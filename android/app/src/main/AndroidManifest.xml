@@ -32,6 +32,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+       <!-- Permissions options for the `location` group -->
+       <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+       <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+       <!-- Permissions options for the `microphone` or `speech` group -->
+       <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

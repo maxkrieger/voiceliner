@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:binder/binder.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
 final playerReadyRef = StateRef(false);
@@ -34,6 +35,10 @@ class PlayerLogic with Logic implements Loadable, Disposable {
 
   @override
   Future<void> load() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException("Could not get microphone permission");
+    }
     _internalPlayer.docsDirectory = await getApplicationDocumentsDirectory();
     _internalPlayer.recordingsDirectory =
         await Directory("${_internalPlayer.docsDirectory.path}/recordings")
