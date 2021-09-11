@@ -2,6 +2,7 @@ class Note {
   final String id;
   final String filePath;
   final DateTime dateCreated;
+  int index;
   Duration? duration;
   String? transcript;
   String? parentNoteId;
@@ -13,7 +14,8 @@ class Note {
       required this.outlineId,
       this.parentNoteId,
       this.transcript,
-      this.duration});
+      this.duration,
+      required this.index});
 
   Note.fromMap(Map<String, dynamic> map)
       : id = map["id"],
@@ -22,9 +24,23 @@ class Note {
             isUtc: true),
         outlineId = map["outline_id"],
         transcript = map["transcript"],
-        parentNoteId = map["parent_note_id"] {
+        parentNoteId = map["parent_note_id"],
+        index = map["index"] {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
+  }
+
+  Map<String, dynamic> get map {
+    return {
+      "id": id,
+      "filePath": filePath,
+      "date_created": dateCreated.toUtc().millisecondsSinceEpoch,
+      "outline_id": outlineId,
+      "transcript": transcript,
+      "parent_note_id": parentNoteId,
+      "index": index,
+      "duration": duration != null ? duration!.inMilliseconds : null
+    };
   }
 }
