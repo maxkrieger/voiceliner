@@ -25,7 +25,7 @@ class Note {
         outlineId = map["outline_id"],
         transcript = map["transcript"],
         parentNoteId = map["parent_note_id"],
-        index = map["index"] {
+        index = map["order_index"] {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
@@ -39,7 +39,7 @@ class Note {
       "outline_id": outlineId,
       "transcript": transcript,
       "parent_note_id": parentNoteId,
-      "index": index,
+      "order_index": index,
       "duration": duration != null ? duration!.inMilliseconds : null
     };
   }

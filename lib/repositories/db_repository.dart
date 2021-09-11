@@ -36,7 +36,7 @@ CREATE TABLE note (
       transcript TEXT,
       parent_note_id TEXT,
       outline_id TEXT NOT NULL,
-      index INTEGER NOT NULL,
+      order_index INTEGER NOT NULL,
       FOREIGN KEY(parent_note_id) REFERENCES note,
       FOREIGN KEY(outline_id) REFERENCES outline
 )''');

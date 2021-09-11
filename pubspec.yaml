@@ -40,6 +40,7 @@ dependencies:
   sqflite: ^2.0.0+4
   path_provider: ^2.0.3
   uuid: ^3.0.4
+  flutter_platform_widgets: ^1.9.5
 
 dev_dependencies:
   flutter_test:
