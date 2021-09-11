@@ -25,7 +25,8 @@ class DBRepository with Logic implements Loadable, Disposable {
 CREATE TABLE outline (
       id TEXT PRIMARY KEY NOT NULL, 
       name TEXT NOT NULL,
-      date_created INTEGER NOT NULL
+      date_created INTEGER NOT NULL,
+      date_updated INTEGER NOT NULL
 )''');
     batch.execute('''
 CREATE TABLE note (
@@ -55,6 +56,11 @@ CREATE TABLE note (
     throw ("Need to upgrade db version $oldVersion to $newVersion");
   }
 
+  Future<void> resetDB() async {
+    await deleteDatabase(_database!.path);
+    await load();
+  }
+
   Future<List<Map<String, dynamic>>> getOutlines() async {
     final result = await _database!.query("outline");
     return result;
@@ -64,6 +70,10 @@ CREATE TABLE note (
     final result = await _database!
         .query("note", where: "outline_id = ?", whereArgs: [outline.id]);
     return result;
+  }
+
+  Future<void> addOutline(Outline outline) async {
+    await _database!.insert("outline", outline.map);
   }
 
   @override
