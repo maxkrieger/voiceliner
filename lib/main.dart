@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
-import 'package:voice_outliner/views/notes_view.dart';
+import 'package:voice_outliner/views/outlines_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +21,16 @@ class VoiceOutlinerApp extends StatelessWidget {
         builder: (context, loading, child) {
           if (loading) {
             // TODO: black screen
-            return Container();
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
           return child!;
         },
         child: MaterialApp(
           title: 'Voice Outliner',
-          home: const NotesView(),
+          // TODO: ternary from initializeState for storage
+          home: const OutlinesView(),
           theme: ThemeData(
               primarySwatch: Colors.deepPurple,
               primaryColor: const Color.fromRGBO(169, 129, 234, 1)),

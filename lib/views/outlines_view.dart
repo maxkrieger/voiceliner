@@ -2,6 +2,7 @@ import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/outline_state.dart';
+import 'package:voice_outliner/views/notes_view.dart';
 
 class OutlinesView extends StatefulWidget {
   const OutlinesView({Key? key}) : super(key: key);
@@ -22,7 +23,7 @@ class _OutlinesViewState extends State<OutlinesView> {
     }
 
     final now = DateTime.now();
-    _textController.text = "${now.day}/${now.month}/${now.year}";
+    _textController.text = "${now.month}/${now.day}/${now.year}";
     _textController.selection = TextSelection(
         baseOffset: 0, extentOffset: _textController.value.text.length);
     await showDialog(
@@ -56,10 +57,21 @@ class _OutlinesViewState extends State<OutlinesView> {
     super.dispose();
   }
 
-  Widget _buildOutline(BuildContext context, int num) {
-    final outline =
-        context.watch(outlinesRef.select((outlines) => outlines[num]));
-    return Card(child: ListTile(title: Text(outline.name)));
+  Widget _buildOutline(BuildContext ctx, int num) {
+    final outline = ctx.watch(outlinesRef.select((outlines) => outlines[num]));
+    return Card(
+        child: ListTile(
+      title: Text(outline.name),
+      onLongPress: () {
+        print("long press");
+      },
+      onTap: () {
+        Navigator.push(
+            ctx,
+            MaterialPageRoute(
+                builder: (_) => NotesView(outlineId: outline.id)));
+      },
+    ));
   }
 
   @override
@@ -73,32 +85,33 @@ class _OutlinesViewState extends State<OutlinesView> {
           final numOutlines =
               context.watch(outlinesRef.select((outlines) => outlines.length));
           return Scaffold(
-            appBar: AppBar(
-              title: const Text("Voice Outliner"),
-              actions: [
-                IconButton(
-                    onPressed: () async {
-                      await context.use(dbRepositoryRef).resetDB();
-                    },
-                    icon: const Icon(Icons.delete))
-              ],
-            ),
-            floatingActionButton: FloatingActionButton(
-              tooltip: "Add Outline",
-              onPressed: _addOutline,
-              child: const Icon(Icons.post_add_rounded),
-            ),
-            body: numOutlines == 0
-                ? Center(
-                    child: ElevatedButton(
-                        onPressed: _addOutline,
-                        child: const Text(
-                          "create your first outline",
-                          style: TextStyle(fontSize: 20.0),
-                        )))
-                : ListView.builder(
-                    itemCount: numOutlines, itemBuilder: _buildOutline),
-          );
+              appBar: AppBar(
+                title: const Text("Voice Outliner"),
+                actions: [
+                  IconButton(
+                      onPressed: () async {
+                        await context.use(dbRepositoryRef).resetDB();
+                      },
+                      icon: const Icon(Icons.delete))
+                ],
+              ),
+              floatingActionButton: FloatingActionButton(
+                tooltip: "Add Outline",
+                onPressed: _addOutline,
+                child: const Icon(Icons.post_add_rounded),
+              ),
+              body: numOutlines == 0
+                  ? Center(
+                      child: ElevatedButton(
+                          onPressed: _addOutline,
+                          child: const Text(
+                            "create your first outline",
+                            style: TextStyle(fontSize: 20.0),
+                          )))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: numOutlines,
+                      itemBuilder: _buildOutline));
         });
   }
 }

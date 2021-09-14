@@ -5,8 +5,21 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+class PlayerState {
+  final int? playingIdx;
+  final bool isPlaying;
+  final bool isRecording;
+  final bool isReady;
+  const PlayerState(
+      {this.playingIdx,
+      required this.isReady,
+      required this.isPlaying,
+      required this.isRecording});
+}
+
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
-final playerReadyRef = StateRef(false);
+final playerStateRef = StateRef<PlayerState>(
+    const PlayerState(isPlaying: false, isRecording: false, isReady: false));
 
 class InternalPlayerState {
   FlutterSoundPlayer player;
@@ -46,6 +59,7 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     // TODO: play from headphones IF AVAILABLE
     await _internalPlayer.player.openAudioSession();
     await _internalPlayer.recorder.openAudioSession();
-    write(playerReadyRef, true);
+    write(playerStateRef,
+        const PlayerState(isReady: true, isPlaying: false, isRecording: false));
   }
 }

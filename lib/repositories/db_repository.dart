@@ -72,6 +72,12 @@ CREATE TABLE note (
     return result;
   }
 
+  Future<Map<String, dynamic>> getOutlineFromId(String outlineId) async {
+    final result = await _database!
+        .query("outline", where: "id = ?", whereArgs: [outlineId]);
+    return result.first;
+  }
+
   Future<void> addOutline(Outline outline) async {
     await _database!.insert("outline", outline.map);
   }
