@@ -34,7 +34,7 @@ class Note {
   Map<String, dynamic> get map {
     return {
       "id": id,
-      "filePath": filePath,
+      "file_path": filePath,
       "date_created": dateCreated.toUtc().millisecondsSinceEpoch,
       "outline_id": outlineId,
       "transcript": transcript,

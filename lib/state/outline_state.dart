@@ -26,8 +26,10 @@ class OutlineLogic with Logic implements Loadable {
   @override
   Future<void> load() async {
     final outlineResults = await _dbRepository.getOutlines();
-    final outlines =
-        outlineResults.map((Map<String, dynamic> res) => Outline.fromMap(res));
-    write(outlinesRef, outlines.toList());
+    final outlines = outlineResults
+        .map((Map<String, dynamic> res) => Outline.fromMap(res))
+        .toList();
+    outlines.sort((a, b) => a.dateUpdated.compareTo(b.dateUpdated));
+    write(outlinesRef, outlines);
   }
 }

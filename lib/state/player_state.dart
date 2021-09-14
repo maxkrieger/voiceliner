@@ -2,24 +2,15 @@ import 'dart:io';
 
 import 'package:binder/binder.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:voice_outliner/data/note.dart';
 
-class PlayerState {
-  final int? playingIdx;
-  final bool isPlaying;
-  final bool isRecording;
-  final bool isReady;
-  const PlayerState(
-      {this.playingIdx,
-      required this.isReady,
-      required this.isPlaying,
-      required this.isRecording});
-}
+enum PlayerState { notReady, ready, playing, recording }
 
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
-final playerStateRef = StateRef<PlayerState>(
-    const PlayerState(isPlaying: false, isRecording: false, isReady: false));
+final playerStateRef = StateRef<PlayerState>(PlayerState.notReady);
 
 class InternalPlayerState {
   FlutterSoundPlayer player;
@@ -29,8 +20,9 @@ class InternalPlayerState {
   InternalPlayerState(this.player, this.recorder);
 }
 
-final internalPlayerRef =
-    StateRef(InternalPlayerState(FlutterSoundPlayer(), FlutterSoundRecorder()));
+final internalPlayerRef = StateRef(InternalPlayerState(
+    FlutterSoundPlayer(logLevel: Level.warning),
+    FlutterSoundRecorder(logLevel: Level.warning)));
 
 class PlayerLogic with Logic implements Loadable, Disposable {
   PlayerLogic(this.scope);
@@ -46,6 +38,26 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     _internalPlayer.player.closeAudioSession();
   }
 
+  Future<void> playNote(Note note) async {
+    write(playerStateRef, PlayerState.recording);
+    await _internalPlayer.player
+        .startPlayer(codec: Codec.aacADTS, fromURI: note.filePath);
+    write(playerStateRef, PlayerState.ready);
+  }
+
+  Future<void> startRecording(Note note) async {
+    await _internalPlayer.recorder
+        .startRecorder(codec: Codec.aacADTS, toFile: note.filePath);
+    write(playerStateRef, PlayerState.recording);
+  }
+
+  Future<Duration?> stopRecording(Note note) async {
+    await _internalPlayer.recorder.stopRecorder();
+    final duration = await flutterSoundHelper.duration(note.filePath);
+    write(playerStateRef, PlayerState.ready);
+    return duration;
+  }
+
   @override
   Future<void> load() async {
     final status = await Permission.microphone.request();
@@ -59,7 +71,6 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     // TODO: play from headphones IF AVAILABLE
     await _internalPlayer.player.openAudioSession();
     await _internalPlayer.recorder.openAudioSession();
-    write(playerStateRef,
-        const PlayerState(isReady: true, isPlaying: false, isRecording: false));
+    write(playerStateRef, PlayerState.ready);
   }
 }

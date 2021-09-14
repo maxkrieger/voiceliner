@@ -1,6 +1,33 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
 import 'package:voice_outliner/state/notes_state.dart';
+import 'package:voice_outliner/widgets/note_item.dart';
+import 'package:voice_outliner/widgets/record_button.dart';
+
+class NotesViewWrapper extends StatelessWidget {
+  final String outlineId;
+  const NotesViewWrapper({Key? key, required this.outlineId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BinderScope(
+        overrides: [
+          notesLogicRef.overrideWith((scope) => NotesLogic(scope, outlineId))
+        ],
+        child: LogicLoader(
+          refs: [notesLogicRef],
+          builder: (ctx, loading, child) {
+            if (loading) {
+              // TODO: black screen
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return NotesView(outlineId: outlineId);
+          },
+        ));
+  }
+}
 
 class NotesView extends StatefulWidget {
   final String outlineId;
@@ -11,59 +38,20 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
-  Widget _buildNote(BuildContext ctx, int num) {
-    final note = context.watch(notesRef.select((state) => state[num]));
-    return Card(child: ListTile(title: Text(note.id)));
-  }
-
-  Widget _buildBody() {
-    final notesCount = context.watch(notesRef.select((state) => state.length));
-    return ListView.builder(
-      shrinkWrap: true,
-      itemBuilder: _buildNote,
-      itemCount: notesCount,
-    );
-  }
-
-  Widget _buildRecordButton() {
-    return Container(
-      child: Text(
-        "hold to record",
-        style: TextStyle(color: Colors.white),
-      ),
-      padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(100.0),
-          color: Color.fromRGBO(169, 129, 234, 0.9)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BinderScope(
-        overrides: [
-          notesLogicRef
-              .overrideWith((scope) => NotesLogic(scope, widget.outlineId))
-        ],
-        child: LogicLoader(
-            refs: [notesLogicRef],
-            builder: (context, loading, child) {
-              if (loading) {
-                // TODO: black screen
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return child!;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                  title: Text(context.watch(currentOutlineRef
-                      .select((state) => state != null ? state.name : "")))),
-              body: _buildBody(),
-              floatingActionButton: _buildRecordButton(),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerFloat,
-            )));
+    final currentOutlineName = context.watch(
+        currentOutlineRef.select((state) => state != null ? state.name : ""));
+    final noteCount = context.watch(notesRef.select((state) => state.length));
+    return Scaffold(
+      appBar: AppBar(title: Text(currentOutlineName)),
+      body: ListView.builder(
+        shrinkWrap: true,
+        itemBuilder: (_, int idx) => NoteItem(key: Key("note-$idx"), num: idx),
+        itemCount: noteCount,
+      ),
+      floatingActionButton: const RecordButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
   }
 }

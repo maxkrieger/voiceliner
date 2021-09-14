@@ -1,6 +1,7 @@
 import 'package:binder/binder.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 
 final dbRepositoryRef = LogicRef((scope) => DBRepository(scope));
@@ -80,6 +81,19 @@ CREATE TABLE note (
 
   Future<void> addOutline(Outline outline) async {
     await _database!.insert("outline", outline.map);
+  }
+
+  Future<void> addNote(Note note) async {
+    final batch = _database!.batch();
+    batch.insert("note", note.map);
+    batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",
+        [DateTime.now().toUtc().millisecondsSinceEpoch, note.outlineId]);
+    await batch.commit();
+  }
+
+  Future<void> updateNote(Note note) async {
+    await _database!
+        .update("note", note.map, where: "id = ?", whereArgs: [note.id]);
   }
 
   @override

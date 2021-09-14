@@ -60,18 +60,19 @@ class _OutlinesViewState extends State<OutlinesView> {
   Widget _buildOutline(BuildContext ctx, int num) {
     final outline = ctx.watch(outlinesRef.select((outlines) => outlines[num]));
     return Card(
+        key: Key("outline-$num"),
         child: ListTile(
-      title: Text(outline.name),
-      onLongPress: () {
-        print("long press");
-      },
-      onTap: () {
-        Navigator.push(
-            ctx,
-            MaterialPageRoute(
-                builder: (_) => NotesView(outlineId: outline.id)));
-      },
-    ));
+          title: Text(outline.name),
+          onLongPress: () {
+            print("long press");
+          },
+          onTap: () {
+            Navigator.push(
+                ctx,
+                MaterialPageRoute(
+                    builder: (_) => NotesViewWrapper(outlineId: outline.id)));
+          },
+        ));
   }
 
   @override

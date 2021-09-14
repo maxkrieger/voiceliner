@@ -1,0 +1,40 @@
+import 'package:binder/binder.dart';
+import 'package:flutter/material.dart';
+import 'package:voice_outliner/state/notes_state.dart';
+import 'package:voice_outliner/state/player_state.dart';
+
+class RecordButton extends StatefulWidget {
+  const RecordButton({Key? key}) : super(key: key);
+
+  @override
+  _RecordButtonState createState() => _RecordButtonState();
+}
+
+class _RecordButtonState extends State<RecordButton> {
+  @override
+  Widget build(BuildContext context) {
+    final playerState = context.watch(playerStateRef);
+    // TODO: shadow
+    return GestureDetector(
+        onTapDown: (_) {
+          context.use(notesLogicRef).startRecording();
+        },
+        onTapUp: (_) {
+          context.use(notesLogicRef).stopRecording();
+        },
+        onVerticalDragEnd: (_) {
+          context.use(notesLogicRef).stopRecording();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          child: Text(
+            playerState == PlayerState.ready ? "hold to record" : "recording",
+            style: const TextStyle(color: Colors.white),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100.0),
+              color: const Color.fromRGBO(169, 129, 234, 0.9)),
+        ));
+  }
+}
