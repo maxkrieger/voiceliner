@@ -2,7 +2,7 @@
     package="chat.saga.voice_outliner">
    <application
         android:label="voice_outliner"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
