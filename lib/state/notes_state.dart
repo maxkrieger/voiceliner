@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:binder/binder.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
-final notesRef = StateRef(const <Note>[]);
+final notesRef = StateRef(const <Note>[], name: "notes");
 final currentOutlineRef = StateRef<Outline?>(null);
 final notesLogicRef = LogicRef((scope) => NotesLogic(scope, ""));
 final currentlyPlayingOrRecordingRef = StateRef<Note?>(null);
@@ -95,6 +97,21 @@ class NotesLogic with Logic implements Loadable {
     notes[note.index] = note;
     write(notesRef, notes);
     _dbRepository.updateNote(note);
+  }
+
+  Future<void> deleteNote(Note note) async {
+    await File(note.filePath).delete();
+    final notes = read(notesRef).toList();
+    notes.removeWhere((element) => note.id == element.id);
+    for (var i = 0; i < notes.length; i++) {
+      notes[i] = Note.fromMap(notes[i].map);
+      notes[i].index = i;
+      if (notes[i].parentNoteId == note.id) {
+        notes[i].parentNoteId = note.parentNoteId;
+      }
+    }
+    await _dbRepository.deleteNote(note, notes);
+    write(notesRef, notes);
   }
 
   @override

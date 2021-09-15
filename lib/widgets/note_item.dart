@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 
 class NoteItem extends StatefulWidget {
@@ -15,10 +16,41 @@ class NoteItem extends StatefulWidget {
 }
 
 class _NoteItemState extends State<NoteItem> {
+  Future<void> _deleteNote() async {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Text("Delete note?"),
+              content: Text("It cannot be restored"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text("cancel")),
+                TextButton(
+                    onPressed: () {
+                      final note = ctx.read(notesRef)[widget.num];
+                      ctx.use(notesLogicRef).deleteNote(note);
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text("delete"))
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final note = context.watch(notesRef.select((state) => state[widget.num]));
-    assert(note.index == widget.num);
+    final note = context.watch(notesRef.select((state) =>
+        widget.num < state.length
+            ? state[widget.num]
+            : Note(
+                id: "",
+                filePath: "",
+                dateCreated: DateTime.now(),
+                outlineId: "",
+                index: 0)));
+    // assert(note.index == widget.num);
     final isCurrent =
         context.watch(currentlyPlayingOrRecordingRef.select((state) {
       return state != null && note.id == state.id;
@@ -62,16 +94,33 @@ class _NoteItemState extends State<NoteItem> {
         ])),
         key: Key("dismissable-${note.id}"),
         child: Card(
+            clipBehavior: Clip.hardEdge,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0)),
             color: const Color.fromRGBO(237, 226, 255, 0.8),
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0)),
-              selected: isCurrent,
-              selectedTileColor: Colors.deepPurpleAccent,
+            child: ExpansionTile(
+              trailing: SizedBox(width: 0),
+              tilePadding: EdgeInsets.zero,
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  IconButton(
+                      onPressed: _deleteNote,
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.deepPurple,
+                      )),
+                  IconButton(
+                      onPressed: () {
+                        print("edit");
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Colors.deepPurple,
+                      ))
+                ])
+              ],
               title: Text(note.transcript == null
                   ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
                   : note.transcript!),
@@ -83,7 +132,12 @@ class _NoteItemState extends State<NoteItem> {
                         : ""),
                     Timeago(builder: (_, t) => Text(t), date: note.dateCreated)
                   ]),
-              onTap: () => context.use(notesLogicRef).playNote(note),
+              leading: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => context.use(notesLogicRef).playNote(note),
+                  icon: isCurrent
+                      ? const Icon(Icons.pause_circle_filled)
+                      : const Icon(Icons.play_circle_filled)),
             )));
   }
 }

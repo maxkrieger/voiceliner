@@ -42,6 +42,7 @@ dependencies:
   uuid: ^3.0.4
   intl: ^0.17.0
   timeago_flutter: ^1.0.0
+  shared_preferences: ^2.0.7
 
 dev_dependencies:
   flutter_test:

@@ -60,10 +60,8 @@ class _OutlinesViewState extends State<OutlinesView> {
   }
 
   void _pushOutline(BuildContext ctx, String outlineId) {
-    Navigator.push(
-        ctx,
-        MaterialPageRoute(
-            builder: (_) => NotesViewWrapper(outlineId: outlineId)));
+    Navigator.pushNamedAndRemoveUntil(ctx, "/notes", (_) => false,
+        arguments: NotesViewArgs(outlineId));
   }
 
   Widget _buildOutline(BuildContext ctx, int num) {
@@ -98,6 +96,7 @@ class _OutlinesViewState extends State<OutlinesView> {
               context.watch(outlinesRef.select((outlines) => outlines.length));
           return Scaffold(
               appBar: AppBar(
+                automaticallyImplyLeading: false,
                 title: const Text("Voice Outliner"),
                 actions: [
                   IconButton(

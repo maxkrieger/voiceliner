@@ -102,6 +102,17 @@ CREATE TABLE note (
     await batch.commit();
   }
 
+  Future<void> deleteNote(Note note, List<Note> reindexed) async {
+    final batch = _database!.batch();
+    reindexed.forEach((element) {
+      batch.rawUpdate(
+          "UPDATE note SET order_index = ?, parent_note_id = ? WHERE id = ?",
+          [element.index, element.parentNoteId, element.id]);
+    });
+    batch.delete("note", where: "id = ?", whereArgs: [note.id]);
+    await batch.commit();
+  }
+
   @override
   Future<void> load() async {
     final db = await openDatabase("voice_outliner.db",
