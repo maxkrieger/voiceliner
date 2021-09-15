@@ -46,6 +46,7 @@ class _NotesViewState extends State<NotesView> {
     return Scaffold(
       appBar: AppBar(title: Text(currentOutlineName)),
       body: ListView.builder(
+        padding: const EdgeInsets.only(bottom: 150),
         shrinkWrap: true,
         itemBuilder: (_, int idx) => NoteItem(key: Key("note-$idx"), num: idx),
         itemCount: noteCount,

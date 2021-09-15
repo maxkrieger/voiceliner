@@ -1,8 +1,8 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
-import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
+import 'package:voice_outliner/views/settings_view.dart';
 
 class OutlinesView extends StatefulWidget {
   const OutlinesView({Key? key}) : super(key: key);
@@ -14,11 +14,13 @@ class OutlinesView extends StatefulWidget {
 class _OutlinesViewState extends State<OutlinesView> {
   final _textController = TextEditingController();
   Future<void> _addOutline() async {
-    void _onSubmitted(BuildContext ctx) {
+    Future<void> _onSubmitted(BuildContext ctx) async {
       if (_textController.value.text.isNotEmpty) {
-        final outlineModel = context.use(outlinesLogicRef);
-        outlineModel.createOutline(_textController.value.text);
+        final outline = await context
+            .use(outlinesLogicRef)
+            .createOutline(_textController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
+        _pushOutline(ctx, outline.id);
       }
     }
 
@@ -57,6 +59,13 @@ class _OutlinesViewState extends State<OutlinesView> {
     super.dispose();
   }
 
+  void _pushOutline(BuildContext ctx, String outlineId) {
+    Navigator.push(
+        ctx,
+        MaterialPageRoute(
+            builder: (_) => NotesViewWrapper(outlineId: outlineId)));
+  }
+
   Widget _buildOutline(BuildContext ctx, int num) {
     final outline = ctx.watch(outlinesRef.select((outlines) => outlines[num]));
     return Card(
@@ -67,12 +76,14 @@ class _OutlinesViewState extends State<OutlinesView> {
             print("long press");
           },
           onTap: () {
-            Navigator.push(
-                ctx,
-                MaterialPageRoute(
-                    builder: (_) => NotesViewWrapper(outlineId: outline.id)));
+            _pushOutline(ctx, outline.id);
           },
         ));
+  }
+
+  void _openSettings() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const SettingsView()));
   }
 
   @override
@@ -90,11 +101,8 @@ class _OutlinesViewState extends State<OutlinesView> {
                 title: const Text("Voice Outliner"),
                 actions: [
                   IconButton(
-                      onPressed: () async {
-                        await context.use(dbRepositoryRef).resetDB();
-                        setState(() {});
-                      },
-                      icon: const Icon(Icons.delete))
+                      onPressed: _openSettings,
+                      icon: const Icon(Icons.settings))
                 ],
               ),
               floatingActionButton: FloatingActionButton(

@@ -15,11 +15,10 @@ class _RecordButtonState extends State<RecordButton> {
   @override
   Widget build(BuildContext context) {
     final playerState = context.watch(playerStateRef);
-    // TODO: shadow
     return GestureDetector(
         onTapDown: (_) {
           context.use(notesLogicRef).startRecording();
-          HapticFeedback.heavyImpact();
+          HapticFeedback.mediumImpact();
           Feedback.forTap(context);
         },
         onTapUp: (_) {
@@ -43,10 +42,8 @@ class _RecordButtonState extends State<RecordButton> {
                       : "hold to record",
                   style: const TextStyle(color: Colors.white),
                 ),
-                padding: EdgeInsets.symmetric(
-                    vertical:
-                        playerState == PlayerState.recording ? 50.0 : 20.0,
-                    horizontal: 50.0),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 20.0, horizontal: 50.0),
                 decoration: BoxDecoration(
                   boxShadow: const [
                     BoxShadow(

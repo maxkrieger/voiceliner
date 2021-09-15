@@ -2,6 +2,7 @@ class Note {
   final String id;
   final String filePath;
   final DateTime dateCreated;
+  bool isComplete;
   int index;
   Duration? duration;
   String? transcript;
@@ -13,6 +14,7 @@ class Note {
       required this.dateCreated,
       required this.outlineId,
       this.parentNoteId,
+      this.isComplete = false,
       this.transcript,
       this.duration,
       required this.index});
@@ -25,7 +27,8 @@ class Note {
         outlineId = map["outline_id"],
         transcript = map["transcript"],
         parentNoteId = map["parent_note_id"],
-        index = map["order_index"] {
+        index = map["order_index"],
+        isComplete = map["is_complete"] == 1 {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
@@ -40,7 +43,8 @@ class Note {
       "transcript": transcript,
       "parent_note_id": parentNoteId,
       "order_index": index,
-      "duration": duration != null ? duration!.inMilliseconds : null
+      "duration": duration != null ? duration!.inMilliseconds : null,
+      "is_complete": isComplete ? 1 : 0
     };
   }
 }

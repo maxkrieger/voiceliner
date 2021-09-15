@@ -24,7 +24,7 @@ class NotesLogic with Logic implements Loadable {
     final note = Note(
         id: uuid.v4(),
         filePath: "$path/$noteId.aac",
-        dateCreated: DateTime.now(),
+        dateCreated: DateTime.now().toUtc(),
         outlineId: read(currentOutlineRef)!.id,
         index: read(notesRef).length);
     await _playerLogic.startRecording(note);
@@ -83,6 +83,7 @@ class NotesLogic with Logic implements Loadable {
     }
     final notes = read(notesRef).toList();
     final note = Note.fromMap(notes[noteToOutdent.index].map);
+    // TODO: find siblings below self and give them same parent
     String? getParent(String? n) {
       if (n == null) {
         return null;

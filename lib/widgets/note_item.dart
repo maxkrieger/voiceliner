@@ -1,6 +1,9 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 
 class NoteItem extends StatefulWidget {
@@ -37,39 +40,49 @@ class _NoteItemState extends State<NoteItem> {
           if (note.index == 0) {
             return false;
           }
+          HapticFeedback.mediumImpact();
           if (direction == DismissDirection.startToEnd) {
             context.use(notesLogicRef).indentNote(note);
           } else if (direction == DismissDirection.endToStart) {
             context.use(notesLogicRef).outdentNote(note);
           }
         },
-        background: Container(
-            color: const Color.fromRGBO(0, 0, 0, 0.05),
-            child: Align(
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: const [
-                  SizedBox(width: 20.0),
-                  Icon(Icons.arrow_forward)
-                ]))),
-        secondaryBackground: Container(
-            color: const Color.fromRGBO(0, 0, 0, 0.05),
-            child: Align(
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: const [
-                  Icon(Icons.arrow_back),
-                  SizedBox(width: 20.0),
-                ]))),
+        background: Align(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: const [
+              SizedBox(width: 20.0),
+              Icon(Icons.arrow_forward)
+            ])),
+        secondaryBackground: Align(
+            child:
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: const [
+          Icon(Icons.arrow_back),
+          SizedBox(width: 20.0),
+        ])),
         key: Key("dismissable-${note.id}"),
         child: Card(
-            margin: EdgeInsets.only(top: 10.0, left: 30.0 * depth, right: 10.0),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
+            color: const Color.fromRGBO(237, 226, 255, 0.8),
+            margin: EdgeInsets.only(
+                top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
             child: ListTile(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0)),
               selected: isCurrent,
               selectedTileColor: Colors.deepPurpleAccent,
-              title: Text(note.id),
-              subtitle: Text(
-                  note.duration != null ? "${note.duration!.inSeconds}s" : ""),
+              title: Text(note.transcript == null
+                  ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
+                  : note.transcript!),
+              subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(note.duration != null
+                        ? "${note.duration!.inSeconds}s"
+                        : ""),
+                    Timeago(builder: (_, t) => Text(t), date: note.dateCreated)
+                  ]),
               onTap: () => context.use(notesLogicRef).playNote(note),
             )));
   }

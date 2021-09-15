@@ -16,8 +16,8 @@ class OutlineLogic with Logic implements Loadable {
     final outline = Outline(
         name: name,
         id: uuid.v4(),
-        dateCreated: DateTime.now(),
-        dateUpdated: DateTime.now());
+        dateCreated: DateTime.now().toUtc(),
+        dateUpdated: DateTime.now().toUtc());
     write(outlinesRef, read(outlinesRef).toList()..add(outline));
     await _dbRepository.addOutline(outline);
     return outline;

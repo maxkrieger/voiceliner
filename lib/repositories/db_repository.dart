@@ -35,6 +35,7 @@ CREATE TABLE note (
       id TEXT PRIMARY KEY NOT NULL, 
       file_path TEXT NOT NULL,
       date_created INTEGER NOT NULL,
+      is_complete INTEGER NOT NULL,
       duration INTEGER,
       transcript TEXT,
       parent_note_id TEXT,
@@ -94,8 +95,11 @@ CREATE TABLE note (
   }
 
   Future<void> updateNote(Note note) async {
-    await _database!
-        .update("note", note.map, where: "id = ?", whereArgs: [note.id]);
+    final batch = _database!.batch();
+    batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",
+        [DateTime.now().toUtc().millisecondsSinceEpoch, note.outlineId]);
+    batch.update("note", note.map, where: "id = ?", whereArgs: [note.id]);
+    await batch.commit();
   }
 
   @override
