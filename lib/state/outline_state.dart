@@ -23,6 +23,23 @@ class OutlineLogic with Logic implements Loadable {
     return outline;
   }
 
+  Future<void> deleteOutline(Outline outline) async {
+    await _dbRepository.deleteOutline(outline);
+    final outlines = read(outlinesRef).toList();
+    outlines.removeWhere((element) => element.id == outline.id);
+    write(outlinesRef, outlines);
+  }
+
+  Future<void> renameOutline(Outline outline, String renameTo) async {
+    final renamedOutline = Outline.fromMap(outline.map);
+    renamedOutline.name = renameTo;
+    final updatedOutlines = read(outlinesRef).toList();
+    updatedOutlines[updatedOutlines
+        .indexWhere((element) => element.id == outline.id)] = renamedOutline;
+    await _dbRepository.renameOutline(renamedOutline);
+    write(outlinesRef, updatedOutlines);
+  }
+
   @override
   Future<void> load() async {
     final outlineResults = await _dbRepository.getOutlines();

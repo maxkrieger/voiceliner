@@ -7,7 +7,6 @@ import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 final notesRef = StateRef(const <Note>[], name: "notes");
-final currentOutlineRef = StateRef<Outline?>(null);
 final notesLogicRef = LogicRef((scope) => NotesLogic(scope, ""));
 final currentlyPlayingOrRecordingRef = StateRef<Note?>(null);
 
@@ -27,7 +26,7 @@ class NotesLogic with Logic implements Loadable {
         id: uuid.v4(),
         filePath: "$path/$noteId.aac",
         dateCreated: DateTime.now().toUtc(),
-        outlineId: read(currentOutlineRef)!.id,
+        outlineId: _outlineId,
         index: read(notesRef).length);
     await _playerLogic.startRecording(note);
     await _dbRepository.addNote(note);
@@ -118,7 +117,6 @@ class NotesLogic with Logic implements Loadable {
   Future<void> load() async {
     final outlineDict = await _dbRepository.getOutlineFromId(_outlineId);
     final outline = Outline.fromMap(outlineDict);
-    write(currentOutlineRef, outline);
     final notesDicts = await _dbRepository.getNotesForOutline(outline);
     final notes = notesDicts.map((n) => Note.fromMap(n)).toList();
     notes.sort((a, b) => a.index.compareTo(b.index));

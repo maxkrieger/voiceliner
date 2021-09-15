@@ -4,7 +4,7 @@ class Outline {
       required this.id,
       required this.dateCreated,
       required this.dateUpdated});
-  final String name;
+  String name;
   final String id;
   final DateTime dateCreated;
   final DateTime dateUpdated;

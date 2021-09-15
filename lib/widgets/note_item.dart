@@ -20,21 +20,21 @@ class _NoteItemState extends State<NoteItem> {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text("Delete note?"),
-              content: Text("It cannot be restored"),
+              title: const Text("Delete note?"),
+              content: const Text("It cannot be restored"),
               actions: [
                 TextButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: Text("cancel")),
+                    child: const Text("cancel")),
                 TextButton(
                     onPressed: () {
                       final note = ctx.read(notesRef)[widget.num];
                       ctx.use(notesLogicRef).deleteNote(note);
                       Navigator.of(ctx).pop();
                     },
-                    child: Text("delete"))
+                    child: const Text("delete"))
               ],
             ));
   }
@@ -101,13 +101,13 @@ class _NoteItemState extends State<NoteItem> {
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
             child: ExpansionTile(
-              trailing: SizedBox(width: 0),
+              trailing: const SizedBox(width: 0),
               tilePadding: EdgeInsets.zero,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   IconButton(
                       onPressed: _deleteNote,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.delete,
                         color: Colors.deepPurple,
                       )),
@@ -115,7 +115,7 @@ class _NoteItemState extends State<NoteItem> {
                       onPressed: () {
                         print("edit");
                       },
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.edit,
                         color: Colors.deepPurple,
                       ))

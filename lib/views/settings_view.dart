@@ -14,21 +14,21 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text("Reset everything?"),
-              content: Text(
+              title: const Text("Reset everything?"),
+              content: const Text(
                   "This deletes the database and files. Relaunch the app afterward."),
               actions: [
                 TextButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: Text("cancel")),
+                    child: const Text("cancel")),
                 TextButton(
                     onPressed: () {
                       ctx.use(dbRepositoryRef).resetDB();
                       Navigator.of(ctx).pop();
                     },
-                    child: Text("reset"))
+                    child: const Text("reset"))
               ],
             ));
   }
@@ -36,10 +36,11 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Settings")),
+        appBar: AppBar(title: const Text("Settings")),
         body: Column(
           children: [
-            ElevatedButton(onPressed: _resetDB, child: Text("reset everything"))
+            ElevatedButton(
+                onPressed: _resetDB, child: const Text("reset everything"))
           ],
         ));
   }

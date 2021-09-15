@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:binder/binder.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -9,7 +11,7 @@ final dbRepositoryRef = LogicRef((scope) => DBRepository(scope));
 final dbReadyRef = StateRef(false);
 final dbRef = StateRef<Database?>(null);
 
-final Uuid uuid = Uuid();
+const Uuid uuid = Uuid();
 
 class DBRepository with Logic implements Loadable, Disposable {
   DBRepository(this.scope);
@@ -102,14 +104,32 @@ CREATE TABLE note (
     await batch.commit();
   }
 
+  Future<void> renameOutline(Outline outline) async {
+    await _database!.rawUpdate(
+        "UPDATE outline SET name = ? WHERE id = ?", [outline.name, outline.id]);
+  }
+
   Future<void> deleteNote(Note note, List<Note> reindexed) async {
     final batch = _database!.batch();
-    reindexed.forEach((element) {
+    void update(Note element) {
       batch.rawUpdate(
           "UPDATE note SET order_index = ?, parent_note_id = ? WHERE id = ?",
           [element.index, element.parentNoteId, element.id]);
-    });
+    }
+
+    reindexed.forEach(update);
     batch.delete("note", where: "id = ?", whereArgs: [note.id]);
+    await batch.commit();
+  }
+
+  Future<void> deleteOutline(Outline outline) async {
+    final notes = await getNotesForOutline(outline);
+    final batch = _database!.batch();
+    for (final n in notes) {
+      await File(n["file_path"]).delete();
+    }
+    batch.delete("note", where: "outline_id = ?", whereArgs: [outline.id]);
+    batch.delete("outline", where: "id = ?", whereArgs: [outline.id]);
     await batch.commit();
   }
 
