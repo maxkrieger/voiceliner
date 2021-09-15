@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
+import 'package:voice_outliner/state/player_state.dart';
 
 final dbRepositoryRef = LogicRef((scope) => DBRepository(scope));
 final dbReadyRef = StateRef(false);
@@ -59,6 +60,7 @@ CREATE TABLE note (
 
   Future<void> resetDB() async {
     await deleteDatabase(_database!.path);
+    await read(internalPlayerRef).recordingsDirectory.delete(recursive: true);
     await load();
   }
 

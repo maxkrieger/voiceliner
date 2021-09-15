@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Voice Outliner</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,6 +24,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationUsageDescription</key>
+	<string>This app can add your location to your recordings to help you remember them.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app can add your location to your recordings to help you remember them.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app records your voice</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app transcribes your voice</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,20 +51,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-
-    <!-- Permission options for the `location` group -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app can add your location to your recordings to help you remember them.</string>
-
-    <key>NSLocationUsageDescription</key>
-    <string>This app can add your location to your recordings to help you remember them.</string>
-
-	<!-- Permission options for the `microphone` group -->
-    <key>NSMicrophoneUsageDescription</key>
-    <string>This app records your voice</string>
-
-    <!-- Permission options for the `speech` group -->
-    <key>NSSpeechRecognitionUsageDescription</key>
-    <string>This app transcribes your voice</string>
 </dict>
 </plist>

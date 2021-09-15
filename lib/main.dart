@@ -30,6 +30,7 @@ class VoiceOutlinerApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Voice Outliner',
           // TODO: ternary from initializeState for storage
+          // TODO: loader as disabled interaction - overlay
           home: const OutlinesView(),
           theme: ThemeData(
               primarySwatch: Colors.deepPurple,

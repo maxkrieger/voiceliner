@@ -92,6 +92,7 @@ class _OutlinesViewState extends State<OutlinesView> {
                   IconButton(
                       onPressed: () async {
                         await context.use(dbRepositoryRef).resetDB();
+                        setState(() {});
                       },
                       icon: const Icon(Icons.delete))
                 ],

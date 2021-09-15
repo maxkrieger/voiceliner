@@ -36,15 +36,64 @@ class NotesLogic with Logic implements Loadable {
   Future<void> stopRecording() async {
     final note = read(currentlyPlayingOrRecordingRef)!;
     note.duration = await _playerLogic.stopRecording(note);
+    write(notesRef, read(notesRef));
     _dbRepository.updateNote(note);
     // TODO: transcribe
     write(currentlyPlayingOrRecordingRef, null);
   }
 
   Future<void> playNote(Note note) async {
+    if (read(currentlyPlayingOrRecordingRef) != null) {
+      _playerLogic.stopPlaying();
+      write(currentlyPlayingOrRecordingRef, null);
+      return;
+    }
     write(currentlyPlayingOrRecordingRef, note);
-    await _playerLogic.playNote(note);
-    write(currentlyPlayingOrRecordingRef, null);
+    await _playerLogic.playNote(note, () {
+      write(currentlyPlayingOrRecordingRef, null);
+    });
+  }
+
+  Future<void> indentNote(Note noteToIndent) async {
+    if (noteToIndent.index == 0) {
+      return;
+    }
+    final notes = read(notesRef).toList();
+    final note = Note.fromMap(notes[noteToIndent.index].map);
+    String predecessorId;
+    final prev = notes[note.index - 1];
+    if (note.parentNoteId == null) {
+      if (prev.parentNoteId == null) {
+        predecessorId = prev.id;
+      } else {
+        predecessorId = prev.parentNoteId!;
+      }
+    } else {
+      predecessorId = prev.id;
+    }
+    note.parentNoteId = predecessorId;
+    notes[note.index] = note;
+    write(notesRef, notes);
+    _dbRepository.updateNote(note);
+  }
+
+  Future<void> outdentNote(Note noteToOutdent) async {
+    if (noteToOutdent.index == 0) {
+      return;
+    }
+    final notes = read(notesRef).toList();
+    final note = Note.fromMap(notes[noteToOutdent.index].map);
+    String? getParent(String? n) {
+      if (n == null) {
+        return null;
+      }
+      return notes.firstWhere((element) => element.id == n).parentNoteId;
+    }
+
+    note.parentNoteId = getParent(note.parentNoteId);
+    notes[note.index] = note;
+    write(notesRef, notes);
+    _dbRepository.updateNote(note);
   }
 
   @override

@@ -38,10 +38,19 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     _internalPlayer.player.closeAudioSession();
   }
 
-  Future<void> playNote(Note note) async {
-    write(playerStateRef, PlayerState.recording);
-    await _internalPlayer.player
-        .startPlayer(codec: Codec.aacADTS, fromURI: note.filePath);
+  Future<void> playNote(Note note, onDone) async {
+    write(playerStateRef, PlayerState.playing);
+    await _internalPlayer.player.startPlayer(
+        codec: Codec.aacADTS,
+        fromURI: note.filePath,
+        whenFinished: () {
+          write(playerStateRef, PlayerState.ready);
+          onDone();
+        });
+  }
+
+  Future<void> stopPlaying() async {
+    await _internalPlayer.player.stopPlayer();
     write(playerStateRef, PlayerState.ready);
   }
 

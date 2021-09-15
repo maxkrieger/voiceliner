@@ -39,6 +39,7 @@
 
        <!-- Permissions options for the `microphone` or `speech` group -->
        <uses-permission android:name="android.permission.RECORD_AUDIO" />
+       <uses-permission android:name="android.permission.VIBRATE" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
