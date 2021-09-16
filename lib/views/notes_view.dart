@@ -101,9 +101,9 @@ class _NotesViewState extends State<NotesView> {
                       },
                       child: const Text("cancel")),
                   TextButton(
-                      onPressed: () {
+                      onPressed: () async {
                         ctx.use(outlinesLogicRef).deleteOutline(outline);
-                        Navigator.pushNamedAndRemoveUntil(
+                        await Navigator.pushNamedAndRemoveUntil(
                             ctx, "/", (route) => false);
                       },
                       child: const Text("delete"))
@@ -150,8 +150,10 @@ class _NotesViewState extends State<NotesView> {
 
   @override
   Widget build(BuildContext context) {
-    final currentOutlineName = context.watch(outlinesRef.select((state) =>
-        state.firstWhere((element) => element.id == widget.outlineId).name));
+    final currentOutlineName = context.watch(outlinesRef.select((state) => state
+        .firstWhere((element) => element.id == widget.outlineId,
+            orElse: () => defaultOutline)
+        .name));
     final noteCount = context.watch(notesRef.select((state) => state.length));
     return Scaffold(
       appBar: AppBar(

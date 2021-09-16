@@ -1,10 +1,10 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
-import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 
 class NoteItem extends StatefulWidget {
@@ -42,15 +42,7 @@ class _NoteItemState extends State<NoteItem> {
   @override
   Widget build(BuildContext context) {
     final note = context.watch(notesRef.select((state) =>
-        widget.num < state.length
-            ? state[widget.num]
-            : Note(
-                id: "",
-                filePath: "",
-                dateCreated: DateTime.now(),
-                outlineId: "",
-                index: 0)));
-    // assert(note.index == widget.num);
+        widget.num < state.length ? state[widget.num] : defaultNote));
     final isCurrent =
         context.watch(currentlyPlayingOrRecordingRef.select((state) {
       return state != null && note.id == state.id;
@@ -68,6 +60,12 @@ class _NoteItemState extends State<NoteItem> {
       return d;
     }));
     return Dismissible(
+        dismissThresholds: const {
+          DismissDirection.startToEnd: 0.2,
+          DismissDirection.endToStart: 0.2,
+        },
+        movementDuration: const Duration(milliseconds: 100),
+        dragStartBehavior: DragStartBehavior.down,
         confirmDismiss: (direction) async {
           if (note.index == 0) {
             return false;
@@ -117,6 +115,14 @@ class _NoteItemState extends State<NoteItem> {
                       },
                       icon: const Icon(
                         Icons.edit,
+                        color: Colors.deepPurple,
+                      )),
+                  IconButton(
+                      onPressed: () {
+                        print("collapse");
+                      },
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
                         color: Colors.deepPurple,
                       ))
                 ])

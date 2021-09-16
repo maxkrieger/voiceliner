@@ -10,6 +10,9 @@ final notesRef = StateRef(const <Note>[], name: "notes");
 final notesLogicRef = LogicRef((scope) => NotesLogic(scope, ""));
 final currentlyPlayingOrRecordingRef = StateRef<Note?>(null);
 
+final defaultNote = Note(
+    id: "", filePath: "", dateCreated: DateTime.now(), outlineId: "", index: 0);
+
 class NotesLogic with Logic implements Loadable {
   @override
   final Scope scope;
@@ -29,18 +32,21 @@ class NotesLogic with Logic implements Loadable {
         outlineId: _outlineId,
         index: read(notesRef).length);
     await _playerLogic.startRecording(note);
-    await _dbRepository.addNote(note);
     write(currentlyPlayingOrRecordingRef, note);
-    write(notesRef, read(notesRef).toList()..add(note));
   }
 
   Future<void> stopRecording() async {
-    final note = read(currentlyPlayingOrRecordingRef)!;
-    note.duration = await _playerLogic.stopRecording(note);
-    write(notesRef, read(notesRef));
-    _dbRepository.updateNote(note);
-    // TODO: transcribe
+    final note = read(currentlyPlayingOrRecordingRef);
+    if (note == null) {
+      _playerLogic.stopRecording();
+      write(currentlyPlayingOrRecordingRef, null);
+      return;
+    }
+    note.duration = await _playerLogic.stopRecording(note: note);
+    write(notesRef, read(notesRef).toList()..add(note));
+    await _dbRepository.addNote(note);
     write(currentlyPlayingOrRecordingRef, null);
+    // TODO: transcribe
   }
 
   Future<void> playNote(Note note) async {

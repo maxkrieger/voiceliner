@@ -65,7 +65,8 @@ class _OutlinesViewState extends State<OutlinesView> {
   }
 
   Widget _buildOutline(BuildContext ctx, int num) {
-    final outline = ctx.watch(outlinesRef.select((outlines) => outlines[num]));
+    final outline = ctx.watch(outlinesRef.select(
+        (outlines) => num < outlines.length ? outlines[num] : defaultOutline));
     return Card(
         key: Key("outline-$num"),
         child: ListTile(

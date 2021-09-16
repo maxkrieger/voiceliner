@@ -18,13 +18,16 @@ class _RecordButtonState extends State<RecordButton> {
     return GestureDetector(
         onTapDown: (_) {
           context.use(notesLogicRef).startRecording();
-          HapticFeedback.mediumImpact();
-          Feedback.forTap(context);
         },
         onTapUp: (_) {
+          HapticFeedback.mediumImpact();
           context.use(notesLogicRef).stopRecording();
         },
-        onVerticalDragEnd: (_) {
+        onLongPressDown: (_) {
+          HapticFeedback.mediumImpact();
+        },
+        onLongPressUp: () {
+          HapticFeedback.mediumImpact();
           context.use(notesLogicRef).stopRecording();
         },
         child: AnimatedOpacity(

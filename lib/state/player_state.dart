@@ -60,10 +60,13 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     write(playerStateRef, PlayerState.recording);
   }
 
-  Future<Duration?> stopRecording(Note note) async {
+  Future<Duration?> stopRecording({Note? note}) async {
     await _internalPlayer.recorder.stopRecorder();
-    final duration = await flutterSoundHelper.duration(note.filePath);
     write(playerStateRef, PlayerState.ready);
+    if (note == null) {
+      return null;
+    }
+    final duration = await flutterSoundHelper.duration(note.filePath);
     return duration;
   }
 
