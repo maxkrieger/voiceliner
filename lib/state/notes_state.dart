@@ -23,6 +23,9 @@ class NotesLogic with Logic implements Loadable {
   PlayerLogic get _playerLogic => use(playerLogicRef);
 
   Future<void> startRecording() async {
+    if (read(currentlyPlayingOrRecordingRef) != null) {
+      return;
+    }
     final noteId = uuid.v4();
     final path = read(internalPlayerRef).recordingsDirectory.path;
     final note = Note(

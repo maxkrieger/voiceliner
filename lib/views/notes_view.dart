@@ -162,7 +162,7 @@ class _NotesViewState extends State<NotesView> {
       return const Scaffold(
           body: Center(
               child: Text(
-                  "please relaunch the app, the recorder isn't ready. Does it have permission?")));
+                  "Please relaunch the app, the recorder isn't ready. Does it have permission?")));
     }
     return Scaffold(
       appBar: AppBar(
