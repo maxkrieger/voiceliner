@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
+import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
 
@@ -155,6 +156,14 @@ class _NotesViewState extends State<NotesView> {
             orElse: () => defaultOutline)
         .name));
     final noteCount = context.watch(notesRef.select((state) => state.length));
+    final isNotReady = context
+        .watch(playerStateRef.select((state) => state == PlayerState.notReady));
+    if (isNotReady) {
+      return const Scaffold(
+          body: Center(
+              child: Text(
+                  "please relaunch the app, the recorder isn't ready. Does it have permission?")));
+    }
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
