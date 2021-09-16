@@ -18,8 +18,6 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    increment_build_number
-    commit_version_bump
     if is_ci
       create_keychain(
         name: ENV['MATCH_KEYCHAIN_NAME'],

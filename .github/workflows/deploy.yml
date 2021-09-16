@@ -38,6 +38,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Bump version
+        run: |
+          cd ./ios
+          bundle exec fastlane run increment_build_number
+          bundle exec fastlane run commit_version_bump
+
       - name: Install tools
         run: |
           flutter pub get
