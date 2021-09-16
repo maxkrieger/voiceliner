@@ -41,6 +41,7 @@ class _SettingsViewState extends State<SettingsView> {
           children: [
             ElevatedButton(
                 onPressed: _resetDB, child: const Text("reset everything"))
+            //  TODO: show licenses
           ],
         ));
   }
