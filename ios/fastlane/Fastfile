@@ -18,22 +18,13 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    if is_ci
-      create_keychain(
-        name: ENV['MATCH_KEYCHAIN_NAME'],
-        password: ENV["MATCH_KEYCHAIN_PASSWORD"],
-        default_keychain: true,
-        unlock: true,
-        timeout: 3600,
-        lock_when_sleeps: false
-      )
-    end
-    match(
+    setup_ci
+
+    sync_code_signing(
       type: "appstore",
-      readonly: is_ci,
-      keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
-      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
+      readonly: is_ci
     )
+
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     upload_to_testflight
   end
