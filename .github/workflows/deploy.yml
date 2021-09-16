@@ -43,9 +43,9 @@ jobs:
           flutter pub get
           cd ./ios && pod install
 
-      - name: Flutter build ipa
+      - name: Flutter build release
         run: |
-          flutter build ipa
+          flutter build ios --release --no-codesign
 
       - name: Deploy to TestFlight
         run: |
