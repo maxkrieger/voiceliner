@@ -1,4 +1,4 @@
-git_url("https://github.com/maxkrieger/fastlane_match_provisioner_vo.git")
+git_url("git@github.com:maxkrieger/fastlane_match_provisioner_vo.git")
 
 storage_mode("git")
 
