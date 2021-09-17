@@ -43,6 +43,8 @@ CREATE TABLE note (
       parent_note_id TEXT,
       outline_id TEXT NOT NULL,
       order_index INTEGER NOT NULL,
+      backed_up INTEGER NOT NULL,
+      color INTEGER,
       FOREIGN KEY(parent_note_id) REFERENCES note,
       FOREIGN KEY(outline_id) REFERENCES outline
 )''');

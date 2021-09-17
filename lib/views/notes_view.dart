@@ -177,6 +177,7 @@ class _NotesViewState extends State<NotesView> {
             icon: const Icon(Icons.view_list_rounded)),
         actions: [
           PopupMenuButton(
+              icon: const Icon(Icons.more_vert),
               itemBuilder: _menuBuilder,
               onSelected: (String item) => _handleMenu(item, outlineId))
         ],

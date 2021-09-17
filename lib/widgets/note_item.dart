@@ -49,7 +49,7 @@ class _NoteItemState extends State<NoteItem> {
                     autofocus: true,
                     autocorrect: false,
                     onSubmitted: (_) => _onSubmitted(dialogCtx),
-                    textCapitalization: TextCapitalization.words),
+                    textCapitalization: TextCapitalization.sentences),
                 actions: [
                   TextButton(
                       child: const Text("cancel"),

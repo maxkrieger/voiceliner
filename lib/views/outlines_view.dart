@@ -1,5 +1,6 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
@@ -71,6 +72,8 @@ class _OutlinesViewState extends State<OutlinesView> {
         key: Key("outline-$num"),
         child: ListTile(
           title: Text(outline.name),
+          subtitle:
+              Timeago(builder: (_, t) => Text(t), date: outline.dateCreated),
           onLongPress: () {
             print("long press");
           },
@@ -120,6 +123,7 @@ class _OutlinesViewState extends State<OutlinesView> {
                             style: TextStyle(fontSize: 20.0),
                           )))
                   : ListView.builder(
+                      reverse: true,
                       shrinkWrap: true,
                       itemCount: numOutlines,
                       itemBuilder: _buildOutline));
