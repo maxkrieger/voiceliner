@@ -8,7 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
-enum PlayerState { notReady, ready, playing, recording }
+enum PlayerState { notReady, ready, playing, recording, processing }
 
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
 final playerStateRef = StateRef<PlayerState>(PlayerState.notReady);
@@ -65,7 +65,6 @@ class PlayerLogic with Logic implements Loadable, Disposable {
 
   Future<Duration?> stopRecording({Note? note}) async {
     await _internalPlayer.recorder.stopRecorder();
-    write(playerStateRef, PlayerState.ready);
     if (note == null) {
       return null;
     }

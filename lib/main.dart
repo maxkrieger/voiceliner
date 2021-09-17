@@ -15,6 +15,9 @@ final routes = {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+  if (sharedPrefs.getBool("should_transcribe") == null) {
+    sharedPrefs.setBool("should_transcribe", true);
+  }
   runApp(BinderScope(
       child: VoiceOutlinerApp(
     sharedPreferences: sharedPrefs,

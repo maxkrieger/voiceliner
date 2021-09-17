@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:binder/binder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
@@ -18,6 +19,8 @@ class NotesLogic with Logic implements Loadable {
   final Scope scope;
 
   final String _outlineId;
+
+  late bool shouldTranscribe;
 
   DBRepository get _dbRepository => use(dbRepositoryRef);
   PlayerLogic get _playerLogic => use(playerLogicRef);
@@ -45,12 +48,18 @@ class NotesLogic with Logic implements Loadable {
       write(currentlyPlayingOrRecordingRef, null);
       return;
     }
+    write(playerStateRef, PlayerState.processing);
+    // prevent cutoff
+    await Future.delayed(const Duration(milliseconds: 500));
     note.duration = await _playerLogic.stopRecording(note: note);
-    final res = await read(speechRecognizerRef).recognize(note);
-    note.transcript = res;
+    if (shouldTranscribe) {
+      final res = await read(speechRecognizerRef).recognize(note);
+      note.transcript = res;
+    }
     write(notesRef, read(notesRef).toList()..add(note));
     await _dbRepository.addNote(note);
     write(currentlyPlayingOrRecordingRef, null);
+    write(playerStateRef, PlayerState.ready);
   }
 
   Future<void> playNote(Note note) async {
@@ -131,6 +140,8 @@ class NotesLogic with Logic implements Loadable {
     final notes = notesDicts.map((n) => Note.fromMap(n)).toList();
     notes.sort((a, b) => a.index.compareTo(b.index));
     write(notesRef, notes);
+    final prefs = await SharedPreferences.getInstance();
+    shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
   }
 
   NotesLogic(this.scope, this._outlineId);

@@ -22,18 +22,23 @@ class SpeechRecognizer {
   }
 
   Future<String?> recognize(Note note) async {
-    final tempDir = await getTemporaryDirectory();
-    final outPath = "${tempDir.path}/${note.id}.wav";
-    await flutterSoundHelper.convertFile(
-        note.filePath, Codec.aacADTS, outPath, Codec.pcm16);
-    final outFile = File(outPath);
-    final outFileBytes = await outFile.readAsBytes();
-    final res = await _speechToText.recognize(_config, outFileBytes);
-    await outFile.delete();
-    if (res.results.isEmpty || res.results.first.alternatives.isEmpty) {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final outPath = "${tempDir.path}/${note.id}.wav";
+      await flutterSoundHelper.convertFile(
+          note.filePath, Codec.aacADTS, outPath, Codec.pcm16);
+      final outFile = File(outPath);
+      final outFileBytes = await outFile.readAsBytes();
+      final res = await _speechToText.recognize(_config, outFileBytes);
+      await outFile.delete();
+      if (res.results.isEmpty || res.results.first.alternatives.isEmpty) {
+        return null;
+      }
+      final fst = res.results.first.alternatives.first.transcript;
+      return fst;
+    } catch (err) {
+      print(err);
       return null;
     }
-    final fst = res.results.first.alternatives.first.transcript;
-    return fst;
   }
 }
