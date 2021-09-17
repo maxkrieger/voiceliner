@@ -20,7 +20,7 @@ class NotesLogic with Logic implements Loadable {
 
   final String _outlineId;
 
-  late bool shouldTranscribe;
+  bool shouldTranscribe = false;
 
   DBRepository get _dbRepository => use(dbRepositoryRef);
   PlayerLogic get _playerLogic => use(playerLogicRef);

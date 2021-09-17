@@ -9,7 +9,7 @@ import 'package:voice_outliner/views/outlines_view.dart';
 
 final routes = {
   "/": (_) => const OutlinesView(),
-  "/notes": (_) => const NotesViewWrapper()
+  "/notes": (_) => const NotesView()
 };
 
 Future<void> main() async {

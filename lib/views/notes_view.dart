@@ -12,43 +12,16 @@ class NotesViewArgs {
   NotesViewArgs(this.outlineId);
 }
 
-class NotesViewWrapper extends StatelessWidget {
-  const NotesViewWrapper({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final outlineId =
-        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
-    return BinderScope(
-        overrides: [
-          notesLogicRef.overrideWith((scope) => NotesLogic(scope, outlineId))
-        ],
-        child: LogicLoader(
-          refs: [notesLogicRef],
-          builder: (ctx, loading, child) {
-            if (loading) {
-              // TODO: black screen
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return NotesView(outlineId: outlineId);
-          },
-        ));
-  }
-}
-
 class NotesView extends StatefulWidget {
-  final String outlineId;
-  const NotesView({Key? key, required this.outlineId}) : super(key: key);
+  const NotesView({Key? key}) : super(key: key);
 
   @override
   _NotesViewState createState() => _NotesViewState();
 }
 
 class _NotesViewState extends State<NotesView> {
-  final ScrollController _scrollController = ScrollController();
   final _renameController = TextEditingController();
+  final _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -85,10 +58,10 @@ class _NotesViewState extends State<NotesView> {
     ];
   }
 
-  void _handleMenu(String item) {
+  void _handleMenu(String item, String outlineId) {
     final outline = context
         .read(outlinesRef)
-        .firstWhere((element) => element.id == widget.outlineId);
+        .firstWhere((element) => element.id == outlineId);
     if (item == "delete") {
       showDialog(
           context: context,
@@ -151,8 +124,34 @@ class _NotesViewState extends State<NotesView> {
 
   @override
   Widget build(BuildContext context) {
+    final outlineId =
+        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
+    return BinderScope(
+        observers: [
+          DelegatingStateObserver(_onAddNote)
+        ],
+        overrides: [
+          notesLogicRef.overrideWith((scope) => NotesLogic(scope, outlineId))
+        ],
+        child: LogicLoader(
+          refs: [notesLogicRef],
+          builder: (ctx, loading, child) {
+            if (loading) {
+              // TODO: black screen
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return buildChild(ctx);
+          },
+        ));
+  }
+
+  Widget buildChild(BuildContext context) {
+    final outlineId =
+        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
     final currentOutlineName = context.watch(outlinesRef.select((state) => state
-        .firstWhere((element) => element.id == widget.outlineId,
+        .firstWhere((element) => element.id == outlineId,
             orElse: () => defaultOutline)
         .name));
     final noteCount = context.watch(notesRef.select((state) => state.length));
@@ -174,26 +173,29 @@ class _NotesViewState extends State<NotesView> {
             },
             icon: const Icon(Icons.view_list_rounded)),
         actions: [
-          PopupMenuButton(itemBuilder: _menuBuilder, onSelected: _handleMenu)
+          PopupMenuButton(
+              itemBuilder: _menuBuilder,
+              onSelected: (String item) => _handleMenu(item, outlineId))
         ],
       ),
-      body: BinderScope(
-          observers: [DelegatingStateObserver(_onAddNote)],
-          child: noteCount > 0
-              ? ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.only(bottom: 150),
-                  shrinkWrap: true,
-                  itemBuilder: (_, int idx) =>
-                      NoteItem(key: Key("note-$idx"), num: idx),
-                  itemCount: noteCount,
-                )
-              : const Center(
-                  child: Text(
-                  "no notes yet!",
-                  style: TextStyle(
-                      fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
-                ))),
+      body: Column(children: [
+        if (noteCount == 0)
+          const Center(
+              child: Text(
+            "no notes yet!",
+            style:
+                TextStyle(fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
+          )),
+        Expanded(
+            child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.only(bottom: 150),
+          shrinkWrap: true,
+          itemBuilder: (_, int idx) =>
+              NoteItem(key: Key("note-$idx"), num: idx),
+          itemCount: noteCount,
+        )),
+      ]),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
