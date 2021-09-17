@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:binder/binder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -146,7 +148,7 @@ class _NoteItemState extends State<NoteItem> {
                 borderRadius: BorderRadius.circular(20.0)),
             color: const Color.fromRGBO(237, 226, 255, 0.8),
             margin: EdgeInsets.only(
-                top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
+                top: 10.0, left: 10.0 + 30.0 * min(depth, 5), right: 10.0),
             child: ExpansionTile(
               initiallyExpanded: currentlyExpanded,
               onExpansionChanged: (bool st) {
