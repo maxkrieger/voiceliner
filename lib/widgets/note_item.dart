@@ -16,6 +16,52 @@ class NoteItem extends StatefulWidget {
 }
 
 class _NoteItemState extends State<NoteItem> {
+  final _renameController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    _renameController.dispose();
+  }
+
+  void _changeNoteTranscript() {
+    final note = context.read(notesRef)[widget.num];
+    Future<void> _onSubmitted(BuildContext ctx) async {
+      if (_renameController.value.text.isNotEmpty) {
+        await context
+            .use(notesLogicRef)
+            .setNoteTranscript(note, _renameController.value.text);
+        Navigator.of(ctx, rootNavigator: true).pop();
+      }
+    }
+
+    _renameController.text = note.transcript ?? "";
+    _renameController.selection = TextSelection(
+        baseOffset: 0, extentOffset: _renameController.value.text.length);
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+                title: const Text("Change note transcript"),
+                content: TextField(
+                    decoration: const InputDecoration(hintText: "Transcript"),
+                    controller: _renameController,
+                    autofocus: true,
+                    autocorrect: false,
+                    onSubmitted: (_) => _onSubmitted(dialogCtx),
+                    textCapitalization: TextCapitalization.words),
+                actions: [
+                  TextButton(
+                      child: const Text("cancel"),
+                      onPressed: () {
+                        Navigator.of(dialogCtx, rootNavigator: true).pop();
+                      }),
+                  TextButton(
+                      child: const Text("set"),
+                      onPressed: () => _onSubmitted(dialogCtx))
+                ]));
+  }
+
   Future<void> _deleteNote() async {
     showDialog(
         context: context,
@@ -119,9 +165,7 @@ class _NoteItemState extends State<NoteItem> {
                       )),
                   IconButton(
                       tooltip: "edit transcript",
-                      onPressed: () {
-                        print("edit");
-                      },
+                      onPressed: _changeNoteTranscript,
                       icon: const Icon(
                         Icons.edit,
                         color: Colors.deepPurple,

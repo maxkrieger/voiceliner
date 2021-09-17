@@ -142,6 +142,15 @@ class NotesLogic with Logic implements Loadable {
     write(notesRef, notes);
   }
 
+  Future<void> setNoteTranscript(Note note, String transcript) async {
+    final notes = read(notesRef).toList();
+    final newNote = Note.fromMap(note.map);
+    newNote.transcript = transcript;
+    notes[newNote.index] = newNote;
+    await _dbRepository.updateNote(newNote);
+    write(notesRef, notes);
+  }
+
   @override
   Future<void> load() async {
     final outlineDict = await _dbRepository.getOutlineFromId(_outlineId);
