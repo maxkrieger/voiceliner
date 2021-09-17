@@ -8,10 +8,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
-enum PlayerState { notReady, ready, playing, recording, processing }
+enum PlayerState {
+  noPermission,
+  notReady,
+  ready,
+  playing,
+  recording,
+  processing
+}
 
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
-final playerStateRef = StateRef<PlayerState>(PlayerState.notReady);
+final playerStateRef = StateRef<PlayerState>(PlayerState.noPermission);
 
 class InternalPlayerState {
   FlutterSoundPlayer player;
@@ -72,20 +79,35 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     return duration;
   }
 
-  @override
-  Future<void> load() async {
+  Future<void> tryPermission() async {
     final status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException("Could not get microphone permission");
+    } else {
+      await load();
     }
-    _internalPlayer.docsDirectory = await getApplicationDocumentsDirectory();
-    _internalPlayer.recordingsDirectory =
-        await Directory("${_internalPlayer.docsDirectory.path}/recordings")
-            .create(recursive: true);
-    // TODO: play from headphones IF AVAILABLE
-    await _internalPlayer.player.openAudioSession();
-    await _internalPlayer.recorder.openAudioSession();
-    await read(speechRecognizerRef).init();
-    write(playerStateRef, PlayerState.ready);
+  }
+
+  @override
+  Future<void> load() async {
+    final granted = await Permission.microphone.isGranted;
+    if (granted) {
+      write(playerStateRef, PlayerState.notReady);
+      try {
+        _internalPlayer.docsDirectory =
+            await getApplicationDocumentsDirectory();
+        _internalPlayer.recordingsDirectory =
+            await Directory("${_internalPlayer.docsDirectory.path}/recordings")
+                .create(recursive: true);
+        // TODO: play from headphones IF AVAILABLE
+        await _internalPlayer.player.openAudioSession();
+        await _internalPlayer.recorder.openAudioSession();
+        await read(speechRecognizerRef).init();
+        write(playerStateRef, PlayerState.ready);
+      } catch (e) {
+        write(playerStateRef, PlayerState.notReady);
+        print(e);
+      }
+    }
   }
 }

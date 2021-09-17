@@ -160,12 +160,8 @@ class _NotesViewState extends State<NotesView> {
     final noteCount = context.watch(notesRef.select((state) => state.length));
     final isNotReady = context
         .watch(playerStateRef.select((state) => state == PlayerState.notReady));
-    if (isNotReady) {
-      return const Scaffold(
-          body: Center(
-              child: Text(
-                  "Please relaunch the app, the recorder isn't ready. Does it have permission?")));
-    }
+    final isNotPermissioned = context.watch(
+        playerStateRef.select((state) => state == PlayerState.noPermission));
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -182,21 +178,37 @@ class _NotesViewState extends State<NotesView> {
               onSelected: (String item) => _handleMenu(item, outlineId))
         ],
       ),
-      body: (noteCount == 0)
-          ? const Center(
-              child: Text(
-              "no notes yet!",
-              style: TextStyle(
-                  fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
-            ))
-          : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 150),
-              shrinkWrap: true,
-              itemBuilder: (_, int idx) =>
-                  NoteItem(key: Key("note-$idx"), num: idx),
-              itemCount: noteCount,
-            ),
+      body: isNotReady
+          ? const Center(child: Text("something went wrong"))
+          : isNotPermissioned
+              ? Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                      const Text("to start recording notes,",
+                          style: TextStyle(fontSize: 20.0)),
+                      ElevatedButton(
+                          onPressed: () {
+                            context.use(playerLogicRef).tryPermission();
+                          },
+                          child: const Text("grant microphone access"))
+                    ]))
+              : (noteCount == 0)
+                  ? const Center(
+                      child: Text(
+                      "no notes yet!",
+                      style: TextStyle(
+                          fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
+                    ))
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(bottom: 150),
+                      shrinkWrap: true,
+                      itemBuilder: (_, int idx) =>
+                          NoteItem(key: Key("note-$idx"), num: idx),
+                      itemCount: noteCount,
+                    ),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
