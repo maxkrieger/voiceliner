@@ -30,6 +30,7 @@
 .pub-cache/
 .pub/
 /build/
+ios/build/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -45,3 +46,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 ios/fastlane/report.xml
+assets/speech_acct.json

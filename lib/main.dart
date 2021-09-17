@@ -9,12 +9,15 @@ import 'package:voice_outliner/views/outlines_view.dart';
 
 final routes = {
   "/": (_) => const OutlinesView(),
-  "/notes": (_) => const NotesViewWrapper()
+  "/notes": (_) => const NotesView()
 };
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+  if (sharedPrefs.getBool("should_transcribe") == null) {
+    sharedPrefs.setBool("should_transcribe", true);
+  }
   runApp(BinderScope(
       child: VoiceOutlinerApp(
     sharedPreferences: sharedPrefs,

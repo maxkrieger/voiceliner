@@ -1,9 +1,17 @@
 import 'package:binder/binder.dart';
+import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/state/notes_state.dart';
 
 final outlinesRef = StateRef(const <Outline>[]);
 final outlinesLogicRef = LogicRef((scope) => OutlineLogic(scope));
+
+final defaultOutline = Outline(
+    name: "deleted",
+    id: "",
+    dateCreated: DateTime.now(),
+    dateUpdated: DateTime.now());
 
 class OutlineLogic with Logic implements Loadable {
   OutlineLogic(this.scope);
@@ -27,6 +35,7 @@ class OutlineLogic with Logic implements Loadable {
     await _dbRepository.deleteOutline(outline);
     final outlines = read(outlinesRef).toList();
     outlines.removeWhere((element) => element.id == outline.id);
+    write(notesRef, <Note>[]);
     write(outlinesRef, outlines);
   }
 

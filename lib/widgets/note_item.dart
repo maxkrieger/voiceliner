@@ -1,10 +1,10 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
-import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 
 class NoteItem extends StatefulWidget {
@@ -16,6 +16,52 @@ class NoteItem extends StatefulWidget {
 }
 
 class _NoteItemState extends State<NoteItem> {
+  final _renameController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    _renameController.dispose();
+  }
+
+  void _changeNoteTranscript() {
+    final note = context.read(notesRef)[widget.num];
+    Future<void> _onSubmitted(BuildContext ctx) async {
+      if (_renameController.value.text.isNotEmpty) {
+        await context
+            .use(notesLogicRef)
+            .setNoteTranscript(note, _renameController.value.text);
+        Navigator.of(ctx, rootNavigator: true).pop();
+      }
+    }
+
+    _renameController.text = note.transcript ?? "";
+    _renameController.selection = TextSelection(
+        baseOffset: 0, extentOffset: _renameController.value.text.length);
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+                title: const Text("Change note transcript"),
+                content: TextField(
+                    decoration: const InputDecoration(hintText: "Transcript"),
+                    controller: _renameController,
+                    autofocus: true,
+                    autocorrect: false,
+                    onSubmitted: (_) => _onSubmitted(dialogCtx),
+                    textCapitalization: TextCapitalization.words),
+                actions: [
+                  TextButton(
+                      child: const Text("cancel"),
+                      onPressed: () {
+                        Navigator.of(dialogCtx, rootNavigator: true).pop();
+                      }),
+                  TextButton(
+                      child: const Text("set"),
+                      onPressed: () => _onSubmitted(dialogCtx))
+                ]));
+  }
+
   Future<void> _deleteNote() async {
     showDialog(
         context: context,
@@ -42,19 +88,14 @@ class _NoteItemState extends State<NoteItem> {
   @override
   Widget build(BuildContext context) {
     final note = context.watch(notesRef.select((state) =>
-        widget.num < state.length
-            ? state[widget.num]
-            : Note(
-                id: "",
-                filePath: "",
-                dateCreated: DateTime.now(),
-                outlineId: "",
-                index: 0)));
-    // assert(note.index == widget.num);
+        widget.num < state.length ? state[widget.num] : defaultNote));
     final isCurrent =
         context.watch(currentlyPlayingOrRecordingRef.select((state) {
       return state != null && note.id == state.id;
     }));
+    //TODO: make computed
+    final currentlyExpanded = context.watch(currentlyExpandedRef
+        .select((state) => state != null && state.id == note.id));
     final depth = context.watch(notesRef.select((notes) {
       int getDepth(String? id) {
         if (id != null) {
@@ -68,6 +109,12 @@ class _NoteItemState extends State<NoteItem> {
       return d;
     }));
     return Dismissible(
+        dismissThresholds: const {
+          DismissDirection.startToEnd: 0.2,
+          DismissDirection.endToStart: 0.2,
+        },
+        movementDuration: const Duration(milliseconds: 100),
+        dragStartBehavior: DragStartBehavior.down,
         confirmDismiss: (direction) async {
           if (note.index == 0) {
             return false;
@@ -92,7 +139,7 @@ class _NoteItemState extends State<NoteItem> {
           Icon(Icons.arrow_back),
           SizedBox(width: 20.0),
         ])),
-        key: Key("dismissable-${note.id}"),
+        key: Key("dismissable-${note.id}-$currentlyExpanded"),
         child: Card(
             clipBehavior: Clip.hardEdge,
             shape: RoundedRectangleBorder(
@@ -101,22 +148,33 @@ class _NoteItemState extends State<NoteItem> {
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
             child: ExpansionTile(
+              initiallyExpanded: currentlyExpanded,
+              onExpansionChanged: (bool st) {
+                context.use(notesLogicRef).setExpansion(st ? note : null);
+              },
               trailing: const SizedBox(width: 0),
               tilePadding: EdgeInsets.zero,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   IconButton(
+                      tooltip: "delete this note",
                       onPressed: _deleteNote,
                       icon: const Icon(
                         Icons.delete,
                         color: Colors.deepPurple,
                       )),
                   IconButton(
-                      onPressed: () {
-                        print("edit");
-                      },
+                      tooltip: "edit transcript",
+                      onPressed: _changeNoteTranscript,
                       icon: const Icon(
                         Icons.edit,
+                        color: Colors.deepPurple,
+                      )),
+                  IconButton(
+                      tooltip: "collapse children",
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
                         color: Colors.deepPurple,
                       ))
                 ])

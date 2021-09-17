@@ -43,6 +43,7 @@ dependencies:
   intl: ^0.17.0
   timeago_flutter: ^1.0.0
   shared_preferences: ^2.0.7
+  google_speech: ^2.0.1
 
 dev_dependencies:
   flutter_launcher_icons: "^0.9.2"
@@ -73,7 +74,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+   - assets/speech_acct.json
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

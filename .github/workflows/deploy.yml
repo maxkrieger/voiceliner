@@ -44,6 +44,12 @@ jobs:
           bundle exec fastlane run increment_build_number
           bundle exec fastlane run commit_version_bump
 
+      - name: Inject google service account file
+        run: |
+          echo $SPEECH_JSON >> ./assets/speech_acct.json
+        env:
+          SPEECH_JSON: ${{secrets.GOOGLE_CLOUD_SPEECH_JSON}}
+
       - name: Install tools
         run: |
           flutter pub get
