@@ -33,13 +33,6 @@
             </intent-filter>
         </activity>
 
-       <!-- Permissions options for the `location` group -->
-       <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-       <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-       <!-- Permissions options for the `microphone` or `speech` group -->
-       <uses-permission android:name="android.permission.RECORD_AUDIO" />
-       <uses-permission android:name="android.permission.VIBRATE" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -47,4 +40,14 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permissions options for the `location` group -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Permissions options for the `microphone` or `speech` group -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>
