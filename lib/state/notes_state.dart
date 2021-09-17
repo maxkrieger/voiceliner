@@ -10,6 +10,7 @@ import 'package:voice_outliner/state/player_state.dart';
 final notesRef = StateRef(const <Note>[], name: "notes");
 final notesLogicRef = LogicRef((scope) => NotesLogic(scope, ""));
 final currentlyPlayingOrRecordingRef = StateRef<Note?>(null);
+final currentlyExpandedRef = StateRef<Note?>(null);
 
 final defaultNote = Note(
     id: "", filePath: "", dateCreated: DateTime.now(), outlineId: "", index: 0);
@@ -24,6 +25,11 @@ class NotesLogic with Logic implements Loadable {
 
   DBRepository get _dbRepository => use(dbRepositoryRef);
   PlayerLogic get _playerLogic => use(playerLogicRef);
+
+  Future<void> setExpansion(Note? note) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    write(currentlyExpandedRef, note);
+  }
 
   Future<void> startRecording() async {
     if (read(currentlyPlayingOrRecordingRef) != null) {
@@ -67,6 +73,10 @@ class NotesLogic with Logic implements Loadable {
       _playerLogic.stopPlaying();
       write(currentlyPlayingOrRecordingRef, null);
       return;
+    }
+    final currentlyExpanded = read(currentlyExpandedRef);
+    if (currentlyExpanded != null && currentlyExpanded.id != note.id) {
+      write(currentlyExpandedRef, null);
     }
     write(currentlyPlayingOrRecordingRef, note);
     await _playerLogic.playNote(note, () {
@@ -140,6 +150,8 @@ class NotesLogic with Logic implements Loadable {
     final notes = notesDicts.map((n) => Note.fromMap(n)).toList();
     notes.sort((a, b) => a.index.compareTo(b.index));
     write(notesRef, notes);
+    write(currentlyExpandedRef, null);
+    write(currentlyPlayingOrRecordingRef, null);
     final prefs = await SharedPreferences.getInstance();
     shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
   }

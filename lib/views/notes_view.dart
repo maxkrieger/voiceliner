@@ -35,9 +35,12 @@ class _NotesViewState extends State<NotesView> {
         oldState is List<Note> &&
         newState is List<Note>) {
       if (oldState.length < newState.length) {
-        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn);
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.fastOutSlowIn);
+        }
       }
     }
     return false;
@@ -178,24 +181,21 @@ class _NotesViewState extends State<NotesView> {
               onSelected: (String item) => _handleMenu(item, outlineId))
         ],
       ),
-      body: Column(children: [
-        if (noteCount == 0)
-          const Center(
+      body: (noteCount == 0)
+          ? const Center(
               child: Text(
-            "no notes yet!",
-            style:
-                TextStyle(fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
-          )),
-        Expanded(
-            child: ListView.builder(
-          controller: _scrollController,
-          padding: const EdgeInsets.only(bottom: 150),
-          shrinkWrap: true,
-          itemBuilder: (_, int idx) =>
-              NoteItem(key: Key("note-$idx"), num: idx),
-          itemCount: noteCount,
-        )),
-      ]),
+              "no notes yet!",
+              style: TextStyle(
+                  fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
+            ))
+          : ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: 150),
+              shrinkWrap: true,
+              itemBuilder: (_, int idx) =>
+                  NoteItem(key: Key("note-$idx"), num: idx),
+              itemCount: noteCount,
+            ),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

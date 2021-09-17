@@ -47,6 +47,9 @@ class _NoteItemState extends State<NoteItem> {
         context.watch(currentlyPlayingOrRecordingRef.select((state) {
       return state != null && note.id == state.id;
     }));
+    //TODO: make computed
+    final currentlyExpanded = context.watch(currentlyExpandedRef
+        .select((state) => state != null && state.id == note.id));
     final depth = context.watch(notesRef.select((notes) {
       int getDepth(String? id) {
         if (id != null) {
@@ -90,7 +93,7 @@ class _NoteItemState extends State<NoteItem> {
           Icon(Icons.arrow_back),
           SizedBox(width: 20.0),
         ])),
-        key: Key("dismissable-${note.id}"),
+        key: Key("dismissable-${note.id}-$currentlyExpanded"),
         child: Card(
             clipBehavior: Clip.hardEdge,
             shape: RoundedRectangleBorder(
@@ -99,6 +102,10 @@ class _NoteItemState extends State<NoteItem> {
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * depth, right: 10.0),
             child: ExpansionTile(
+              initiallyExpanded: currentlyExpanded,
+              onExpansionChanged: (bool st) {
+                context.use(notesLogicRef).setExpansion(st ? note : null);
+              },
               trailing: const SizedBox(width: 0),
               tilePadding: EdgeInsets.zero,
               children: [
