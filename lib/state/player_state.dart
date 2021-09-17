@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:voice_outliner/data/note.dart';
+import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
 enum PlayerState { notReady, ready, playing, recording }
 
@@ -23,6 +24,8 @@ class InternalPlayerState {
 final internalPlayerRef = StateRef(InternalPlayerState(
     FlutterSoundPlayer(logLevel: Level.warning),
     FlutterSoundRecorder(logLevel: Level.warning)));
+
+final speechRecognizerRef = StateRef(SpeechRecognizer());
 
 class PlayerLogic with Logic implements Loadable, Disposable {
   PlayerLogic(this.scope);
@@ -83,6 +86,7 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     // TODO: play from headphones IF AVAILABLE
     await _internalPlayer.player.openAudioSession();
     await _internalPlayer.recorder.openAudioSession();
+    await read(speechRecognizerRef).init();
     write(playerStateRef, PlayerState.ready);
   }
 }

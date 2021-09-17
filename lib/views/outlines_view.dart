@@ -102,6 +102,7 @@ class _OutlinesViewState extends State<OutlinesView> {
                 actions: [
                   IconButton(
                       onPressed: _openSettings,
+                      tooltip: "settings",
                       icon: const Icon(Icons.settings))
                 ],
               ),

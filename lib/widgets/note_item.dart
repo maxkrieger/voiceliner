@@ -104,12 +104,14 @@ class _NoteItemState extends State<NoteItem> {
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   IconButton(
+                      tooltip: "delete this note",
                       onPressed: _deleteNote,
                       icon: const Icon(
                         Icons.delete,
                         color: Colors.deepPurple,
                       )),
                   IconButton(
+                      tooltip: "edit transcript",
                       onPressed: () {
                         print("edit");
                       },
@@ -118,9 +120,8 @@ class _NoteItemState extends State<NoteItem> {
                         color: Colors.deepPurple,
                       )),
                   IconButton(
-                      onPressed: () {
-                        print("collapse");
-                      },
+                      tooltip: "collapse children",
+                      onPressed: () {},
                       icon: const Icon(
                         Icons.keyboard_arrow_down,
                         color: Colors.deepPurple,

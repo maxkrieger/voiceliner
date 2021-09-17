@@ -46,10 +46,11 @@ class NotesLogic with Logic implements Loadable {
       return;
     }
     note.duration = await _playerLogic.stopRecording(note: note);
+    final res = await read(speechRecognizerRef).recognize(note);
+    note.transcript = res;
     write(notesRef, read(notesRef).toList()..add(note));
     await _dbRepository.addNote(note);
     write(currentlyPlayingOrRecordingRef, null);
-    // TODO: transcribe
   }
 
   Future<void> playNote(Note note) async {

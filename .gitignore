@@ -46,3 +46,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 ios/fastlane/report.xml
+assets/speech_acct.json
