@@ -31,7 +31,7 @@ jobs:
           base64 -d -i keystore.b64 > keystore.jks
           echo "${{secrets.KEY_PROPERTIES}}" > key.properties
           echo "${{secrets.GOOGLE_PLAY_JSON_CONTENT}}" > google_play.b64
-          b64 -d -i google_play.b64 > google_play.json
+          base64 -d -i google_play.b64 > google_play.json
 
       - name: Setup flutter
         uses: subosito/flutter-action@v1
