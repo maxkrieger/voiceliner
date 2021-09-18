@@ -57,8 +57,3 @@ jobs:
           cd ./android && bundle exec fastlane beta
         env:
           GOOGLE_PLAY_JSON: google_play.json
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
