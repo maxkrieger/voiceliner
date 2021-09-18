@@ -1,11 +1,11 @@
-name: deploy
+name: deploy_ios
 
 on:
   push:
     branches: [master]
 
 jobs:
-  deploy:
+  deploy_ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -38,13 +38,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Bump version
-        run: |
-          cd ./ios
-          bundle exec fastlane run increment_build_number
-          bundle exec fastlane run increment_version_number bump_type:"minor"
-          bundle exec fastlane run commit_version_bump
-
       - name: Inject google service account file
         run: |
           echo $SPEECH_JSON >> ./assets/speech_acct.json
@@ -69,8 +62,3 @@ jobs:
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
           FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}

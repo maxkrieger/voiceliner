@@ -48,3 +48,5 @@ app.*.map.json
 ios/fastlane/report.xml
 assets/speech_acct.json
 local.properties
+android/fastlane/report.xml
+key.properties
