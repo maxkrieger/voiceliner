@@ -52,7 +52,7 @@ jobs:
         run: |
           flutter build appbundle
 
-      - name: Deploy to TestFlight
+      - name: Deploy beta to Play Store
         run: |
           cd ./android && bundle exec fastlane beta
         env:
