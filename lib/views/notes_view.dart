@@ -158,10 +158,8 @@ class _NotesViewState extends State<NotesView> {
             orElse: () => defaultOutline)
         .name));
     final noteCount = context.watch(notesRef.select((state) => state.length));
-    final isNotReady = context
-        .watch(playerStateRef.select((state) => state == PlayerState.notReady));
-    final isNotPermissioned = context.watch(
-        playerStateRef.select((state) => state == PlayerState.noPermission));
+    final playerState = context.watch(playerStateRef);
+    final playerError = context.watch(playerErrorRef);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -178,37 +176,40 @@ class _NotesViewState extends State<NotesView> {
               onSelected: (String item) => _handleMenu(item, outlineId))
         ],
       ),
-      body: isNotReady
-          ? const Center(child: Text("something went wrong"))
-          : isNotPermissioned
-              ? Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                      const Text("to start recording notes,",
-                          style: TextStyle(fontSize: 20.0)),
-                      ElevatedButton(
-                          onPressed: () {
-                            context.use(playerLogicRef).tryPermission();
-                          },
-                          child: const Text("grant microphone access"))
-                    ]))
-              : (noteCount == 0)
-                  ? const Center(
-                      child: Text(
-                      "no notes yet!",
-                      style: TextStyle(
-                          fontSize: 40.0, color: Color.fromRGBO(0, 0, 0, 0.5)),
-                    ))
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 150),
-                      shrinkWrap: true,
-                      itemBuilder: (_, int idx) =>
-                          NoteItem(key: Key("note-$idx"), num: idx),
-                      itemCount: noteCount,
-                    ),
+      body: playerState == PlayerState.notReady
+          ? const Center(child: Text("setting up..."))
+          : playerState == PlayerState.error
+              ? Center(child: Text("error: $playerError"))
+              : playerState == PlayerState.noPermission
+                  ? Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                          const Text("to start recording notes,",
+                              style: TextStyle(fontSize: 20.0)),
+                          ElevatedButton(
+                              onPressed: () {
+                                context.use(playerLogicRef).tryPermission();
+                              },
+                              child: const Text("grant microphone access"))
+                        ]))
+                  : (noteCount == 0)
+                      ? const Center(
+                          child: Text(
+                          "no notes yet!",
+                          style: TextStyle(
+                              fontSize: 40.0,
+                              color: Color.fromRGBO(0, 0, 0, 0.5)),
+                        ))
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.only(bottom: 150),
+                          shrinkWrap: true,
+                          itemBuilder: (_, int idx) =>
+                              NoteItem(key: Key("note-$idx"), num: idx),
+                          itemCount: noteCount,
+                        ),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

@@ -11,6 +11,7 @@ import 'package:voice_outliner/repositories/speech_recognizer.dart';
 enum PlayerState {
   noPermission,
   notReady,
+  error,
   ready,
   playing,
   recording,
@@ -19,6 +20,7 @@ enum PlayerState {
 
 final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
 final playerStateRef = StateRef<PlayerState>(PlayerState.noPermission);
+final playerErrorRef = StateRef("");
 
 class InternalPlayerState {
   FlutterSoundPlayer player;
@@ -81,9 +83,7 @@ class PlayerLogic with Logic implements Loadable, Disposable {
 
   Future<void> tryPermission() async {
     final status = await Permission.microphone.request();
-    if (status != PermissionStatus.granted) {
-      throw RecordingPermissionException("Could not get microphone permission");
-    } else {
+    if (status == PermissionStatus.granted) {
       await load();
     }
   }
@@ -105,8 +105,8 @@ class PlayerLogic with Logic implements Loadable, Disposable {
         await read(speechRecognizerRef).init();
         write(playerStateRef, PlayerState.ready);
       } catch (e) {
-        write(playerStateRef, PlayerState.notReady);
-        print(e);
+        write(playerStateRef, PlayerState.error);
+        write(playerErrorRef, e);
       }
     }
   }
