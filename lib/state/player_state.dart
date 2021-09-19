@@ -106,7 +106,7 @@ class PlayerLogic with Logic implements Loadable, Disposable {
         write(playerStateRef, PlayerState.ready);
       } catch (e) {
         write(playerStateRef, PlayerState.error);
-        write(playerErrorRef, e);
+        write(playerErrorRef, e.toString());
       }
     }
   }
