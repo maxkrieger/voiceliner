@@ -93,20 +93,27 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     final granted = await Permission.microphone.isGranted;
     if (granted) {
       write(playerStateRef, PlayerState.notReady);
+      var steps = 0;
       try {
         _internalPlayer.docsDirectory =
             await getApplicationDocumentsDirectory();
+        steps++;
         _internalPlayer.recordingsDirectory =
             await Directory("${_internalPlayer.docsDirectory.path}/recordings")
                 .create(recursive: true);
+        steps++;
         // TODO: play from headphones IF AVAILABLE
         await _internalPlayer.player.openAudioSession();
+        steps++;
         await _internalPlayer.recorder.openAudioSession();
+        steps++;
         await read(speechRecognizerRef).init();
+        steps++;
         write(playerStateRef, PlayerState.ready);
+        steps++;
       } catch (e) {
         write(playerStateRef, PlayerState.error);
-        write(playerErrorRef, e.toString());
+        write(playerErrorRef, "step $steps : ${e.toString()}");
       }
     }
   }
