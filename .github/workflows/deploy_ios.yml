@@ -40,7 +40,7 @@ jobs:
 
       - name: Inject google service account file
         run: |
-          echo $SPEECH_JSON >> ./assets/speech_acct.json
+          echo ${{ secrets.SPEECH_JSON }} >> ./assets/speech_acct.json
         env:
           SPEECH_JSON: ${{secrets.GOOGLE_CLOUD_SPEECH_JSON}}
 
