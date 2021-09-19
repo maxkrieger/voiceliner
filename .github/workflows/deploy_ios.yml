@@ -40,9 +40,8 @@ jobs:
 
       - name: Inject google service account file
         run: |
-          echo ${{ secrets.SPEECH_JSON }} >> ./assets/speech_acct.json
-        env:
-          SPEECH_JSON: ${{secrets.GOOGLE_CLOUD_SPEECH_JSON}}
+          echo "${{ secrets.SPEECH_JSON }}" >> speech_acct.b64
+          base64 -d -i speech_acct.b64 > ./assets/speech_acct.json
 
       - name: Install tools
         run: |
