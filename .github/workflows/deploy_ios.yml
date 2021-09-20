@@ -50,7 +50,7 @@ jobs:
 
       - name: Flutter build release
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Deploy to TestFlight
         run: |

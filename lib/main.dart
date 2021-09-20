@@ -1,6 +1,7 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
@@ -18,10 +19,13 @@ Future<void> main() async {
   if (sharedPrefs.getBool("should_transcribe") == null) {
     sharedPrefs.setBool("should_transcribe", true);
   }
-  runApp(BinderScope(
-      child: VoiceOutlinerApp(
-    sharedPreferences: sharedPrefs,
-  )));
+  await sentry.SentryFlutter.init((config) {
+    config.dsn = const String.fromEnvironment("SENTRY_DSN");
+  },
+      appRunner: () => runApp(BinderScope(
+              child: VoiceOutlinerApp(
+            sharedPreferences: sharedPrefs,
+          ))));
 }
 
 class VoiceOutlinerApp extends StatefulWidget {

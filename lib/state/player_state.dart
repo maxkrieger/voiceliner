@@ -5,6 +5,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
@@ -116,8 +117,9 @@ class PlayerLogic with Logic implements Loadable, Disposable {
         steps++;
         write(playerStateRef, PlayerState.ready);
         steps++;
-      } catch (e) {
+      } catch (e, st) {
         write(playerStateRef, PlayerState.error);
+        await sentry.Sentry.captureException(e, stackTrace: st);
         write(playerErrorRef, "step $steps : ${e.toString()}");
       }
     }

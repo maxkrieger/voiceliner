@@ -49,7 +49,7 @@ jobs:
 
       - name: Flutter build release
         run: |
-          flutter build appbundle
+          flutter build appbundle --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Deploy beta to Play Store
         run: |
