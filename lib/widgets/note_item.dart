@@ -199,7 +199,8 @@ class _NoteItemState extends State<NoteItem> {
               title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    Flexible(
+                        child: Text(
                       note.transcript == null
                           ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
                           : note.transcript!,
@@ -207,10 +208,14 @@ class _NoteItemState extends State<NoteItem> {
                           decoration: note.isComplete
                               ? TextDecoration.lineThrough
                               : null),
-                    ),
-                    Text(note.duration != null
-                        ? "${note.duration!.inSeconds}s"
-                        : "")
+                    )),
+                    Text(
+                      note.duration != null
+                          ? "${note.duration!.inSeconds}s"
+                          : "",
+                      style:
+                          const TextStyle(color: Color.fromRGBO(0, 0, 0, .5)),
+                    )
                   ]),
               leading: IconButton(
                   padding: EdgeInsets.zero,
