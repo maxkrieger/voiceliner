@@ -37,11 +37,18 @@ class NotesLogic with Logic implements Loadable {
     }
     final noteId = uuid.v4();
     final path = read(internalPlayerRef).recordingsDirectory.path;
+    String? parent;
+    final notes = read(notesRef);
+    if (notes.isNotEmpty &&
+        DateTime.now().difference(notes.last.dateCreated).inMinutes < 2) {
+      parent = notes.last.parentNoteId;
+    }
     final note = Note(
         id: uuid.v4(),
         filePath: "$path/$noteId.aac",
         dateCreated: DateTime.now().toUtc(),
         outlineId: _outlineId,
+        parentNoteId: parent,
         index: read(notesRef).length);
     await _playerLogic.startRecording(note);
     write(currentlyPlayingOrRecordingRef, note);
