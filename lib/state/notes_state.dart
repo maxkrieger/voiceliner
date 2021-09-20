@@ -36,7 +36,6 @@ class NotesLogic with Logic implements Loadable {
       return;
     }
     final noteId = uuid.v4();
-    final path = read(internalPlayerRef).recordingsDirectory.path;
     String? parent;
     final notes = read(notesRef);
     if (notes.isNotEmpty &&
@@ -45,7 +44,7 @@ class NotesLogic with Logic implements Loadable {
     }
     final note = Note(
         id: uuid.v4(),
-        filePath: "$path/$noteId.aac",
+        filePath: "$noteId.aac",
         dateCreated: DateTime.now().toUtc(),
         outlineId: _outlineId,
         parentNoteId: parent,
@@ -66,7 +65,8 @@ class NotesLogic with Logic implements Loadable {
     await Future.delayed(const Duration(milliseconds: 500));
     note.duration = await _playerLogic.stopRecording(note: note);
     if (shouldTranscribe) {
-      final res = await read(speechRecognizerRef).recognize(note);
+      final res = await read(speechRecognizerRef)
+          .recognize(note, _playerLogic.getPathFromFilename(note.filePath));
       note.transcript = res;
     }
     write(notesRef, read(notesRef).toList()..add(note));
@@ -135,7 +135,8 @@ class NotesLogic with Logic implements Loadable {
   }
 
   Future<void> deleteNote(Note note) async {
-    await File(note.filePath).delete();
+    final path = _playerLogic.getPathFromFilename(note.filePath);
+    await File(path).delete();
     final notes = read(notesRef).toList();
     notes.removeWhere((element) => note.id == element.id);
     for (var i = 0; i < notes.length; i++) {

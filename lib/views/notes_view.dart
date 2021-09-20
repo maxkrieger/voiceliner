@@ -50,9 +50,9 @@ class _NotesViewState extends State<NotesView> {
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
     final outlineId =
         (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
-    final outline = context
-        .read(outlinesRef)
-        .firstWhere((element) => element.id == outlineId);
+    final outline = context.read(outlinesRef).firstWhere(
+        (element) => element.id == outlineId,
+        orElse: () => defaultOutline);
     return [
       const PopupMenuItem(
           value: "rename",

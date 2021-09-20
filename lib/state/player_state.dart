@@ -54,10 +54,8 @@ class PlayerLogic with Logic implements Loadable, Disposable {
   Future<void> playNote(Note note, onDone) async {
     write(playerStateRef, PlayerState.playing);
     await _internalPlayer.player.startPlayer(
-        sampleRate:
-            note.dateCreated.isBefore(DateTime(2021, 9, 20)) ? 16000 : 44100,
         codec: Codec.aacADTS,
-        fromURI: note.filePath,
+        fromURI: getPathFromFilename(note.filePath),
         whenFinished: () {
           write(playerStateRef, PlayerState.ready);
           onDone();
@@ -69,10 +67,15 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     write(playerStateRef, PlayerState.ready);
   }
 
+  String getPathFromFilename(String fileName) {
+    final path = "${_internalPlayer.recordingsDirectory.path}/$fileName";
+    return path;
+  }
+
   Future<void> startRecording(Note note) async {
     await _internalPlayer.recorder.startRecorder(
         codec: Codec.aacADTS,
-        toFile: note.filePath,
+        toFile: getPathFromFilename(note.filePath),
         sampleRate: 44100,
         bitRate: 128000);
     write(playerStateRef, PlayerState.recording);
@@ -83,7 +86,8 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     if (note == null) {
       return null;
     }
-    final duration = await flutterSoundHelper.duration(note.filePath);
+    final duration =
+        await flutterSoundHelper.duration(getPathFromFilename(note.filePath));
     return duration;
   }
 

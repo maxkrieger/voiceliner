@@ -128,7 +128,8 @@ CREATE TABLE note (
     final notes = await getNotesForOutline(outline);
     final batch = _database!.batch();
     for (final n in notes) {
-      await File(n["file_path"]).delete();
+      final path = use(playerLogicRef).getPathFromFilename(n["file_path"]);
+      await File(path).delete();
     }
     batch.delete("note", where: "outline_id = ?", whereArgs: [outline.id]);
     batch.delete("outline", where: "id = ?", whereArgs: [outline.id]);

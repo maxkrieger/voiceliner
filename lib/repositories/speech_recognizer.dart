@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:google_speech/google_speech.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:voice_outliner/data/note.dart';
 
 class SpeechRecognizer {
@@ -21,12 +22,12 @@ class SpeechRecognizer {
     _speechToText = SpeechToText.viaServiceAccount(serviceAccount);
   }
 
-  Future<String?> recognize(Note note) async {
+  Future<String?> recognize(Note note, String path) async {
     try {
       final tempDir = await getTemporaryDirectory();
       final outPath = "${tempDir.path}/${note.id}.wav";
       await flutterSoundHelper.convertFile(
-          note.filePath, Codec.aacADTS, outPath, Codec.pcm16);
+          path, Codec.aacADTS, outPath, Codec.pcm16);
       final outFile = File(outPath);
       final outFileBytes = await outFile.readAsBytes();
       final res = await _speechToText.recognize(_config, outFileBytes);
@@ -36,8 +37,8 @@ class SpeechRecognizer {
       }
       final fst = res.results.first.alternatives.first.transcript;
       return fst;
-    } catch (err) {
-      print(err);
+    } catch (err, st) {
+      await sentry.Sentry.captureException(err, stackTrace: st);
       return null;
     }
   }

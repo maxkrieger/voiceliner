@@ -101,7 +101,8 @@ class _NoteItemState extends State<NoteItem> {
     final depth = context.watch(notesRef.select((notes) {
       int getDepth(String? id) {
         if (id != null) {
-          final predecessor = notes.firstWhere((element) => element.id == id);
+          final predecessor = notes.firstWhere((element) => element.id == id,
+              orElse: () => defaultNote);
           return 1 + getDepth(predecessor.parentNoteId);
         }
         return 0;
