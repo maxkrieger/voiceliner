@@ -12,7 +12,7 @@ class SpeechRecognizer {
   final _config = RecognitionConfig(
       encoding: AudioEncoding.LINEAR16,
       languageCode: "en-US",
-      sampleRateHertz: 16000,
+      sampleRateHertz: 44100,
       model: RecognitionModel.basic);
   Future<void> init() async {
     final serviceAccount = ServiceAccount.fromString(
