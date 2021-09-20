@@ -53,7 +53,8 @@ class PlayerLogic with Logic implements Loadable, Disposable {
   Future<void> playNote(Note note, onDone) async {
     write(playerStateRef, PlayerState.playing);
     await _internalPlayer.player.startPlayer(
-        sampleRate: 44100,
+        sampleRate:
+            note.dateCreated.isBefore(DateTime(2021, 9, 20)) ? 16000 : 44100,
         codec: Codec.aacADTS,
         fromURI: note.filePath,
         whenFinished: () {
@@ -72,7 +73,7 @@ class PlayerLogic with Logic implements Loadable, Disposable {
         codec: Codec.aacADTS,
         toFile: note.filePath,
         sampleRate: 44100,
-        bitRate: 44100);
+        bitRate: 128000);
     write(playerStateRef, PlayerState.recording);
   }
 

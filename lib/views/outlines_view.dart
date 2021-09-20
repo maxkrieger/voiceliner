@@ -73,7 +73,7 @@ class _OutlinesViewState extends State<OutlinesView> {
         child: ListTile(
           title: Text(outline.name),
           subtitle:
-              Timeago(builder: (_, t) => Text(t), date: outline.dateCreated),
+              Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
           onLongPress: () {
             print("long press");
           },

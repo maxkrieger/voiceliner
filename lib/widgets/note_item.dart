@@ -146,7 +146,9 @@ class _NoteItemState extends State<NoteItem> {
             clipBehavior: Clip.hardEdge,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0)),
-            color: const Color.fromRGBO(237, 226, 255, 0.8),
+            color: note.isComplete
+                ? const Color.fromRGBO(229, 229, 229, 1.0)
+                : const Color.fromRGBO(237, 226, 255, 0.8),
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * min(depth, 5), right: 10.0),
             child: ExpansionTile(
@@ -158,6 +160,19 @@ class _NoteItemState extends State<NoteItem> {
               tilePadding: EdgeInsets.zero,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Checkbox(
+                      value: note.isComplete,
+                      onChanged: (v) => context
+                          .use(notesLogicRef)
+                          .setNoteComplete(note, v ?? false)),
+                  const Spacer(),
+                  Timeago(
+                      builder: (_, t) => Text(
+                            t,
+                            style: const TextStyle(
+                                color: Color.fromRGBO(0, 0, 0, .5)),
+                          ),
+                      date: note.dateCreated),
                   IconButton(
                       tooltip: "delete this note",
                       onPressed: _deleteNote,
@@ -172,25 +187,30 @@ class _NoteItemState extends State<NoteItem> {
                         Icons.edit,
                         color: Colors.deepPurple,
                       )),
-                  IconButton(
-                      tooltip: "collapse children",
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.deepPurple,
-                      ))
+                  // IconButton(
+                  //     tooltip: "collapse children",
+                  //     onPressed: () {},
+                  //     icon: const Icon(
+                  //       Icons.keyboard_arrow_down,
+                  //       color: Colors.deepPurple,
+                  //     ))
                 ])
               ],
-              title: Text(note.transcript == null
-                  ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
-                  : note.transcript!),
-              subtitle: Row(
+              title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Text(
+                      note.transcript == null
+                          ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
+                          : note.transcript!,
+                      style: TextStyle(
+                          decoration: note.isComplete
+                              ? TextDecoration.lineThrough
+                              : null),
+                    ),
                     Text(note.duration != null
                         ? "${note.duration!.inSeconds}s"
-                        : ""),
-                    Timeago(builder: (_, t) => Text(t), date: note.dateCreated)
+                        : "")
                   ]),
               leading: IconButton(
                   padding: EdgeInsets.zero,

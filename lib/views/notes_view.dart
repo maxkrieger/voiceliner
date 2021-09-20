@@ -1,5 +1,6 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
@@ -46,7 +47,12 @@ class _NotesViewState extends State<NotesView> {
     return false;
   }
 
-  List<PopupMenuItem<String>> _menuBuilder(BuildContext context) {
+  List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
+    final outlineId =
+        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
+    final outline = context
+        .read(outlinesRef)
+        .firstWhere((element) => element.id == outlineId);
     return [
       const PopupMenuItem(
           value: "rename",
@@ -58,6 +64,14 @@ class _NotesViewState extends State<NotesView> {
           child: ListTile(
               leading: Icon(Icons.delete_forever),
               title: Text("delete outline"))),
+      const PopupMenuDivider(),
+      PopupMenuItem(
+          child: ListTile(
+        enabled: false,
+        leading: const Icon(Icons.date_range),
+        title: Text(
+            "created ${DateFormat.jm().format(outline.dateCreated.toLocal())}"),
+      ))
     ];
   }
 

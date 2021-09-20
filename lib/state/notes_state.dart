@@ -158,6 +158,15 @@ class NotesLogic with Logic implements Loadable {
     write(notesRef, notes);
   }
 
+  Future<void> setNoteComplete(Note note, bool complete) async {
+    final notes = read(notesRef).toList();
+    final newNote = Note.fromMap(note.map);
+    newNote.isComplete = complete;
+    notes[newNote.index] = newNote;
+    await _dbRepository.updateNote(newNote);
+    write(notesRef, notes);
+  }
+
   @override
   Future<void> load() async {
     final outlineDict = await _dbRepository.getOutlineFromId(_outlineId);
