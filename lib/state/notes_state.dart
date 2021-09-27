@@ -55,15 +55,15 @@ class NotesLogic with Logic implements Loadable {
   }
 
   Future<void> stopRecording() async {
+    write(playerStateRef, PlayerState.processing);
+    // prevent cutoff
+    await Future.delayed(const Duration(milliseconds: 500));
     final note = read(currentlyPlayingOrRecordingRef);
     if (note == null) {
       _playerLogic.stopRecording();
       write(currentlyPlayingOrRecordingRef, null);
       return;
     }
-    write(playerStateRef, PlayerState.processing);
-    // prevent cutoff
-    await Future.delayed(const Duration(milliseconds: 500));
     note.duration = await _playerLogic.stopRecording(note: note);
     if (shouldTranscribe) {
       final res = await read(speechRecognizerRef)

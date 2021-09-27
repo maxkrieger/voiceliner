@@ -14,17 +14,17 @@ class RecordButton extends StatefulWidget {
 
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
-  _stopRecord(_) {
+  _stopRecord(_) async {
     HapticFeedback.mediumImpact();
-    context.use(notesLogicRef).stopRecording();
+    await context.use(notesLogicRef).stopRecording();
   }
 
   _stopRecord0() {
     _stopRecord(null);
   }
 
-  _startRecord(_) {
-    context.use(notesLogicRef).startRecording();
+  _startRecord(_) async {
+    await context.use(notesLogicRef).startRecording();
   }
 
   _playEffect(LongPressDownDetails d) {
