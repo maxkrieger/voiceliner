@@ -38,6 +38,7 @@ class NotesLogic with Logic implements Loadable {
     final noteId = uuid.v4();
     String? parent;
     final notes = read(notesRef);
+    int idx = read(notesRef).length;
     if (notes.isNotEmpty &&
         DateTime.now().difference(notes.last.dateCreated).inMinutes < 2) {
       parent = notes.last.parentNoteId;
@@ -48,7 +49,7 @@ class NotesLogic with Logic implements Loadable {
         dateCreated: DateTime.now().toUtc(),
         outlineId: _outlineId,
         parentNoteId: parent,
-        index: read(notesRef).length);
+        index: idx);
     await _playerLogic.startRecording(note);
     write(currentlyPlayingOrRecordingRef, note);
   }

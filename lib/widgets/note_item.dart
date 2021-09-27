@@ -44,8 +44,9 @@ class _NoteItemState extends State<NoteItem> {
         barrierDismissible: false,
         context: context,
         builder: (dialogCtx) => AlertDialog(
-                title: const Text("Change note transcript"),
+                title: const Text("Change text"),
                 content: TextField(
+                    maxLines: null,
                     decoration: const InputDecoration(hintText: "Transcript"),
                     controller: _renameController,
                     autofocus: true,
