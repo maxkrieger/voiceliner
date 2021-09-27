@@ -6,8 +6,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/state/notes_state.dart';
+import 'package:voice_outliner/state/player_state.dart';
 
 class NoteItem extends StatefulWidget {
   final int num;
@@ -91,6 +93,9 @@ class _NoteItemState extends State<NoteItem> {
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
     return const [
       PopupMenuItem(
+          value: "share",
+          child: ListTile(leading: Icon(Icons.share), title: Text("share"))),
+      PopupMenuItem(
           value: "edit",
           child: ListTile(leading: Icon(Icons.edit), title: Text("edit text"))),
       PopupMenuItem(
@@ -99,11 +104,22 @@ class _NoteItemState extends State<NoteItem> {
     ];
   }
 
+  void _shareNote() {
+    final note = context.read(notesRef)[widget.num];
+    String path =
+        context.use(playerLogicRef).getPathFromFilename(note.filePath);
+    Share.shareFiles([path],
+        text: note.transcript ??
+            "note from ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}");
+  }
+
   void _handleMenu(String item) {
     if (item == "delete") {
       _deleteNote();
     } else if (item == "edit") {
       _changeNoteTranscript();
+    } else if (item == "share") {
+      _shareNote();
     }
   }
 
