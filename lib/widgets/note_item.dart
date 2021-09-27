@@ -223,8 +223,8 @@ class _NoteItemState extends State<NoteItem> {
                   padding: EdgeInsets.zero,
                   onPressed: () => context.use(notesLogicRef).playNote(note),
                   icon: isCurrent
-                      ? const Icon(Icons.pause_circle_filled)
-                      : const Icon(Icons.play_circle_filled)),
+                      ? const Icon(Icons.stop_circle_outlined)
+                      : const Icon(Icons.play_circle_outlined)),
             )));
   }
 }
