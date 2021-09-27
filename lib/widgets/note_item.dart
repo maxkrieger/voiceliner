@@ -88,6 +88,25 @@ class _NoteItemState extends State<NoteItem> {
             ));
   }
 
+  List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
+    return const [
+      PopupMenuItem(
+          value: "edit",
+          child: ListTile(leading: Icon(Icons.edit), title: Text("edit text"))),
+      PopupMenuItem(
+          value: "delete",
+          child: ListTile(leading: Icon(Icons.delete), title: Text("delete")))
+    ];
+  }
+
+  void _handleMenu(String item) {
+    if (item == "delete") {
+      _deleteNote();
+    } else if (item == "edit") {
+      _changeNoteTranscript();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final note = context.watch(notesRef.select((state) =>
@@ -175,20 +194,10 @@ class _NoteItemState extends State<NoteItem> {
                                 color: Color.fromRGBO(0, 0, 0, .5)),
                           ),
                       date: note.dateCreated),
-                  IconButton(
-                      tooltip: "delete this note",
-                      onPressed: _deleteNote,
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.deepPurple,
-                      )),
-                  IconButton(
-                      tooltip: "edit transcript",
-                      onPressed: _changeNoteTranscript,
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.deepPurple,
-                      )),
+                  PopupMenuButton(
+                      itemBuilder: _menuBuilder,
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _handleMenu)
                   // IconButton(
                   //     tooltip: "collapse children",
                   //     onPressed: () {},
