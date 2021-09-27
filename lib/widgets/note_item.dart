@@ -204,7 +204,7 @@ class _NoteItemState extends State<NoteItem> {
                     Flexible(
                         child: Text(
                       note.transcript == null
-                          ? "Recording at ${DateFormat.jm().format(note.dateCreated.toLocal())}"
+                          ? "Recording at ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}"
                           : note.transcript!,
                       style: TextStyle(
                           decoration: note.isComplete

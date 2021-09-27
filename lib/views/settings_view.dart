@@ -1,6 +1,7 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 
 class SettingsView extends StatefulWidget {
@@ -66,10 +67,17 @@ class _SettingsViewState extends State<SettingsView> {
                           sharedPreferences.setBool("should_transcribe", v);
                         });
                       }),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip),
+                    title: const Text("Privacy"),
+                    onTap: () => launch(
+                        "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823"),
+                  ),
                   const AboutListTile(
                     icon: Icon(Icons.info),
                     aboutBoxChildren: [Text("made by Max Krieger")],
                   ),
+                  const Divider(),
                   ListTile(
                       leading: const Icon(Icons.delete_forever),
                       onTap: _resetDB,

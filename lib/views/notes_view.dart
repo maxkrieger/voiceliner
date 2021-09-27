@@ -1,6 +1,6 @@
 import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
@@ -68,9 +68,12 @@ class _NotesViewState extends State<NotesView> {
       PopupMenuItem(
           child: ListTile(
         enabled: false,
-        leading: const Icon(Icons.date_range),
-        title: Text(
-            "created ${DateFormat.jm().format(outline.dateCreated.toLocal())}"),
+        title: Timeago(
+            builder: (_, t) => Text(
+                  "created $t",
+                  style: const TextStyle(fontSize: 15),
+                ),
+            date: outline.dateCreated.toLocal()),
       ))
     ];
   }
@@ -177,7 +180,14 @@ class _NotesViewState extends State<NotesView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(currentOutlineName),
+        title: TextButton(
+          style: TextButton.styleFrom(
+              primary: Colors.white, textStyle: const TextStyle(fontSize: 20)),
+          child: Text(
+            currentOutlineName,
+          ),
+          onPressed: () => _handleMenu("rename", outlineId),
+        ),
         leading: IconButton(
             onPressed: () {
               Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
@@ -209,13 +219,25 @@ class _NotesViewState extends State<NotesView> {
                               child: const Text("grant microphone access"))
                         ]))
                   : (noteCount == 0)
-                      ? const Center(
-                          child: Text(
-                          "no notes yet!",
-                          style: TextStyle(
-                              fontSize: 40.0,
-                              color: Color.fromRGBO(0, 0, 0, 0.5)),
-                        ))
+                      ? Center(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: const [
+                              Text("no notes yet!",
+                                  style: TextStyle(
+                                      fontSize: 40.0,
+                                      color: Color.fromRGBO(0, 0, 0, 0.5))),
+                              SizedBox(
+                                height: 12.0,
+                              ),
+                              Text(
+                                "swipe notes to indent them",
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
+                              )
+                            ]))
                       : ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.only(bottom: 150),
