@@ -108,9 +108,9 @@ class _NoteItemState extends State<NoteItem> {
     final note = context.read(notesRef)[widget.num];
     String path =
         context.use(playerLogicRef).getPathFromFilename(note.filePath);
-    Share.shareFiles([path],
-        text: note.transcript ??
-            "note from ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}");
+    String desc = note.transcript ??
+        "note from ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}";
+    Share.shareFiles([path], text: desc, subject: desc);
   }
 
   void _handleMenu(String item) {
