@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:voice_outliner/data/note.dart';
@@ -62,11 +63,10 @@ CREATE TABLE outline (
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       print("migrating to 2 ${db.path}");
+      Sentry.addBreadcrumb(Breadcrumb(message: "Migrating to v2"));
       final List<Map<String, dynamic>> oldNotes =
-          await db.query("note", columns: ["id", "order_index"]);
-      oldNotes
-          .toList()
-          .sort((a, b) => a["order_index"].compareTo(b["order_index"]));
+          await db.query("note", columns: ["id", "order_index", "outline_id"]);
+
       final batch = db.batch();
       batch.execute("PRAGMA foreign_keys=OFF");
       batch.execute("ALTER TABLE note RENAME TO tmp_note");
@@ -94,17 +94,23 @@ CREATE TABLE outline (
       FROM tmp_note''');
       batch.execute("DROP TABLE tmp_note");
       batch.execute("PRAGMA foreign_keys=ON");
-      await batch.commit();
-      for (var i = 0; i < oldNotes.length; i++) {
-        await db.update(
-            "note",
-            {
-              "predecessor_note_id":
-                  i == 0 ? null : oldNotes[i - 1]["id"] as String
-            },
-            where: "id = ?",
-            whereArgs: [oldNotes[i]["id"]]);
+      final Map<String, List<Map<String, dynamic>>> outlines = {};
+      for (var n in oldNotes) {
+        if (outlines[n["outline_id"]] != null) {
+          outlines[n["outline_id"]]?.add(n);
+        } else {
+          outlines[n["outline_id"]] = [n];
+        }
       }
+      for (var o in outlines.values) {
+        o.sort((a, b) => a["order_index"].compareTo(b["order_index"]));
+        for (var i = 0; i < o.length; i++) {
+          batch.update("note",
+              {"predecessor_note_id": i == 0 ? null : o[i - 1]["id"] as String},
+              where: "id = ?", whereArgs: [o[i]["id"]]);
+        }
+      }
+      await batch.commit();
       print("done migrating");
     }
     // if oldVersion < x
