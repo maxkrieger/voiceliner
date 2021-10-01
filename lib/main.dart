@@ -1,9 +1,9 @@
-import 'package:binder/binder.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
@@ -22,10 +22,21 @@ Future<void> main() async {
   await sentry.SentryFlutter.init((config) {
     config.dsn = const String.fromEnvironment("SENTRY_DSN");
   },
-      appRunner: () => runApp(BinderScope(
+      appRunner: () => runApp(MultiProvider(
+              providers: [
+                ChangeNotifierProvider<PlayerModel>(
+                    create: (_) => PlayerModel()..load()),
+                ChangeNotifierProvider<DBRepository>(
+                  create: (_) => DBRepository()..load(),
+                ),
+                ChangeNotifierProxyProvider2<DBRepository, PlayerModel,
+                        OutlinesModel>(
+                    create: (_) => OutlinesModel(),
+                    update: (_, d, p, o) => (o ?? OutlinesModel())..load(p, d))
+              ],
               child: VoiceOutlinerApp(
-            sharedPreferences: sharedPrefs,
-          ))));
+                sharedPreferences: sharedPrefs,
+              ))));
 }
 
 class VoiceOutlinerApp extends StatefulWidget {
@@ -40,9 +51,6 @@ class VoiceOutlinerApp extends StatefulWidget {
 class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
   String? lastRoute;
   String? lastOutline;
-
-  // @override
-  // void didChange
 
   @override
   void initState() {
@@ -63,40 +71,33 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return LogicLoader(
-        refs: [dbRepositoryRef, playerLogicRef],
-        builder: (context, loading, child) {
-          if (loading) {
-            // TODO: black screen
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          return child!;
-        },
-        child: MaterialApp(
-          title: 'Voice Outliner',
-          // TODO: loader as disabled interaction - overlay
-          onGenerateRoute: (RouteSettings route) {
-            saveRoute(route);
-            final rte = routes[route.name];
-            if (rte == null) {
-              throw ("Route null");
-            }
-            return MaterialPageRoute(
-                builder: rte,
-                settings: RouteSettings(
-                    name: route.name,
-                    arguments: route.arguments ??
-                        (lastOutline != null
-                            ? NotesViewArgs(lastOutline!)
-                            : null)));
-          },
-          initialRoute: lastRoute ?? "/",
-          theme: ThemeData(
-              primarySwatch: Colors.deepPurple,
-              primaryColor: const Color.fromRGBO(169, 129, 234, 1)),
-          color: const Color.fromRGBO(169, 129, 234, 1),
-        ));
+    bool loading = context.select<OutlinesModel, bool>((m) => m.isReady);
+    if (!loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return MaterialApp(
+      title: 'Voice Outliner',
+      // TODO: loader as disabled interaction - overlay
+      onGenerateRoute: (RouteSettings route) {
+        saveRoute(route);
+        final rte = routes[route.name];
+        if (rte == null) {
+          throw ("Route null");
+        }
+        return MaterialPageRoute(
+            builder: rte,
+            settings: RouteSettings(
+                name: route.name,
+                arguments: route.arguments ??
+                    (lastOutline != null
+                        ? NotesViewArgs(lastOutline!)
+                        : null)));
+      },
+      initialRoute: lastRoute ?? "/",
+      theme: ThemeData(
+          primarySwatch: Colors.deepPurple,
+          primaryColor: const Color.fromRGBO(169, 129, 234, 1)),
+      color: const Color.fromRGBO(169, 129, 234, 1),
+    );
   }
 }

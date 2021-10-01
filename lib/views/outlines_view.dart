@@ -1,6 +1,7 @@
-import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
@@ -17,8 +18,8 @@ class _OutlinesViewState extends State<OutlinesView> {
   Future<void> _addOutline() async {
     Future<void> _onSubmitted(BuildContext ctx) async {
       if (_textController.value.text.isNotEmpty) {
-        final outline = await context
-            .use(outlinesLogicRef)
+        final outline = await ctx
+            .read<OutlinesModel>()
             .createOutline(_textController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
         _pushOutline(ctx, outline.id);
@@ -66,21 +67,23 @@ class _OutlinesViewState extends State<OutlinesView> {
   }
 
   Widget _buildOutline(BuildContext ctx, int num) {
-    final outline = ctx.watch(outlinesRef.select(
-        (outlines) => num < outlines.length ? outlines[num] : defaultOutline));
-    return Card(
-        key: Key("outline-$num"),
-        child: ListTile(
-          title: Text(outline.name),
-          subtitle:
-              Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
-          onLongPress: () {
-            print("long press");
-          },
-          onTap: () {
-            _pushOutline(ctx, outline.id);
-          },
-        ));
+    return Builder(builder: (ct) {
+      final outline = ct.select<OutlinesModel, Outline>((value) =>
+          value.outlines.length > num ? value.outlines[num] : defaultOutline);
+      return Card(
+          key: Key("outline-$num"),
+          child: ListTile(
+            title: Text(outline.name),
+            subtitle:
+                Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
+            onLongPress: () {
+              print("long press");
+            },
+            onTap: () {
+              _pushOutline(ctx, outline.id);
+            },
+          ));
+    });
   }
 
   void _openSettings() {
@@ -90,43 +93,44 @@ class _OutlinesViewState extends State<OutlinesView> {
 
   @override
   Widget build(BuildContext ct) {
-    return LogicLoader(
-        refs: [outlinesLogicRef],
-        builder: (context, loading, child) {
-          if (loading) {
-            return const CircularProgressIndicator();
-          }
-          final numOutlines =
-              context.watch(outlinesRef.select((outlines) => outlines.length));
-          return Scaffold(
-              appBar: AppBar(
-                automaticallyImplyLeading: false,
-                title: const Text("Voice Outliner"),
-                actions: [
-                  IconButton(
-                      onPressed: _openSettings,
-                      tooltip: "settings",
-                      icon: const Icon(Icons.settings))
-                ],
-              ),
-              floatingActionButton: FloatingActionButton(
-                tooltip: "Add Outline",
-                onPressed: _addOutline,
-                child: const Icon(Icons.post_add_rounded),
-              ),
-              body: numOutlines == 0
-                  ? Center(
-                      child: ElevatedButton(
-                          onPressed: _addOutline,
-                          child: const Text(
-                            "create your first outline",
-                            style: TextStyle(fontSize: 20.0),
-                          )))
-                  : ListView.builder(
-                      reverse: true,
-                      shrinkWrap: true,
-                      itemCount: numOutlines,
-                      itemBuilder: _buildOutline));
-        });
+    final ready = context.select<OutlinesModel, bool>((value) => value.isReady);
+    final numOutlines =
+        context.select<OutlinesModel, int>((value) => value.outlines.length);
+    if (!ready) {
+      return const Scaffold(
+          body: Center(
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text("Voice Outliner"),
+          actions: [
+            IconButton(
+                onPressed: _openSettings,
+                tooltip: "settings",
+                icon: const Icon(Icons.settings))
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: "Add Outline",
+          onPressed: _addOutline,
+          child: const Icon(Icons.post_add_rounded),
+        ),
+        body: numOutlines == 0
+            ? Center(
+                child: ElevatedButton(
+                    onPressed: _addOutline,
+                    child: const Text(
+                      "create your first outline",
+                      style: TextStyle(fontSize: 20.0),
+                    )))
+            : ListView.builder(
+                reverse: true,
+                shrinkWrap: true,
+                itemCount: numOutlines,
+                itemBuilder: _buildOutline));
   }
 }

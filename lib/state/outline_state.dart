@@ -1,24 +1,21 @@
-import 'package:binder/binder.dart';
-import 'package:voice_outliner/data/note.dart';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
-import 'package:voice_outliner/state/notes_state.dart';
-
-final outlinesRef = StateRef(const <Outline>[]);
-final outlinesLogicRef = LogicRef((scope) => OutlineLogic(scope));
+import 'package:voice_outliner/state/player_state.dart';
 
 final defaultOutline = Outline(
-    name: "deleted",
-    id: "",
-    dateCreated: DateTime.now(),
-    dateUpdated: DateTime.now());
+    name: "", id: "", dateCreated: DateTime.now(), dateUpdated: DateTime.now());
 
-class OutlineLogic with Logic implements Loadable {
-  OutlineLogic(this.scope);
-  @override
-  final Scope scope;
+class OutlinesModel extends ChangeNotifier {
+  OutlinesModel();
 
-  DBRepository get _dbRepository => use(dbRepositoryRef);
+  final List<Outline> outlines = [];
+
+  late DBRepository _dbRepository;
+  late PlayerModel _playerModel;
+  bool isReady = false;
 
   Future<Outline> createOutline(String name) async {
     final outline = Outline(
@@ -26,36 +23,43 @@ class OutlineLogic with Logic implements Loadable {
         id: uuid.v4(),
         dateCreated: DateTime.now().toUtc(),
         dateUpdated: DateTime.now().toUtc());
-    write(outlinesRef, read(outlinesRef).toList()..add(outline));
+    outlines.add(outline);
+    notifyListeners();
     await _dbRepository.addOutline(outline);
     return outline;
   }
 
   Future<void> deleteOutline(Outline outline) async {
+    final notes = await _dbRepository.getNotesForOutline(outline);
+    for (final n in notes) {
+      final path = _playerModel.getPathFromFilename(n["file_path"]);
+      await File(path).delete();
+    }
     await _dbRepository.deleteOutline(outline);
-    final outlines = read(outlinesRef).toList();
     outlines.removeWhere((element) => element.id == outline.id);
-    write(notesRef, <Note>[]);
-    write(outlinesRef, outlines);
+    notifyListeners();
   }
 
   Future<void> renameOutline(Outline outline, String renameTo) async {
-    final renamedOutline = Outline.fromMap(outline.map);
-    renamedOutline.name = renameTo;
-    final updatedOutlines = read(outlinesRef).toList();
-    updatedOutlines[updatedOutlines
-        .indexWhere((element) => element.id == outline.id)] = renamedOutline;
-    await _dbRepository.renameOutline(renamedOutline);
-    write(outlinesRef, updatedOutlines);
+    outline.name = renameTo;
+    notifyListeners();
+    await _dbRepository.renameOutline(outline);
   }
 
-  @override
-  Future<void> load() async {
-    final outlineResults = await _dbRepository.getOutlines();
-    final outlines = outlineResults
-        .map((Map<String, dynamic> res) => Outline.fromMap(res))
-        .toList();
-    outlines.sort((a, b) => a.dateUpdated.compareTo(b.dateUpdated));
-    write(outlinesRef, outlines);
+  Outline getOutlineFromId(String outlineId) =>
+      outlines.firstWhere((element) => element.id == outlineId);
+
+  Future<void> load(PlayerModel playerModel, DBRepository db) async {
+    if (db.ready && playerModel.playerState == PlayerState.ready) {
+      _dbRepository = db;
+      _playerModel = playerModel;
+      final outlineResults = await _dbRepository.getOutlines();
+      outlines.clear();
+      outlines.addAll(outlineResults
+          .map((Map<String, dynamic> res) => Outline.fromMap(res)));
+      outlines.sort((a, b) => a.dateUpdated.compareTo(b.dateUpdated));
+      isReady = true;
+      notifyListeners();
+    }
   }
 }

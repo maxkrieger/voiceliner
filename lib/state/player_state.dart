@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:binder/binder.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,70 +19,59 @@ enum PlayerState {
   processing
 }
 
-final playerLogicRef = LogicRef((scope) => PlayerLogic(scope));
-final playerStateRef = StateRef<PlayerState>(PlayerState.noPermission);
-final playerErrorRef = StateRef("");
-
-class InternalPlayerState {
-  FlutterSoundPlayer player;
-  FlutterSoundRecorder recorder;
-  late Directory docsDirectory;
+class PlayerModel extends ChangeNotifier {
+  final speechRecognizer = SpeechRecognizer();
+  final _player = FlutterSoundPlayer(logLevel: Level.warning);
+  final _recorder = FlutterSoundRecorder(logLevel: Level.warning);
   late Directory recordingsDirectory;
-  InternalPlayerState(this.player, this.recorder);
-}
+  late Directory docsDirectory;
+  PlayerState _playerState = PlayerState.noPermission;
 
-final internalPlayerRef = StateRef(InternalPlayerState(
-    FlutterSoundPlayer(logLevel: Level.warning),
-    FlutterSoundRecorder(logLevel: Level.warning)));
-
-final speechRecognizerRef = StateRef(SpeechRecognizer());
-
-class PlayerLogic with Logic implements Loadable, Disposable {
-  PlayerLogic(this.scope);
-
-  InternalPlayerState get _internalPlayer => read(internalPlayerRef);
-
-  @override
-  final Scope scope;
+  PlayerState get playerState => _playerState;
+  set playerState(PlayerState state) {
+    _playerState = state;
+    notifyListeners();
+  }
 
   @override
   void dispose() {
-    _internalPlayer.recorder.closeAudioSession();
-    _internalPlayer.player.closeAudioSession();
+    _recorder.closeAudioSession();
+    _player.closeAudioSession();
+    super.dispose();
   }
 
   Future<void> playNote(Note note, onDone) async {
-    write(playerStateRef, PlayerState.playing);
-    await _internalPlayer.player.startPlayer(
+    playerState = PlayerState.playing;
+    await _player.startPlayer(
         codec: Codec.aacADTS,
         fromURI: getPathFromFilename(note.filePath),
         whenFinished: () {
-          write(playerStateRef, PlayerState.ready);
+          playerState = PlayerState.ready;
           onDone();
         });
   }
 
   Future<void> stopPlaying() async {
-    await _internalPlayer.player.stopPlayer();
-    write(playerStateRef, PlayerState.ready);
+    await _player.stopPlayer();
+    playerState = PlayerState.ready;
   }
 
   String getPathFromFilename(String fileName) {
-    final path = "${_internalPlayer.recordingsDirectory.path}/$fileName";
+    final path = "${recordingsDirectory.path}/$fileName";
     return path;
   }
 
   Future<void> startRecording(Note note) async {
-    await _internalPlayer.recorder.startRecorder(
+    await _recorder.startRecorder(
         codec: Codec.aacADTS,
         toFile: getPathFromFilename(note.filePath),
         sampleRate: 44100,
         bitRate: 128000);
-    write(playerStateRef, PlayerState.recording);
+    playerState = PlayerState.recording;
   }
 
   Future<Duration?> stopRecording({Note? note}) async {
-    await _internalPlayer.recorder.stopRecorder();
+    await _recorder.stopRecorder();
     if (note == null) {
       return null;
     }
@@ -98,33 +87,23 @@ class PlayerLogic with Logic implements Loadable, Disposable {
     }
   }
 
-  @override
   Future<void> load() async {
     final granted = await Permission.microphone.isGranted;
     if (granted) {
-      write(playerStateRef, PlayerState.notReady);
-      var steps = 0;
+      playerState = PlayerState.notReady;
       try {
-        _internalPlayer.docsDirectory =
-            await getApplicationDocumentsDirectory();
-        steps++;
-        _internalPlayer.recordingsDirectory =
-            await Directory("${_internalPlayer.docsDirectory.path}/recordings")
+        docsDirectory = await getApplicationDocumentsDirectory();
+        recordingsDirectory =
+            await Directory("${docsDirectory.path}/recordings")
                 .create(recursive: true);
-        steps++;
         // TODO: play from headphones IF AVAILABLE
-        await _internalPlayer.player.openAudioSession();
-        steps++;
-        await _internalPlayer.recorder.openAudioSession();
-        steps++;
-        await read(speechRecognizerRef).init();
-        steps++;
-        write(playerStateRef, PlayerState.ready);
-        steps++;
+        await _player.openAudioSession();
+        await _recorder.openAudioSession();
+        await speechRecognizer.init();
+        playerState = PlayerState.ready;
       } catch (e, st) {
-        write(playerStateRef, PlayerState.error);
+        playerState = PlayerState.error;
         await sentry.Sentry.captureException(e, stackTrace: st);
-        write(playerErrorRef, "step $steps : ${e.toString()}");
       }
     }
   }

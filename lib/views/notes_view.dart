@@ -1,7 +1,7 @@
-import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
-import 'package:voice_outliner/data/note.dart';
+import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
@@ -13,46 +13,41 @@ class NotesViewArgs {
   NotesViewArgs(this.outlineId);
 }
 
-class NotesView extends StatefulWidget {
+class NotesView extends StatelessWidget {
   const NotesView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final outlineId =
+        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
+    return ChangeNotifierProxyProvider2<PlayerModel, DBRepository, NotesModel>(
+      child: _NotesView(outlineId: outlineId),
+      create: (BuildContext context) => NotesModel(outlineId),
+      update: (_, pl, db, n) => (n ?? NotesModel(outlineId))..load(pl, db),
+    );
+  }
+}
+
+class _NotesView extends StatefulWidget {
+  final String outlineId;
+  const _NotesView({Key? key, required this.outlineId}) : super(key: key);
 
   @override
   _NotesViewState createState() => _NotesViewState();
 }
 
-class _NotesViewState extends State<NotesView> {
+class _NotesViewState extends State<_NotesView> {
   final _renameController = TextEditingController();
-  final _scrollController = ScrollController();
 
   @override
   void dispose() {
     super.dispose();
     _renameController.dispose();
-    _scrollController.dispose();
-  }
-
-  bool _onAddNote<T>(StateRef<T> ref, T oldState, T newState, Object? action) {
-    if (ref.key.name == "notes" &&
-        oldState is List<Note> &&
-        newState is List<Note>) {
-      if (oldState.length < newState.length) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.fastOutSlowIn);
-        }
-      }
-    }
-    return false;
   }
 
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
-    final outlineId =
-        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
-    final outline = context.read(outlinesRef).firstWhere(
-        (element) => element.id == outlineId,
-        orElse: () => defaultOutline);
+    final outlineId = widget.outlineId;
+    final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
     return [
       const PopupMenuItem(
           value: "rename",
@@ -79,9 +74,7 @@ class _NotesViewState extends State<NotesView> {
   }
 
   void _handleMenu(String item, String outlineId) {
-    final outline = context
-        .read(outlinesRef)
-        .firstWhere((element) => element.id == outlineId);
+    final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
     if (item == "delete") {
       showDialog(
           context: context,
@@ -96,7 +89,7 @@ class _NotesViewState extends State<NotesView> {
                       child: const Text("cancel")),
                   TextButton(
                       onPressed: () async {
-                        ctx.use(outlinesLogicRef).deleteOutline(outline);
+                        ctx.read<OutlinesModel>().deleteOutline(outline);
                         await Navigator.pushNamedAndRemoveUntil(
                             ctx, "/", (route) => false);
                       },
@@ -106,8 +99,8 @@ class _NotesViewState extends State<NotesView> {
     } else if (item == "rename") {
       Future<void> _onSubmitted(BuildContext ctx) async {
         if (_renameController.value.text.isNotEmpty) {
-          await context
-              .use(outlinesLogicRef)
+          await ctx
+              .read<OutlinesModel>()
               .renameOutline(outline, _renameController.value.text);
           Navigator.of(ctx, rootNavigator: true).pop();
         }
@@ -144,39 +137,29 @@ class _NotesViewState extends State<NotesView> {
 
   @override
   Widget build(BuildContext context) {
-    final outlineId =
-        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
-    return BinderScope(
-        observers: [
-          DelegatingStateObserver(_onAddNote)
-        ],
-        overrides: [
-          notesLogicRef.overrideWith((scope) => NotesLogic(scope, outlineId))
-        ],
-        child: LogicLoader(
-          refs: [notesLogicRef],
-          builder: (ctx, loading, child) {
-            if (loading) {
-              // TODO: black screen
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return buildChild(ctx);
-          },
-        ));
+    final ready = context.select<NotesModel, bool>((value) => value.isReady);
+    if (!ready) {
+      return const Scaffold(
+          body: Center(
+        child: CircularProgressIndicator(),
+      ));
+    }
+    return buildChild(context);
   }
 
   Widget buildChild(BuildContext context) {
-    final outlineId =
-        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
-    final currentOutlineName = context.watch(outlinesRef.select((state) => state
-        .firstWhere((element) => element.id == outlineId,
-            orElse: () => defaultOutline)
-        .name));
-    final noteCount = context.watch(notesRef.select((state) => state.length));
-    final playerState = context.watch(playerStateRef);
-    final playerError = context.watch(playerErrorRef);
+    final outlineId = widget.outlineId;
+    final currentOutlineName = context.select<OutlinesModel, String>((value) =>
+        value.outlines
+            .firstWhere((element) => element.id == outlineId,
+                orElse: () => defaultOutline)
+            .name);
+    final noteCount =
+        context.select<NotesModel, int>((value) => value.notes.length);
+    final scrollController = context.select<NotesModel, ScrollController>(
+        (value) => value.scrollController);
+    final playerState =
+        context.select<PlayerModel, PlayerState>((value) => value.playerState);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -203,7 +186,7 @@ class _NotesViewState extends State<NotesView> {
       body: playerState == PlayerState.notReady
           ? const Center(child: Text("setting up..."))
           : playerState == PlayerState.error
-              ? Center(child: Text("error: $playerError"))
+              ? const Center(child: Text("error"))
               : playerState == PlayerState.noPermission
                   ? Center(
                       child: Column(
@@ -214,7 +197,7 @@ class _NotesViewState extends State<NotesView> {
                               style: TextStyle(fontSize: 20.0)),
                           ElevatedButton(
                               onPressed: () {
-                                context.use(playerLogicRef).tryPermission();
+                                context.read<PlayerModel>().tryPermission();
                               },
                               child: const Text("grant microphone access"))
                         ]))
@@ -238,8 +221,10 @@ class _NotesViewState extends State<NotesView> {
                                     color: Color.fromRGBO(0, 0, 0, 0.5)),
                               )
                             ]))
-                      : ListView.builder(
-                          controller: _scrollController,
+                      : ReorderableListView.builder(
+                          onReorder: (a, b) =>
+                              context.read<NotesModel>().swapNotes(a, b),
+                          scrollController: scrollController,
                           padding: const EdgeInsets.only(bottom: 150),
                           shrinkWrap: true,
                           itemBuilder: (_, int idx) =>

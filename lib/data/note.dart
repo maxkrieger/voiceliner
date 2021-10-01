@@ -1,13 +1,13 @@
+import 'dart:collection';
 import 'dart:ui';
 
-class Note {
+class Note extends LinkedListEntry<Note> {
   final String id;
   final String filePath;
   final DateTime dateCreated;
   bool isComplete;
-  bool backedUp;
+  bool isCollapsed;
   Color? color;
-  int index;
   Duration? duration;
   String? transcript;
   String? parentNoteId;
@@ -19,12 +19,12 @@ class Note {
       required this.outlineId,
       this.parentNoteId,
       this.isComplete = false,
-      this.backedUp = false,
       this.color,
       this.transcript,
       this.duration,
-      required this.index});
+      required this.isCollapsed});
 
+  //TODO: color
   Note.fromMap(Map<String, dynamic> map)
       : id = map["id"],
         filePath = map["file_path"],
@@ -33,13 +33,14 @@ class Note {
         outlineId = map["outline_id"],
         transcript = map["transcript"],
         parentNoteId = map["parent_note_id"],
-        index = map["order_index"],
         isComplete = map["is_complete"] == 1,
-        backedUp = map["backed_up"] == 1 {
+        isCollapsed = map["is_collapsed"] == 1 {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
   }
+
+  String? get predecessorNoteId => previous?.id;
 
   Map<String, dynamic> get map {
     return {
@@ -49,10 +50,10 @@ class Note {
       "outline_id": outlineId,
       "transcript": transcript,
       "parent_note_id": parentNoteId,
-      "order_index": index,
+      "predecessor_note_id": predecessorNoteId,
       "duration": duration != null ? duration!.inMilliseconds : null,
       "is_complete": isComplete ? 1 : 0,
-      "backed_up": backedUp ? 1 : 0
+      "is_collapsed": isCollapsed ? 1 : 0,
     };
   }
 }

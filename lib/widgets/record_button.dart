@@ -1,7 +1,7 @@
-import 'package:binder/binder.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
@@ -16,7 +16,7 @@ class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
   _stopRecord(_) async {
     HapticFeedback.mediumImpact();
-    await context.use(notesLogicRef).stopRecording();
+    await context.read<NotesModel>().stopRecording();
   }
 
   _stopRecord0() {
@@ -24,7 +24,7 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _startRecord(_) async {
-    await context.use(notesLogicRef).startRecording();
+    await context.read<NotesModel>().startRecording();
   }
 
   _playEffect(LongPressDownDetails d) {
@@ -36,7 +36,8 @@ class _RecordButtonState extends State<RecordButton> {
 
   @override
   Widget build(BuildContext context) {
-    final playerState = context.watch(playerStateRef);
+    final playerState =
+        context.select<PlayerModel, PlayerState>((p) => p.playerState);
     final isRecording = playerState == PlayerState.recording;
     final isProcessing = playerState == PlayerState.processing;
     return GestureDetector(

@@ -1,8 +1,9 @@
-import 'package:binder/binder.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/state/player_state.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -41,8 +42,12 @@ class _SettingsViewState extends State<SettingsView> {
                     },
                     child: const Text("cancel")),
                 TextButton(
-                    onPressed: () {
-                      ctx.use(dbRepositoryRef).resetDB();
+                    onPressed: () async {
+                      await ctx.read<DBRepository>().resetDB();
+                      await ctx
+                          .read<PlayerModel>()
+                          .recordingsDirectory
+                          .delete(recursive: true);
                       Navigator.of(ctx).pop();
                     },
                     child: const Text("reset"))

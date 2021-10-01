@@ -1,13 +1,13 @@
 import 'dart:math';
 
-import 'package:binder/binder.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
@@ -29,11 +29,11 @@ class _NoteItemState extends State<NoteItem> {
   }
 
   void _changeNoteTranscript() {
-    final note = context.read(notesRef)[widget.num];
+    final note = context.read<NotesModel>().notes.elementAt(widget.num);
     Future<void> _onSubmitted(BuildContext ctx) async {
       if (_renameController.value.text.isNotEmpty) {
         await context
-            .use(notesLogicRef)
+            .read<NotesModel>()
             .setNoteTranscript(note, _renameController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
       }
@@ -81,8 +81,11 @@ class _NoteItemState extends State<NoteItem> {
                     child: const Text("cancel")),
                 TextButton(
                     onPressed: () {
-                      final note = ctx.read(notesRef)[widget.num];
-                      ctx.use(notesLogicRef).deleteNote(note);
+                      final note = context
+                          .read<NotesModel>()
+                          .notes
+                          .elementAt(widget.num);
+                      context.read<NotesModel>().deleteNote(note);
                       Navigator.of(ctx).pop();
                     },
                     child: const Text("delete"))
@@ -105,9 +108,9 @@ class _NoteItemState extends State<NoteItem> {
   }
 
   void _shareNote() {
-    final note = context.read(notesRef)[widget.num];
+    final note = context.read<NotesModel>().notes.elementAt(widget.num);
     String path =
-        context.use(playerLogicRef).getPathFromFilename(note.filePath);
+        context.read<PlayerModel>().getPathFromFilename(note.filePath);
     String desc = note.transcript ??
         "note from ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}";
     Share.shareFiles([path], text: desc, subject: desc);
@@ -125,16 +128,35 @@ class _NoteItemState extends State<NoteItem> {
 
   @override
   Widget build(BuildContext context) {
-    final note = context.watch(notesRef.select((state) =>
-        widget.num < state.length ? state[widget.num] : defaultNote));
-    final isCurrent =
-        context.watch(currentlyPlayingOrRecordingRef.select((state) {
-      return state != null && note.id == state.id;
-    }));
+    final note = context.select<NotesModel?, Note?>((m) => m == null
+        ? null
+        : m.notes.length > widget.num
+            ? m.notes.elementAt(widget.num)
+            : defaultNote);
+    if (note == null) {
+      return Card(
+          clipBehavior: Clip.hardEdge,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          color: const Color.fromRGBO(237, 226, 255, 0.8),
+          margin: const EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0));
+    }
+    final isCurrent = context.select<NotesModel?, bool>((value) => value == null
+        ? false
+        : value.currentlyPlayingOrRecording != null &&
+            value.currentlyPlayingOrRecording!.id == note.id);
     //TODO: make computed
-    final currentlyExpanded = context.watch(currentlyExpandedRef
-        .select((state) => state != null && state.id == note.id));
-    final depth = context.watch(notesRef.select((notes) {
+    final currentlyExpanded = context.select<NotesModel?, bool>((value) =>
+        value == null
+            ? false
+            : value.currentlyExpanded != null &&
+                value.currentlyExpanded!.id == note.id);
+
+    final depth = context.select<NotesModel?, int>((notesModel) {
+      if (notesModel == null || widget.num >= notesModel.notes.length) {
+        return 0;
+      }
+      final notes = notesModel.notes;
       int getDepth(String? id) {
         if (id != null) {
           final predecessor = notes.firstWhere((element) => element.id == id,
@@ -144,9 +166,9 @@ class _NoteItemState extends State<NoteItem> {
         return 0;
       }
 
-      final d = getDepth(notes[widget.num].parentNoteId);
+      final d = getDepth(notes.elementAt(widget.num).parentNoteId);
       return d;
-    }));
+    });
     return Dismissible(
         dismissThresholds: const {
           DismissDirection.startToEnd: 0.2,
@@ -155,14 +177,14 @@ class _NoteItemState extends State<NoteItem> {
         movementDuration: const Duration(milliseconds: 100),
         dragStartBehavior: DragStartBehavior.down,
         confirmDismiss: (direction) async {
-          if (note.index == 0) {
+          if (note.previous == null) {
             return false;
           }
           HapticFeedback.mediumImpact();
           if (direction == DismissDirection.startToEnd) {
-            context.use(notesLogicRef).indentNote(note);
+            context.read<NotesModel>().indentNote(note);
           } else if (direction == DismissDirection.endToStart) {
-            context.use(notesLogicRef).outdentNote(note);
+            context.read<NotesModel>().outdentNote(note);
           }
         },
         background: Align(
@@ -191,7 +213,9 @@ class _NoteItemState extends State<NoteItem> {
             child: ExpansionTile(
               initiallyExpanded: currentlyExpanded,
               onExpansionChanged: (bool st) {
-                context.use(notesLogicRef).setExpansion(st ? note : null);
+                context
+                    .read<NotesModel>()
+                    .setCurrentlyExpanded(st ? note : null);
               },
               trailing: const SizedBox(width: 0),
               tilePadding: EdgeInsets.zero,
@@ -200,7 +224,7 @@ class _NoteItemState extends State<NoteItem> {
                   Checkbox(
                       value: note.isComplete,
                       onChanged: (v) => context
-                          .use(notesLogicRef)
+                          .read<NotesModel>()
                           .setNoteComplete(note, v ?? false)),
                   const Spacer(),
                   Timeago(
@@ -246,7 +270,7 @@ class _NoteItemState extends State<NoteItem> {
                   ]),
               leading: IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () => context.use(notesLogicRef).playNote(note),
+                  onPressed: () => context.read<NotesModel>().playNote(note),
                   icon: isCurrent
                       ? const Icon(Icons.stop_circle_outlined)
                       : const Icon(Icons.play_circle_outlined)),
