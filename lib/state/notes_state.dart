@@ -181,7 +181,7 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> swapNotes(int a, int b) async {
-    if (a == b) {
+    if (a == b || b - 1 == a) {
       return;
     }
     Sentry.addBreadcrumb(Breadcrumb(message: "Swapping $a to $b"));
