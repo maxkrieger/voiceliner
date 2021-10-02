@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
@@ -180,6 +181,10 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> swapNotes(int a, int b) async {
+    if (a == b) {
+      return;
+    }
+    Sentry.addBreadcrumb(Breadcrumb(message: "Swapping $a to $b"));
     int initialSize = notes.length;
     final noteA = notes.elementAt(a);
     if (b == 0) {

@@ -135,6 +135,13 @@ class _NoteItemState extends State<NoteItem> {
             : defaultNote);
     if (note == null) {
       return Card(
+          child: const Center(
+              child: Text(
+            "drag to reorder",
+            style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Color.fromRGBO(0, 0, 0, 0.5)),
+          )),
           clipBehavior: Clip.hardEdge,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
