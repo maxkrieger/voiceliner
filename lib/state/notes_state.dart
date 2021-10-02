@@ -156,8 +156,16 @@ class NotesModel extends ChangeNotifier {
 
   Future<void> deleteNote(Note note) async {
     final path = _playerModel.getPathFromFilename(note.filePath);
-    await File(path).delete();
+    bool exists = await File(path).exists();
+    if (exists) {
+      await File(path).delete();
+    }
     note.unlink();
+    notes.forEach((entry) {
+      if (entry.parentNoteId == note.id) {
+        entry.parentNoteId = note.parentNoteId;
+      }
+    });
     notifyListeners();
     await _dbRepository.deleteNote(note, notes);
   }
@@ -189,6 +197,7 @@ class NotesModel extends ChangeNotifier {
     final noteA = notes.elementAt(a);
     if (b == 0) {
       noteA.unlink();
+      noteA.parentNoteId = null;
       notes.addFirst(noteA);
     } else {
       //TODO: handle gooder
@@ -226,6 +235,12 @@ class NotesModel extends ChangeNotifier {
           noteToFindSuccessor.insertAfter(n);
           noteToFindSuccessor = n;
         }
+      }
+      if (notes.length != notesDicts.length) {
+        print("Mismatched notes extraction");
+        Sentry.captureMessage(
+            "Only extracted ${notes.length} from ${notesDicts.length}",
+            level: SentryLevel.error);
       }
       currentlyExpanded = null;
       currentlyPlayingOrRecording = null;

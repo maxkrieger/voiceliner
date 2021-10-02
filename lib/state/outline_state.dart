@@ -33,7 +33,10 @@ class OutlinesModel extends ChangeNotifier {
     final notes = await _dbRepository.getNotesForOutline(outline);
     for (final n in notes) {
       final path = _playerModel.getPathFromFilename(n["file_path"]);
-      await File(path).delete();
+      final exists = await File(path).exists();
+      if (exists) {
+        await File(path).delete();
+      }
     }
     await _dbRepository.deleteOutline(outline);
     outlines.removeWhere((element) => element.id == outline.id);
