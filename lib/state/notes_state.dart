@@ -240,6 +240,12 @@ class NotesModel extends ChangeNotifier {
         Sentry.captureMessage(
             "Only extracted ${notes.length} from ${notesDicts.length}",
             level: SentryLevel.error);
+        notesDicts.forEach((element) {
+          if (!notes.any((e) => e.id == element["id"])) {
+            notes.add(Note.fromMap(element));
+          }
+        });
+        await _dbRepository.realignNotes(notes);
       }
       currentlyExpanded = null;
       currentlyPlayingOrRecording = null;
