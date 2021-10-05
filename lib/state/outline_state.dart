@@ -53,7 +53,7 @@ class OutlinesModel extends ChangeNotifier {
       outlines.firstWhere((element) => element.id == outlineId);
 
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
-    if (db.ready && playerModel.playerState == PlayerState.ready) {
+    if (db.ready) {
       _dbRepository = db;
       _playerModel = playerModel;
       final outlineResults = await _dbRepository.getOutlines();

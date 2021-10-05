@@ -215,9 +215,7 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
-    if (!isReady & !isIniting &&
-        db.ready &&
-        playerModel.playerState == PlayerState.ready) {
+    if (!isReady & !isIniting && db.ready) {
       isIniting = true;
       _playerModel = playerModel;
       _dbRepository = db;
