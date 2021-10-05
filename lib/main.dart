@@ -8,10 +8,7 @@ import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
 
-final routes = {
-  "/": (_) => const OutlinesView(),
-  "/notes": (_) => const NotesView()
-};
+final routes = {"/": const OutlinesView(), "/notes": const NotesView()};
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,15 +74,17 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
     }
     return MaterialApp(
       title: 'Voice Outliner',
-      // TODO: loader as disabled interaction - overlay
       onGenerateRoute: (RouteSettings route) {
         saveRoute(route);
         final rte = routes[route.name];
         if (rte == null) {
           throw ("Route null");
         }
-        return MaterialPageRoute(
-            builder: rte,
+        return PageRouteBuilder(
+            pageBuilder: (c, a, aa) => rte,
+            transitionsBuilder: (c, an, an2, child) =>
+                Align(child: FadeTransition(opacity: an, child: child)),
+            transitionDuration: const Duration(milliseconds: 300),
             settings: RouteSettings(
                 name: route.name,
                 arguments: route.arguments ??

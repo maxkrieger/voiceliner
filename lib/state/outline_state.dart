@@ -60,7 +60,7 @@ class OutlinesModel extends ChangeNotifier {
       outlines.clear();
       outlines.addAll(outlineResults
           .map((Map<String, dynamic> res) => Outline.fromMap(res)));
-      outlines.sort((a, b) => a.dateUpdated.compareTo(b.dateUpdated));
+      outlines.sort((a, b) => b.dateUpdated.compareTo(a.dateUpdated));
       isReady = true;
       notifyListeners();
     }

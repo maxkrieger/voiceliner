@@ -70,19 +70,21 @@ class _OutlinesViewState extends State<OutlinesView> {
     return Builder(builder: (ct) {
       final outline = ct.select<OutlinesModel, Outline>((value) =>
           value.outlines.length > num ? value.outlines[num] : defaultOutline);
-      return Card(
-          key: Key("outline-$num"),
-          child: ListTile(
-            title: Text(outline.name),
-            subtitle:
-                Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
-            onLongPress: () {
-              print("long press");
-            },
-            onTap: () {
-              _pushOutline(ctx, outline.id);
-            },
-          ));
+      return Hero(
+          tag: "outline-${outline.id}",
+          child: Card(
+              key: Key("outline-$num"),
+              child: ListTile(
+                title: Text(outline.name),
+                subtitle: Timeago(
+                    builder: (_, t) => Text(t), date: outline.dateUpdated),
+                onLongPress: () {
+                  print("long press");
+                },
+                onTap: () {
+                  _pushOutline(ctx, outline.id);
+                },
+              )));
     });
   }
 
@@ -128,7 +130,6 @@ class _OutlinesViewState extends State<OutlinesView> {
                       style: TextStyle(fontSize: 20.0),
                     )))
             : ListView.builder(
-                reverse: true,
                 shrinkWrap: true,
                 itemCount: numOutlines,
                 itemBuilder: _buildOutline));
