@@ -206,5 +206,6 @@ CREATE TABLE outline (
         onOpen: _onOpen,
         onUpgrade: _onUpgrade);
     _database = db;
+    print(db.path);
   }
 }

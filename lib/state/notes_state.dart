@@ -172,10 +172,11 @@ class NotesModel extends ChangeNotifier {
 
   // Snapshot hack
   Future<void> rebuildNote(Note note) async {
-    note.insertAfter(Note.fromMap(note.map));
+    final newNote = Note.fromMap(note.map);
+    note.insertAfter(newNote);
     note.unlink();
     notifyListeners();
-    await _dbRepository.updateNote(note);
+    await _dbRepository.updateNote(newNote);
   }
 
   Future<void> setNoteTranscript(Note note, String transcript) async {
