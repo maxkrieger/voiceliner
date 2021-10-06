@@ -10,6 +10,7 @@ import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
 enum PlayerState {
+  notLoaded,
   noPermission,
   notReady,
   error,
@@ -20,12 +21,12 @@ enum PlayerState {
 }
 
 class PlayerModel extends ChangeNotifier {
-  final speechRecognizer = SpeechRecognizer();
   final _player = FlutterSoundPlayer(logLevel: Level.warning);
   final _recorder = FlutterSoundRecorder(logLevel: Level.warning);
+  final speechRecognizer = SpeechRecognizer();
   late Directory recordingsDirectory;
   late Directory docsDirectory;
-  PlayerState _playerState = PlayerState.noPermission;
+  PlayerState _playerState = PlayerState.notLoaded;
 
   PlayerState get playerState => _playerState;
   set playerState(PlayerState state) {
@@ -88,14 +89,17 @@ class PlayerModel extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    docsDirectory = await getApplicationDocumentsDirectory();
+    recordingsDirectory = await Directory("${docsDirectory.path}/recordings")
+        .create(recursive: true);
+    if (playerState == PlayerState.notLoaded) {
+      playerState = PlayerState.noPermission;
+      notifyListeners();
+    }
     final granted = await Permission.microphone.isGranted;
     if (granted) {
       playerState = PlayerState.notReady;
       try {
-        docsDirectory = await getApplicationDocumentsDirectory();
-        recordingsDirectory =
-            await Directory("${docsDirectory.path}/recordings")
-                .create(recursive: true);
         // TODO: play from headphones IF AVAILABLE
         await _player.openAudioSession();
         await _recorder.openAudioSession();

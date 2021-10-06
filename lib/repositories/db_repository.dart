@@ -7,7 +7,9 @@ import 'package:uuid/uuid.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 
-const String tableCreator = '''
+const int dbVersion = 3;
+
+const String noteTableDef = '''
       id TEXT PRIMARY KEY NOT NULL, 
       file_path TEXT,
       date_created INTEGER NOT NULL,
@@ -19,6 +21,8 @@ const String tableCreator = '''
       parent_note_id TEXT,
       outline_id TEXT NOT NULL,
       color INTEGER,
+      backed_up INTEGER NOT_NULL DEFAULT 0,
+      transcribed INTEGER NOT_NULL DEFAULT 1,
       FOREIGN KEY(parent_note_id) REFERENCES note,
       FOREIGN KEY(predecessor_note_id) REFERENCES note,
       FOREIGN KEY(outline_id) REFERENCES outline
@@ -47,7 +51,7 @@ CREATE TABLE outline (
       date_created INTEGER NOT NULL,
       date_updated INTEGER NOT NULL
 )''');
-    batch.execute("CREATE TABLE note($tableCreator)");
+    batch.execute("CREATE TABLE note($noteTableDef)");
     await batch.commit(noResult: true);
   }
 
@@ -61,16 +65,17 @@ CREATE TABLE outline (
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    final batch = db.batch();
+    print("migrating to $newVersion from $oldVersion ${db.path}");
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Migrating to $newVersion from $oldVersion"));
     if (oldVersion < 2) {
-      print("migrating to 2 ${db.path}");
-      Sentry.addBreadcrumb(Breadcrumb(message: "Migrating to v2"));
       final List<Map<String, dynamic>> oldNotes =
           await db.query("note", columns: ["id", "order_index", "outline_id"]);
 
-      final batch = db.batch();
       batch.execute("PRAGMA foreign_keys=OFF");
       batch.execute("ALTER TABLE note RENAME TO tmp_note");
-      batch.execute("CREATE TABLE note($tableCreator)");
+      batch.execute("CREATE TABLE note($noteTableDef)");
       batch.execute('''INSERT INTO note(
       id,
       file_path,
@@ -110,9 +115,15 @@ CREATE TABLE outline (
               where: "id = ?", whereArgs: [o[i]["id"]]);
         }
       }
-      await batch.commit();
-      print("done migrating");
     }
+    if (oldVersion == 2) {
+      batch.execute(
+          "ALTER TABLE note ADD COLUMN backed_up INTEGER NOT NULL DEFAULT 0");
+      batch.execute(
+          "ALTER TABLE note ADD COLUMN transcribed INTEGER NOT NULL DEFAULT 1");
+    }
+    print("done migrating");
+    await batch.commit();
     // if oldVersion < x
   }
 
@@ -121,6 +132,11 @@ CREATE TABLE outline (
     await deleteDatabase(_database.path);
     ready = false;
     await load();
+  }
+
+  void writeOutlineUpdated(Batch batch, String outlineId) {
+    batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",
+        [DateTime.now().toUtc().millisecondsSinceEpoch, outlineId]);
   }
 
   Future<List<Map<String, dynamic>>> getOutlines() async {
@@ -147,22 +163,23 @@ CREATE TABLE outline (
   Future<void> addNote(Note note) async {
     final batch = _database.batch();
     batch.insert("note", note.map);
-    batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",
-        [DateTime.now().toUtc().millisecondsSinceEpoch, note.outlineId]);
+    writeOutlineUpdated(batch, note.outlineId);
     await batch.commit();
   }
 
   Future<void> updateNote(Note note) async {
     final batch = _database.batch();
-    batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",
-        [DateTime.now().toUtc().millisecondsSinceEpoch, note.outlineId]);
+    writeOutlineUpdated(batch, note.outlineId);
     batch.update("note", note.map, where: "id = ?", whereArgs: [note.id]);
     await batch.commit();
   }
 
   Future<void> renameOutline(Outline outline) async {
-    await _database.rawUpdate(
+    final batch = _database.batch();
+    batch.rawUpdate(
         "UPDATE outline SET name = ? WHERE id = ?", [outline.name, outline.id]);
+    writeOutlineUpdated(batch, outline.id);
+    await batch.commit();
   }
 
   Future<void> realignNotes(LinkedList<Note> notes) async {
@@ -171,6 +188,10 @@ CREATE TABLE outline (
       batch.rawUpdate(
           "UPDATE note SET predecessor_note_id = ?, parent_note_id = ? WHERE id = ?",
           [element.predecessorNoteId, element.parentNoteId, element.id]);
+    }
+
+    if (notes.isNotEmpty) {
+      writeOutlineUpdated(batch, notes.first.outlineId);
     }
 
     notes.forEach(update);
@@ -186,6 +207,7 @@ CREATE TABLE outline (
     }
 
     notes.forEach(update);
+    writeOutlineUpdated(batch, note.outlineId);
     batch.delete("note", where: "id = ?", whereArgs: [note.id]);
     await batch.commit();
   }
@@ -200,7 +222,7 @@ CREATE TABLE outline (
 
   Future<void> load() async {
     final db = await openDatabase("voice_outliner.db",
-        version: 2,
+        version: dbVersion,
         onCreate: _onCreate,
         onConfigure: _onConfigure,
         onOpen: _onOpen,

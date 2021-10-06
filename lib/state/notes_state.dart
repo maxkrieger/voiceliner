@@ -48,6 +48,20 @@ class NotesModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> runJobs() async {
+    notes.forEach((entry) async {
+      if (shouldTranscribe && !entry.transcribed) {
+        final res = await _playerModel.speechRecognizer
+            .recognize(entry, _playerModel.getPathFromFilename(entry.filePath));
+        if (res.item1) {
+          entry.transcribed = true;
+          entry.transcript = res.item2;
+          rebuildNote(entry);
+        }
+      }
+    });
+  }
+
   Future<void> startRecording() async {
     if (currentlyPlayingOrRecording != null) {
       return;
@@ -59,7 +73,7 @@ class NotesModel extends ChangeNotifier {
       parent = notes.last.parentNoteId;
     }
     final note = Note(
-        id: uuid.v4(),
+        id: noteId,
         filePath: "$noteId.aac",
         dateCreated: DateTime.now().toUtc(),
         outlineId: _outlineId,
@@ -80,11 +94,7 @@ class NotesModel extends ChangeNotifier {
       return;
     }
     note.duration = await _playerModel.stopRecording(note: note);
-    if (shouldTranscribe) {
-      final res = await _playerModel.speechRecognizer
-          .recognize(note, _playerModel.getPathFromFilename(note.filePath));
-      note.transcript = res;
-    }
+
     if (currentlyExpanded != null) {
       note.parentNoteId = currentlyExpanded!.id;
       currentlyExpanded!.insertAfter(note);
@@ -100,6 +110,7 @@ class NotesModel extends ChangeNotifier {
     await _dbRepository.addNote(note);
     currentlyPlayingOrRecording = null;
     _playerModel.playerState = PlayerState.ready;
+    runJobs();
   }
 
   Future<void> playNote(Note note) async {
@@ -181,6 +192,7 @@ class NotesModel extends ChangeNotifier {
 
   Future<void> setNoteTranscript(Note note, String transcript) async {
     note.transcript = transcript;
+    note.transcribed = true;
     await rebuildNote(note);
   }
 
@@ -254,6 +266,7 @@ class NotesModel extends ChangeNotifier {
       isReady = true;
       notifyListeners();
       isIniting = false;
+      await runJobs();
     }
   }
 }

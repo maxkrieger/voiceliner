@@ -7,6 +7,8 @@ class Note extends LinkedListEntry<Note> {
   final DateTime dateCreated;
   bool isComplete;
   bool isCollapsed;
+  bool transcribed = false;
+  bool backedUp = false;
   Color? color;
   Duration? duration;
   String? transcript;
@@ -34,7 +36,9 @@ class Note extends LinkedListEntry<Note> {
         transcript = map["transcript"],
         parentNoteId = map["parent_note_id"],
         isComplete = map["is_complete"] == 1,
-        isCollapsed = map["is_collapsed"] == 1 {
+        isCollapsed = map["is_collapsed"] == 1,
+        backedUp = map["backed_up"] == 1,
+        transcribed = map["transcribed"] == 1 {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
@@ -54,6 +58,8 @@ class Note extends LinkedListEntry<Note> {
       "duration": duration != null ? duration!.inMilliseconds : null,
       "is_complete": isComplete ? 1 : 0,
       "is_collapsed": isCollapsed ? 1 : 0,
+      "transcribed": transcribed ? 1 : 0,
+      "backed_up": backedUp ? 1 : 0,
     };
   }
 }
