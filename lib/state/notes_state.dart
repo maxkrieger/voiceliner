@@ -109,6 +109,8 @@ class NotesModel extends ChangeNotifier {
     }
     notifyListeners();
     await _dbRepository.addNote(note);
+    // NOTE: always realign when inserting
+    await _dbRepository.realignNotes(notes);
     currentlyPlayingOrRecording = null;
     _playerModel.playerState = PlayerState.ready;
     runJobs();
