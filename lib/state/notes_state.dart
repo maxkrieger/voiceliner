@@ -39,6 +39,7 @@ class NotesModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
+    isReady = false;
     scrollController.dispose();
   }
 
@@ -53,7 +54,7 @@ class NotesModel extends ChangeNotifier {
       if (shouldTranscribe && !entry.transcribed) {
         final res = await _playerModel.speechRecognizer
             .recognize(entry, _playerModel.getPathFromFilename(entry.filePath));
-        if (res.item1) {
+        if (res.item1 && isReady) {
           entry.transcribed = true;
           entry.transcript = res.item2;
           rebuildNote(entry);
@@ -96,8 +97,8 @@ class NotesModel extends ChangeNotifier {
     note.duration = await _playerModel.stopRecording(note: note);
 
     if (currentlyExpanded != null) {
-      note.parentNoteId = currentlyExpanded!.id;
-      currentlyExpanded!.insertAfter(note);
+      note.parentNoteId = currentlyExpanded?.id;
+      currentlyExpanded?.insertAfter(note);
     } else {
       notes.add(note);
       if (scrollController.hasClients) {

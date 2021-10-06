@@ -94,16 +94,26 @@ class _NoteItemState extends State<NoteItem> {
   }
 
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
-    return const [
-      PopupMenuItem(
+    final note = context.read<NotesModel>().notes.elementAt(widget.num);
+    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
+    return [
+      const PopupMenuItem(
           value: "share",
           child: ListTile(leading: Icon(Icons.share), title: Text("share"))),
-      PopupMenuItem(
+      const PopupMenuItem(
           value: "edit",
           child: ListTile(leading: Icon(Icons.edit), title: Text("edit text"))),
-      PopupMenuItem(
+      const PopupMenuItem(
           value: "delete",
-          child: ListTile(leading: Icon(Icons.delete), title: Text("delete")))
+          child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
+      if (!note.transcribed && shouldTranscribe)
+        const PopupMenuItem(
+            child: ListTile(
+                enabled: false,
+                title: Text(
+                  "waiting to transcribe...",
+                  style: TextStyle(fontSize: 15),
+                )))
     ];
   }
 
