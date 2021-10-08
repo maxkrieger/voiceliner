@@ -27,7 +27,7 @@ class _OutlinesViewState extends State<OutlinesView> {
     }
 
     final now = DateTime.now();
-    _textController.text = "${now.month}/${now.day}/${now.year}";
+    _textController.text = "${now.month}/${now.day}/${now.year - 2000}";
     _textController.selection = TextSelection(
         baseOffset: 0, extentOffset: _textController.value.text.length);
     await showDialog(

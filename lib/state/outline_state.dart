@@ -23,7 +23,7 @@ class OutlinesModel extends ChangeNotifier {
         id: uuid.v4(),
         dateCreated: DateTime.now().toUtc(),
         dateUpdated: DateTime.now().toUtc());
-    outlines.add(outline);
+    outlines.insert(0, outline);
     notifyListeners();
     await _dbRepository.addOutline(outline);
     return outline;

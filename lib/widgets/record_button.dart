@@ -39,7 +39,6 @@ class _RecordButtonState extends State<RecordButton> {
     final playerState =
         context.select<PlayerModel, PlayerState>((p) => p.playerState);
     final isRecording = playerState == PlayerState.recording;
-    final isProcessing = playerState == PlayerState.processing;
     return GestureDetector(
         onTapDown: _startRecord,
         onTapUp: _stopRecord,
@@ -58,10 +57,7 @@ class _RecordButtonState extends State<RecordButton> {
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
-          opacity:
-              playerState == PlayerState.ready || isProcessing || isRecording
-                  ? 1.0
-                  : 0.0,
+          opacity: playerState == PlayerState.ready || isRecording ? 1.0 : 0.0,
           child: AnimatedContainer(
               width: 200,
               height: 75,
@@ -72,14 +68,14 @@ class _RecordButtonState extends State<RecordButton> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                     if (!isRecording) ...[
-                      isProcessing
-                          ? const SizedBox(
-                              width: 20.0,
-                              height: 20.0,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ))
-                          : const Icon(Icons.mic, color: Colors.white),
+                      // isProcessing
+                      //     ? const SizedBox(
+                      //         width: 20.0,
+                      //         height: 20.0,
+                      //         child: CircularProgressIndicator(
+                      //           color: Colors.white,
+                      //         ))
+                      const Icon(Icons.mic, color: Colors.white),
                       const SizedBox(
                         width: 10.0,
                       )
@@ -87,9 +83,9 @@ class _RecordButtonState extends State<RecordButton> {
                     Text(
                       isRecording
                           ? "recording"
-                          : isProcessing
-                              ? "processing..."
-                              : "hold to record",
+                          // : isProcessing
+                          //     ? "processing..."
+                          : "hold to record",
                       style:
                           const TextStyle(color: Colors.white, fontSize: 15.0),
                     )

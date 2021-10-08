@@ -17,7 +17,7 @@ enum PlayerState {
   ready,
   playing,
   recording,
-  processing
+  // processing
 }
 
 class PlayerModel extends ChangeNotifier {

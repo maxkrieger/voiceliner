@@ -85,10 +85,11 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> stopRecording() async {
-    _playerModel.playerState = PlayerState.processing;
     // prevent cutoff
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
     final note = currentlyPlayingOrRecording;
+    _playerModel.playerState = PlayerState.ready;
+    notifyListeners();
     if (note == null) {
       _playerModel.stopRecording();
       currentlyPlayingOrRecording = null;
@@ -112,7 +113,6 @@ class NotesModel extends ChangeNotifier {
     // NOTE: always realign when inserting
     await _dbRepository.realignNotes(notes);
     currentlyPlayingOrRecording = null;
-    _playerModel.playerState = PlayerState.ready;
     runJobs();
   }
 

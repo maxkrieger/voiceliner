@@ -240,9 +240,12 @@ class _NoteItemState extends State<NoteItem> {
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Checkbox(
                       value: note.isComplete,
-                      onChanged: (v) => context
-                          .read<NotesModel>()
-                          .setNoteComplete(note, v ?? false)),
+                      onChanged: (v) {
+                        context
+                            .read<NotesModel>()
+                            .setNoteComplete(note, v ?? false);
+                        HapticFeedback.mediumImpact();
+                      }),
                   const Spacer(),
                   Timeago(
                       builder: (_, t) => Text(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
-import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
@@ -151,9 +150,11 @@ class _NotesViewState extends State<_NotesView> {
 
   Widget buildChild(BuildContext context) {
     final outlineId = widget.outlineId;
-    final currentOutline = context.select<OutlinesModel, Outline>((value) =>
-        value.outlines.firstWhere((element) => element.id == outlineId,
-            orElse: () => defaultOutline));
+    final currentOutlineName = context.select<OutlinesModel, String>((value) =>
+        value.outlines
+            .firstWhere((element) => element.id == outlineId,
+                orElse: () => defaultOutline)
+            .name);
     final noteCount =
         context.select<NotesModel, int>((value) => value.notes.length);
     final scrollController = context.select<NotesModel, ScrollController>(
@@ -167,7 +168,7 @@ class _NotesViewState extends State<_NotesView> {
           style: TextButton.styleFrom(
               primary: Colors.white, textStyle: const TextStyle(fontSize: 20)),
           child: Text(
-            currentOutline.name,
+            currentOutlineName,
           ),
           onPressed: () => _handleMenu("rename", outlineId),
         ),
@@ -184,7 +185,7 @@ class _NotesViewState extends State<_NotesView> {
         ],
       ),
       body: Hero(
-          tag: "outline-${currentOutline.id}",
+          tag: "outline-$outlineId",
           child: (playerState == PlayerState.notReady
               ? const Center(child: Text("setting up..."))
               : playerState == PlayerState.error
