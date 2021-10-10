@@ -54,7 +54,7 @@ class OutlinesModel extends ChangeNotifier {
       outlines.firstWhere((element) => element.id == outlineId);
 
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
-    if (db.ready) {
+    if (db.ready && !isReady) {
       Sentry.addBreadcrumb(
           Breadcrumb(message: "Load outlines", timestamp: DateTime.now()));
       _dbRepository = db;

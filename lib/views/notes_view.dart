@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/notes_state.dart';
@@ -62,15 +63,16 @@ class _NotesViewState extends State<_NotesView> {
               title: Text("delete outline"))),
       const PopupMenuDivider(),
       PopupMenuItem(
+          value: "time",
           child: ListTile(
-        enabled: false,
-        title: Timeago(
-            builder: (_, t) => Text(
-                  "created $t",
-                  style: const TextStyle(fontSize: 15),
-                ),
-            date: outline.dateCreated.toLocal()),
-      ))
+            enabled: false,
+            title: Timeago(
+                builder: (_, t) => Text(
+                      "created $t",
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                date: outline.dateCreated.toLocal()),
+          ))
     ];
   }
 
@@ -133,6 +135,9 @@ class _NotesViewState extends State<_NotesView> {
                         child: const Text("rename"),
                         onPressed: () => _onSubmitted(dialogCtx))
                   ]));
+    } else {
+      print("unhandled");
+      Sentry.captureMessage("Unhandled item", level: SentryLevel.error);
     }
   }
 

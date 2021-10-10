@@ -66,6 +66,8 @@ class NotesModel extends ChangeNotifier {
           }
         }
         if (entry.next == null) {
+          Sentry.addBreadcrumb(
+              Breadcrumb(message: "Jobs done", timestamp: DateTime.now()));
           jobsRunning = false;
         }
       });
