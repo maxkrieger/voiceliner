@@ -20,6 +20,7 @@ class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
   bool isReady = false;
   bool isIniting = false;
+  bool jobsRunning = false;
   final LinkedList<Note> notes = LinkedList<Note>();
   final scrollController = ScrollController();
   Note? currentlyExpanded;
@@ -50,21 +51,37 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> runJobs() async {
-    notes.forEach((entry) async {
-      if (shouldTranscribe && !entry.transcribed) {
-        final res = await _playerModel.speechRecognizer
-            .recognize(entry, _playerModel.getPathFromFilename(entry.filePath));
-        if (res.item1 && isReady) {
-          entry.transcribed = true;
-          entry.transcript = res.item2;
-          rebuildNote(entry);
+    if (!jobsRunning) {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
+      jobsRunning = true;
+      notes.forEach((entry) async {
+        if (shouldTranscribe && !entry.transcribed) {
+          final res = await _playerModel.speechRecognizer.recognize(
+              entry, _playerModel.getPathFromFilename(entry.filePath));
+          if (res.item1 && isReady) {
+            entry.transcribed = true;
+            entry.transcript = res.item2;
+            rebuildNote(entry);
+          }
         }
-      }
-    });
+        if (entry.next == null) {
+          jobsRunning = false;
+        }
+      });
+    } else {
+      Sentry.captureMessage("Trying to run jobs while running already",
+          level: SentryLevel.error);
+    }
   }
 
   Future<void> startRecording() async {
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Start recording", timestamp: DateTime.now()));
     if (currentlyPlayingOrRecording != null) {
+      Sentry.captureMessage(
+          "Attempted to start recording when already in progress",
+          level: SentryLevel.error);
       return;
     }
     final noteId = uuid.v4();
@@ -86,20 +103,28 @@ class NotesModel extends ChangeNotifier {
 
   Future<void> stopRecording() async {
     // prevent cutoff
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
     await Future.delayed(const Duration(milliseconds: 300));
     final note = currentlyPlayingOrRecording;
+    currentlyPlayingOrRecording = null;
     _playerModel.playerState = PlayerState.ready;
     notifyListeners();
     if (note == null) {
+      Sentry.captureMessage("Attempted to stop recording on an empty note",
+          level: SentryLevel.error);
       _playerModel.stopRecording();
-      currentlyPlayingOrRecording = null;
       return;
     }
     note.duration = await _playerModel.stopRecording(note: note);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 
     if (currentlyExpanded != null) {
-      note.parentNoteId = currentlyExpanded?.id;
-      currentlyExpanded?.insertAfter(note);
+      note.parentNoteId = currentlyExpanded!.id;
+      currentlyExpanded!.insertAfter(note);
+      Sentry.addBreadcrumb(Breadcrumb(
+          message: "Insert after expanded", timestamp: DateTime.now()));
     } else {
       notes.add(note);
       if (scrollController.hasClients) {
@@ -107,12 +132,17 @@ class NotesModel extends ChangeNotifier {
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn);
       }
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Insert bottom", timestamp: DateTime.now()));
     }
     notifyListeners();
     await _dbRepository.addNote(note);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Added note to db", timestamp: DateTime.now()));
     // NOTE: always realign when inserting
     await _dbRepository.realignNotes(notes);
-    currentlyPlayingOrRecording = null;
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Realigned notes", timestamp: DateTime.now()));
     runJobs();
   }
 
@@ -182,6 +212,8 @@ class NotesModel extends ChangeNotifier {
     });
     notifyListeners();
     await _dbRepository.deleteNote(note, notes);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Deleted note", timestamp: DateTime.now()));
   }
 
   // Snapshot hack
@@ -191,6 +223,8 @@ class NotesModel extends ChangeNotifier {
     note.unlink();
     notifyListeners();
     await _dbRepository.updateNote(newNote);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Rebuilt note", timestamp: DateTime.now()));
   }
 
   Future<void> setNoteTranscript(Note note, String transcript) async {
@@ -226,12 +260,16 @@ class NotesModel extends ChangeNotifier {
       }
     }
     await _dbRepository.realignNotes(notes);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Reordered note", timestamp: DateTime.now()));
     assert(notes.length == initialSize);
     notifyListeners();
   }
 
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
     if (!isReady & !isIniting && db.ready) {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Running load", timestamp: DateTime.now()));
       isIniting = true;
       _playerModel = playerModel;
       _dbRepository = db;
@@ -267,6 +305,7 @@ class NotesModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
       isReady = true;
+      jobsRunning = false;
       notifyListeners();
       isIniting = false;
       await runJobs();

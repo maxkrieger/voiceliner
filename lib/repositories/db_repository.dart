@@ -228,6 +228,8 @@ CREATE TABLE outline (
         onOpen: _onOpen,
         onUpgrade: _onUpgrade);
     _database = db;
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Load db", timestamp: DateTime.now()));
     print(db.path);
   }
 }

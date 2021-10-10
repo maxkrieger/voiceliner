@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
@@ -54,6 +55,8 @@ class OutlinesModel extends ChangeNotifier {
 
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
     if (db.ready) {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Load outlines", timestamp: DateTime.now()));
       _dbRepository = db;
       _playerModel = playerModel;
       final outlineResults = await _dbRepository.getOutlines();

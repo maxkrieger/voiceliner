@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
@@ -89,6 +90,8 @@ class PlayerModel extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Load player", timestamp: DateTime.now()));
     docsDirectory = await getApplicationDocumentsDirectory();
     recordingsDirectory = await Directory("${docsDirectory.path}/recordings")
         .create(recursive: true);
