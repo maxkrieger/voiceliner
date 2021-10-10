@@ -45,6 +45,8 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> setCurrentlyExpanded(Note? note) async {
+    Sentry.addBreadcrumb(Breadcrumb(
+        message: "Setting currently expanded", timestamp: DateTime.now()));
     await Future.delayed(const Duration(milliseconds: 200));
     currentlyExpanded = note;
     notifyListeners();
@@ -123,11 +125,15 @@ class NotesModel extends ChangeNotifier {
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 
     if (currentlyExpanded != null) {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Try after expanded", timestamp: DateTime.now()));
       note.parentNoteId = currentlyExpanded!.id;
       currentlyExpanded!.insertAfter(note);
       Sentry.addBreadcrumb(Breadcrumb(
           message: "Insert after expanded", timestamp: DateTime.now()));
     } else {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Try in bottom", timestamp: DateTime.now()));
       notes.add(note);
       if (scrollController.hasClients) {
         scrollController.animateTo(scrollController.position.maxScrollExtent,
