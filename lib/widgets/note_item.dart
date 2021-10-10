@@ -138,6 +138,7 @@ class _NoteItemState extends State<NoteItem> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
     final note = context.select<NotesModel?, Note?>((m) => m == null
         ? null
         : m.notes.length > widget.num
@@ -271,15 +272,22 @@ class _NoteItemState extends State<NoteItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                        child: Text(
-                      note.transcript == null
-                          ? "Recording at ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}"
-                          : note.transcript!,
-                      style: TextStyle(
-                          decoration: note.isComplete
-                              ? TextDecoration.lineThrough
-                              : null),
-                    )),
+                        child: shouldTranscribe && !note.transcribed
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ))
+                            : Text(
+                                note.transcript == null
+                                    ? "Recording at ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}"
+                                    : note.transcript!,
+                                style: TextStyle(
+                                    decoration: note.isComplete
+                                        ? TextDecoration.lineThrough
+                                        : null),
+                              )),
                     Text(
                       note.duration != null
                           ? "${note.duration!.inSeconds}s"

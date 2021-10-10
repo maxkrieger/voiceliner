@@ -125,15 +125,11 @@ class NotesModel extends ChangeNotifier {
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 
     if (currentlyExpanded != null) {
-      Sentry.addBreadcrumb(
-          Breadcrumb(message: "Try after expanded", timestamp: DateTime.now()));
       note.parentNoteId = currentlyExpanded!.id;
       currentlyExpanded!.insertAfter(note);
       Sentry.addBreadcrumb(Breadcrumb(
           message: "Insert after expanded", timestamp: DateTime.now()));
     } else {
-      Sentry.addBreadcrumb(
-          Breadcrumb(message: "Try in bottom", timestamp: DateTime.now()));
       notes.add(note);
       if (scrollController.hasClients) {
         scrollController.animateTo(scrollController.position.maxScrollExtent,
@@ -205,8 +201,16 @@ class NotesModel extends ChangeNotifier {
     notifyListeners();
     await _dbRepository.updateNote(noteToOutdent);
   }
+  // TODO: for moveNote, set currentlyExpanded
 
   Future<void> deleteNote(Note note) async {
+    if (currentlyExpanded != null && note.id == currentlyExpanded!.id) {
+      currentlyExpanded = null;
+    }
+    if (currentlyPlayingOrRecording != null &&
+        currentlyPlayingOrRecording!.id == note.id) {
+      currentlyPlayingOrRecording = null;
+    }
     final path = _playerModel.getPathFromFilename(note.filePath);
     bool exists = await File(path).exists();
     if (exists) {
@@ -229,6 +233,9 @@ class NotesModel extends ChangeNotifier {
     final newNote = Note.fromMap(note.map);
     note.insertAfter(newNote);
     note.unlink();
+    if (currentlyExpanded != null && currentlyExpanded!.id == note.id) {
+      currentlyExpanded = newNote;
+    }
     notifyListeners();
     await _dbRepository.updateNote(newNote);
     Sentry.addBreadcrumb(
