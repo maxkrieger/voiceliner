@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
@@ -121,9 +120,9 @@ class _NoteItemState extends State<NoteItem> {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
     String path =
         context.read<PlayerModel>().getPathFromFilename(note.filePath);
-    String desc = note.transcript ??
-        "note from ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}";
-    Share.shareFiles([path], text: desc, subject: desc);
+    String desc = note.transcript ?? note.infoString;
+    Share.shareFiles([path],
+        mimeTypes: ["audio/aac"], text: desc, subject: desc);
   }
 
   void _handleMenu(String item) {
