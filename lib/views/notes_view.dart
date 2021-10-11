@@ -57,15 +57,15 @@ class _NotesViewState extends State<_NotesView> {
               leading: Icon(Icons.drive_file_rename_outline),
               title: Text("rename outline"))),
       const PopupMenuItem(
-          value: "delete",
-          child: ListTile(
-              leading: Icon(Icons.delete_forever),
-              title: Text("delete outline"))),
-      const PopupMenuItem(
           value: "export_md",
           child: ListTile(
               leading: Icon(Icons.receipt_long),
               title: Text("export markdown"))),
+      const PopupMenuItem(
+          value: "delete",
+          child: ListTile(
+              leading: Icon(Icons.delete_forever),
+              title: Text("delete outline"))),
       const PopupMenuDivider(),
       PopupMenuItem(
           value: "time",

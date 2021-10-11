@@ -195,7 +195,7 @@ class NotesModel extends ChangeNotifier {
         "${tempDir.path}/${Uri.encodeFull(outline.name.replaceAll("/", "-"))}.md");
     var contents = "# ${outline.name} \n";
     for (var n in notes) {
-      var line = "- ";
+      var line = n.isComplete ? "- [x] " : "- [ ] ";
       line += n.transcript ?? n.infoString;
       line += "\n";
       line = line.padLeft(line.length + 4 * getDepth(n), " ");
