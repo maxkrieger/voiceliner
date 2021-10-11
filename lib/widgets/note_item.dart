@@ -138,7 +138,8 @@ class _NoteItemState extends State<NoteItem> {
 
   @override
   Widget build(BuildContext context) {
-    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
+    final shouldTranscribe =
+        context.read<NotesModel?>()?.shouldTranscribe ?? false;
     final note = context.select<NotesModel?, Note?>((m) => m == null
         ? null
         : m.notes.length > widget.num
@@ -174,18 +175,7 @@ class _NoteItemState extends State<NoteItem> {
       if (notesModel == null || widget.num >= notesModel.notes.length) {
         return 0;
       }
-      final notes = notesModel.notes;
-      int getDepth(String? id) {
-        if (id != null) {
-          final predecessor = notes.firstWhere((element) => element.id == id,
-              orElse: () => defaultNote);
-          return 1 + getDepth(predecessor.parentNoteId);
-        }
-        return 0;
-      }
-
-      final d = getDepth(notes.elementAt(widget.num).parentNoteId);
-      return d;
+      return notesModel.getDepth(note);
     });
     return Dismissible(
         dismissThresholds: const {
@@ -281,7 +271,7 @@ class _NoteItemState extends State<NoteItem> {
                                 ))
                             : Text(
                                 note.transcript == null
-                                    ? "Recording at ${DateFormat.yMd().add_jm().format(note.dateCreated.toLocal())}"
+                                    ? note.infoString
                                     : note.transcript!,
                                 style: TextStyle(
                                     decoration: note.isComplete

@@ -32,7 +32,6 @@ class SpeechRecognizer {
       final outFile = File(outPath);
       final outFileBytes = await outFile.readAsBytes();
       final res = await _speechToText.recognize(_config, outFileBytes);
-      await outFile.delete();
       if (res.results.isEmpty || res.results.first.alternatives.isEmpty) {
         return const Tuple2(true, null);
       }

@@ -1,6 +1,8 @@
 import 'dart:collection';
 import 'dart:ui';
 
+import 'package:intl/intl.dart';
+
 class Note extends LinkedListEntry<Note> {
   final String id;
   final String filePath;
@@ -43,6 +45,9 @@ class Note extends LinkedListEntry<Note> {
       duration = Duration(milliseconds: map["duration"]);
     }
   }
+
+  String get infoString =>
+      "Recording at ${DateFormat.yMd().add_jm().format(dateCreated.toLocal())}";
 
   String? get predecessorNoteId => previous?.id;
 

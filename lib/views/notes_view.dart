@@ -61,6 +61,11 @@ class _NotesViewState extends State<_NotesView> {
           child: ListTile(
               leading: Icon(Icons.delete_forever),
               title: Text("delete outline"))),
+      const PopupMenuItem(
+          value: "export_md",
+          child: ListTile(
+              leading: Icon(Icons.receipt_long),
+              title: Text("export markdown"))),
       const PopupMenuDivider(),
       PopupMenuItem(
           value: "time",
@@ -135,6 +140,8 @@ class _NotesViewState extends State<_NotesView> {
                         child: const Text("rename"),
                         onPressed: () => _onSubmitted(dialogCtx))
                   ]));
+    } else if (item == "export_md") {
+      context.read<NotesModel>().exportToMarkdown(outline);
     } else {
       print("unhandled");
       Sentry.captureMessage("Unhandled item", level: SentryLevel.error);

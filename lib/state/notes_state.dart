@@ -2,7 +2,9 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
@@ -20,7 +22,6 @@ class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
   bool isReady = false;
   bool isIniting = false;
-  bool jobsRunning = false;
   final LinkedList<Note> notes = LinkedList<Note>();
   final scrollController = ScrollController();
   Note? currentlyExpanded;
@@ -53,30 +54,19 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> runJobs() async {
-    if (!jobsRunning) {
-      Sentry.addBreadcrumb(
-          Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
-      jobsRunning = true;
-      notes.forEach((entry) async {
-        if (shouldTranscribe && !entry.transcribed) {
-          final res = await _playerModel.speechRecognizer.recognize(
-              entry, _playerModel.getPathFromFilename(entry.filePath));
-          if (res.item1 && isReady) {
-            entry.transcribed = true;
-            entry.transcript = res.item2;
-            rebuildNote(entry);
-          }
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
+    notes.forEach((entry) async {
+      if (shouldTranscribe && !entry.transcribed) {
+        final res = await _playerModel.speechRecognizer
+            .recognize(entry, _playerModel.getPathFromFilename(entry.filePath));
+        if (res.item1 && isReady) {
+          entry.transcribed = true;
+          entry.transcript = res.item2;
+          rebuildNote(entry);
         }
-        if (entry.next == null) {
-          Sentry.addBreadcrumb(
-              Breadcrumb(message: "Jobs done", timestamp: DateTime.now()));
-          jobsRunning = false;
-        }
-      });
-    } else {
-      Sentry.captureMessage("Trying to run jobs while running already",
-          level: SentryLevel.error);
-    }
+      }
+    });
   }
 
   Future<void> startRecording() async {
@@ -183,6 +173,39 @@ class NotesModel extends ChangeNotifier {
     noteToIndent.parentNoteId = predecessorId;
     notifyListeners();
     await _dbRepository.updateNote(noteToIndent);
+  }
+
+  int _getDepth(String? id) {
+    if (id != null) {
+      final predecessor = notes.firstWhere((element) => element.id == id,
+          orElse: () => defaultNote);
+      return 1 + _getDepth(predecessor.parentNoteId);
+    }
+    return 0;
+  }
+
+  int getDepth(Note note) {
+    final d = _getDepth(note.parentNoteId);
+    return d;
+  }
+
+  Future<void> exportToMarkdown(Outline outline) async {
+    final tempDir = await getTemporaryDirectory();
+    final file = File(
+        "${tempDir.path}/${Uri.encodeFull(outline.name.replaceAll("/", "-"))}.md");
+    var contents = "# ${outline.name} \n";
+    for (var n in notes) {
+      var line = "- ";
+      line += n.transcript ?? n.infoString;
+      line += "\n";
+      line = line.padLeft(line.length + 4 * getDepth(n), " ");
+      contents += line;
+    }
+    await file.writeAsString(contents);
+    await Share.shareFiles([file.path],
+        mimeTypes: ["text/markdown"], text: outline.name);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Exported note", timestamp: DateTime.now()));
   }
 
   Future<void> outdentNote(Note noteToOutdent) async {
@@ -320,7 +343,6 @@ class NotesModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
       isReady = true;
-      jobsRunning = false;
       notifyListeners();
       isIniting = false;
       await runJobs();
