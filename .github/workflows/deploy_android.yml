@@ -57,4 +57,4 @@ jobs:
           cd ./android && bundle exec fastlane beta
         env:
           GOOGLE_PLAY_JSON: google_play.json
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          PLAY_APP_IDENTIFIER: ${{ secrets.PLAY_APP_IDENTIFIER }}

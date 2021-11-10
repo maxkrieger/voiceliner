@@ -26,7 +26,8 @@ flutter.versionCode=24
 |Env Var|Value|
 |----|----|
 |APPLE_ID|apple account email"
-|APP_IDENTIFIER|com.blabla.blabla|
+|APP_IDENTIFIER|ios com.blabla.blabla|
+|PLAY_APP_IDENTIFIER|android com.blablabla.bla|
 |ITC_TEAM_ID|documented in fastlane|
 |TEAM_ID|documented in fastlane|
 |MATCH_GIT|github SSH URI for fastlane match|
