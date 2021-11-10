@@ -195,17 +195,22 @@ class NotesModel extends ChangeNotifier {
     await _dbRepository.updateNote(noteToIndent);
   }
 
-  int _getDepth(String? id) {
+  int _getDepth(String? id, int depth) {
+    if (depth > 8) {
+      Sentry.captureMessage("Stack overflow for depth",
+          level: SentryLevel.error);
+      return 8;
+    }
     if (id != null) {
       final predecessor = notes.firstWhere((element) => element.id == id,
           orElse: () => defaultNote);
-      return 1 + _getDepth(predecessor.parentNoteId);
+      return _getDepth(predecessor.parentNoteId, depth + 1);
     }
-    return 0;
+    return depth;
   }
 
   int getDepth(Note note) {
-    final d = _getDepth(note.parentNoteId);
+    final d = _getDepth(note.parentNoteId, 0);
     return d;
   }
 
@@ -213,12 +218,23 @@ class NotesModel extends ChangeNotifier {
     if (noteToOutdent.previous == null) {
       return;
     }
-    // TODO: find siblings below self and give them same parent
     String? getParent(String? n) {
       if (n == null) {
         return null;
       }
       return notes.firstWhere((element) => element.id == n).parentNoteId;
+    }
+
+    // Find siblings below self and give them my parent
+    bool ready = false;
+    for (var i = 0; i < notes.length; i++) {
+      if (ready &&
+          notes.elementAt(i).parentNoteId == noteToOutdent.parentNoteId) {
+        notes.elementAt(i).parentNoteId = getParent(noteToOutdent.parentNoteId);
+      }
+      if (notes.elementAt(i).id == noteToOutdent.id) {
+        ready = true;
+      }
     }
 
     noteToOutdent.parentNoteId = getParent(noteToOutdent.parentNoteId);
@@ -277,6 +293,21 @@ class NotesModel extends ChangeNotifier {
     await rebuildNote(note);
   }
 
+  bool isDescendantOf(Note candidate, Note of) {
+    if (candidate.parentNoteId == null) {
+      return false;
+    }
+    if (candidate.id == of.id) {
+      return true;
+    }
+    if (candidate.parentNoteId == of.id) {
+      return true;
+    }
+    return isDescendantOf(
+        notes.firstWhere((element) => element.id == candidate.parentNoteId),
+        of);
+  }
+
   Future<void> swapNotes(int a, int b) async {
     if (a == b || b - 1 == a) {
       return;
@@ -284,20 +315,25 @@ class NotesModel extends ChangeNotifier {
     Sentry.addBreadcrumb(Breadcrumb(message: "Swapping $a to $b"));
     int initialSize = notes.length;
     final noteA = notes.elementAt(a);
+    noteA.parentNoteId = null;
     if (b == 0) {
       noteA.unlink();
-      noteA.parentNoteId = null;
       notes.addFirst(noteA);
     } else {
-      //TODO: handle gooder
       final dest = notes.elementAt(b - 1);
       noteA.unlink();
+      notes.forEach((entry) {
+        if (entry.parentNoteId == dest.id) {
+          entry.parentNoteId = null;
+        }
+      });
       dest.insertAfter(noteA);
-
-      if (noteA.parentNoteId != null) {
-        noteA.parentNoteId = noteA.previous!.id;
-      }
     }
+    notes.forEach((entry) {
+      if (entry.parentNoteId == noteA.id) {
+        entry.parentNoteId = null;
+      }
+    });
     await _dbRepository.realignNotes(notes);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Reordered note", timestamp: DateTime.now()));
