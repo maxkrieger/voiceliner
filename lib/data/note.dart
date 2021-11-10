@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:ui';
 
 import 'package:intl/intl.dart';
 
@@ -11,7 +10,7 @@ class Note extends LinkedListEntry<Note> {
   bool isCollapsed;
   bool transcribed = false;
   bool backedUp = false;
-  Color? color;
+  int? color;
   Duration? duration;
   String? transcript;
   String? parentNoteId;
@@ -36,6 +35,7 @@ class Note extends LinkedListEntry<Note> {
             isUtc: true),
         outlineId = map["outline_id"],
         transcript = map["transcript"],
+        color = map["color"],
         parentNoteId = map["parent_note_id"],
         isComplete = map["is_complete"] == 1,
         isCollapsed = map["is_collapsed"] == 1,
@@ -43,9 +43,6 @@ class Note extends LinkedListEntry<Note> {
         transcribed = map["transcribed"] == 1 {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
-    }
-    if (map["color"] != null) {
-      color = Color(map["color"]);
     }
   }
 
@@ -68,7 +65,7 @@ class Note extends LinkedListEntry<Note> {
       "is_collapsed": isCollapsed ? 1 : 0,
       "transcribed": transcribed ? 1 : 0,
       "backed_up": backedUp ? 1 : 0,
-      if (color != null) "color": color?.value
+      "color": color
     };
   }
 }

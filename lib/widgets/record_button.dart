@@ -15,25 +15,18 @@ class RecordButton extends StatefulWidget {
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
 
-  Color computeExportedColor(double dy) {
-    Color a = const Color.fromRGBO(237, 226, 255, 1);
-    Color b = const Color.fromRGBO(255, 191, 217, 1.0);
-    double t = (-1 * dy / MediaQuery.of(context).size.height);
-    return Color.lerp(a, b, t)!;
-  }
-
   Color computeShadowColor(double dy) {
     Color a = const Color.fromRGBO(169, 129, 234, 0.6);
     Color b = const Color.fromRGBO(248, 82, 150, 0.6);
-    double t = (-1 * dy / MediaQuery.of(context).size.height);
+    double t = (dy.abs() / MediaQuery.of(context).size.height);
     return Color.lerp(a, b, t)!;
   }
 
   _stopRecord(_) async {
     HapticFeedback.mediumImpact();
-    await context
-        .read<NotesModel>()
-        .stopRecording(computeExportedColor(offset.dy));
+    int magnitude =
+        ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt();
+    await context.read<NotesModel>().stopRecording(magnitude);
   }
 
   _stopRecord0() {

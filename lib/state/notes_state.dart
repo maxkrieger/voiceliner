@@ -114,7 +114,7 @@ class NotesModel extends ChangeNotifier {
     currentlyPlayingOrRecording = note;
   }
 
-  Future<void> stopRecording(Color color) async {
+  Future<void> stopRecording(int color) async {
     // prevent cutoff
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
