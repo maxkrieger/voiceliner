@@ -14,9 +14,26 @@ class RecordButton extends StatefulWidget {
 
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
+
+  Color computeExportedColor(double dy) {
+    Color a = const Color.fromRGBO(237, 226, 255, 1);
+    Color b = const Color.fromRGBO(255, 191, 217, 1.0);
+    double t = (-1 * dy / MediaQuery.of(context).size.height);
+    return Color.lerp(a, b, t)!;
+  }
+
+  Color computeShadowColor(double dy) {
+    Color a = const Color.fromRGBO(169, 129, 234, 0.6);
+    Color b = const Color.fromRGBO(248, 82, 150, 0.6);
+    double t = (-1 * dy / MediaQuery.of(context).size.height);
+    return Color.lerp(a, b, t)!;
+  }
+
   _stopRecord(_) async {
     HapticFeedback.mediumImpact();
-    await context.read<NotesModel>().stopRecording();
+    await context
+        .read<NotesModel>()
+        .stopRecording(computeExportedColor(offset.dy));
   }
 
   _stopRecord0() {
@@ -68,24 +85,13 @@ class _RecordButtonState extends State<RecordButton> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                     if (!isRecording) ...[
-                      // isProcessing
-                      //     ? const SizedBox(
-                      //         width: 20.0,
-                      //         height: 20.0,
-                      //         child: CircularProgressIndicator(
-                      //           color: Colors.white,
-                      //         ))
                       const Icon(Icons.mic, color: Colors.white),
                       const SizedBox(
                         width: 10.0,
                       )
                     ],
                     Text(
-                      isRecording
-                          ? "recording"
-                          // : isProcessing
-                          //     ? "processing..."
-                          : "hold to record",
+                      isRecording ? "recording" : "hold to record",
                       style:
                           const TextStyle(color: Colors.white, fontSize: 15.0),
                     )
@@ -99,7 +105,7 @@ class _RecordButtonState extends State<RecordButton> {
                       offset: Offset(0, 3)),
                   if (isRecording)
                     BoxShadow(
-                        color: const Color.fromRGBO(169, 129, 234, 0.6),
+                        color: computeShadowColor(offset.dy),
                         blurRadius: 120.0,
                         spreadRadius: 120.0,
                         offset: offset + const Offset(-100, -95))

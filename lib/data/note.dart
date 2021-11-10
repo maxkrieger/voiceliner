@@ -44,6 +44,9 @@ class Note extends LinkedListEntry<Note> {
     if (map["duration"] != null) {
       duration = Duration(milliseconds: map["duration"]);
     }
+    if (map["color"] != null) {
+      color = Color(map["color"]);
+    }
   }
 
   String get infoString =>
@@ -65,6 +68,7 @@ class Note extends LinkedListEntry<Note> {
       "is_collapsed": isCollapsed ? 1 : 0,
       "transcribed": transcribed ? 1 : 0,
       "backed_up": backedUp ? 1 : 0,
+      if (color != null) "color": color?.value
     };
   }
 }

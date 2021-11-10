@@ -214,7 +214,7 @@ class _NoteItemState extends State<NoteItem> {
                 borderRadius: BorderRadius.circular(20.0)),
             color: note.isComplete
                 ? const Color.fromRGBO(229, 229, 229, 1.0)
-                : const Color.fromRGBO(237, 226, 255, 0.8),
+                : note.color ?? const Color.fromRGBO(237, 226, 255, 0.8),
             margin: EdgeInsets.only(
                 top: 10.0, left: 10.0 + 30.0 * min(depth, 5), right: 10.0),
             child: ExpansionTile(

@@ -45,6 +45,25 @@ class NotesModel extends ChangeNotifier {
     scrollController.dispose();
   }
 
+  Future<void> exportToMarkdown(Outline outline) async {
+    final tempDir = await getTemporaryDirectory();
+    final file = File(
+        "${tempDir.path}/${Uri.encodeFull(outline.name.replaceAll("/", "-"))}.md");
+    var contents = "# ${outline.name} \n";
+    for (var n in notes) {
+      var line = n.isComplete ? "- [x] " : "- [ ] ";
+      line += n.transcript ?? n.infoString;
+      line += "\n";
+      line = line.padLeft(line.length + 4 * getDepth(n), " ");
+      contents += line;
+    }
+    await file.writeAsString(contents);
+    await Share.shareFiles([file.path],
+        mimeTypes: ["text/markdown"], text: outline.name);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Exported note", timestamp: DateTime.now()));
+  }
+
   Future<void> setCurrentlyExpanded(Note? note) async {
     Sentry.addBreadcrumb(Breadcrumb(
         message: "Setting currently expanded", timestamp: DateTime.now()));
@@ -95,7 +114,7 @@ class NotesModel extends ChangeNotifier {
     currentlyPlayingOrRecording = note;
   }
 
-  Future<void> stopRecording() async {
+  Future<void> stopRecording(Color color) async {
     // prevent cutoff
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
@@ -110,6 +129,7 @@ class NotesModel extends ChangeNotifier {
       _playerModel.stopRecording();
       return;
     }
+    note.color = color;
     note.duration = await _playerModel.stopRecording(note: note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
@@ -187,25 +207,6 @@ class NotesModel extends ChangeNotifier {
   int getDepth(Note note) {
     final d = _getDepth(note.parentNoteId);
     return d;
-  }
-
-  Future<void> exportToMarkdown(Outline outline) async {
-    final tempDir = await getTemporaryDirectory();
-    final file = File(
-        "${tempDir.path}/${Uri.encodeFull(outline.name.replaceAll("/", "-"))}.md");
-    var contents = "# ${outline.name} \n";
-    for (var n in notes) {
-      var line = n.isComplete ? "- [x] " : "- [ ] ";
-      line += n.transcript ?? n.infoString;
-      line += "\n";
-      line = line.padLeft(line.length + 4 * getDepth(n), " ");
-      contents += line;
-    }
-    await file.writeAsString(contents);
-    await Share.shareFiles([file.path],
-        mimeTypes: ["text/markdown"], text: outline.name);
-    Sentry.addBreadcrumb(
-        Breadcrumb(message: "Exported note", timestamp: DateTime.now()));
   }
 
   Future<void> outdentNote(Note noteToOutdent) async {
