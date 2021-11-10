@@ -241,7 +241,27 @@ class NotesModel extends ChangeNotifier {
     notifyListeners();
     await _dbRepository.updateNote(noteToOutdent);
   }
-  // TODO: for moveNote, set currentlyExpanded
+
+  Future<void> moveNote(Note note, String outlineId) async {
+    if (currentlyExpanded != null && currentlyExpanded!.id == note.id) {
+      currentlyExpanded = null;
+    }
+    if (currentlyPlayingOrRecording != null &&
+        currentlyPlayingOrRecording!.id == note.id) {
+      currentlyPlayingOrRecording = null;
+    }
+    notes.forEach((entry) {
+      if (entry.parentNoteId == note.id) {
+        entry.parentNoteId = note.parentNoteId;
+      }
+    });
+    note.unlink();
+    note.parentNoteId = null;
+    note.outlineId = outlineId;
+    await _dbRepository.moveNote(note, outlineId);
+    notifyListeners();
+    await _dbRepository.realignNotes(notes);
+  }
 
   Future<void> deleteNote(Note note) async {
     if (currentlyExpanded != null && note.id == currentlyExpanded!.id) {
@@ -263,7 +283,8 @@ class NotesModel extends ChangeNotifier {
       }
     });
     notifyListeners();
-    await _dbRepository.deleteNote(note, notes);
+    await _dbRepository.realignNotes(notes);
+    await _dbRepository.deleteNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Deleted note", timestamp: DateTime.now()));
   }
@@ -350,7 +371,7 @@ class NotesModel extends ChangeNotifier {
       _dbRepository = db;
       final outlineDict = await _dbRepository.getOutlineFromId(_outlineId);
       final outline = Outline.fromMap(outlineDict);
-      final notesDicts = await _dbRepository.getNotesForOutline(outline);
+      final notesDicts = await _dbRepository.getNotesForOutlineId(outline.id);
       if (notesDicts.isNotEmpty) {
         var noteToFindSuccessor = Note.fromMap(notesDicts
             .firstWhere((element) => element["predecessor_note_id"] == null));

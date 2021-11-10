@@ -31,7 +31,7 @@ class OutlinesModel extends ChangeNotifier {
   }
 
   Future<void> deleteOutline(Outline outline) async {
-    final notes = await _dbRepository.getNotesForOutline(outline);
+    final notes = await _dbRepository.getNotesForOutlineId(outline.id);
     for (final n in notes) {
       final path = _playerModel.getPathFromFilename(n["file_path"]);
       final exists = await File(path).exists();

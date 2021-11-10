@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
+import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 class NoteItem extends StatefulWidget {
@@ -103,6 +104,10 @@ class _NoteItemState extends State<NoteItem> {
           value: "edit",
           child: ListTile(leading: Icon(Icons.edit), title: Text("edit text"))),
       const PopupMenuItem(
+          value: "move",
+          child: ListTile(
+              leading: Icon(Icons.playlist_play), title: Text("move to"))),
+      const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
       if (!note.transcribed && shouldTranscribe)
@@ -125,6 +130,32 @@ class _NoteItemState extends State<NoteItem> {
         mimeTypes: ["audio/aac"], text: desc, subject: desc);
   }
 
+  Widget _buildOutlineButton(BuildContext ctx, int num) {
+    final outline = context.read<OutlinesModel>().outlines[num];
+    return Card(
+        key: Key("select-outline-$num"),
+        child: ListTile(
+            onTap: () {
+              final note =
+                  context.read<NotesModel>().notes.elementAt(widget.num);
+              context.read<NotesModel>().moveNote(note, outline.id);
+              Navigator.pop(ctx);
+            },
+            title: Text(outline.name)));
+  }
+
+  Future<void> _moveNote() async {
+    final outlines = context.read<OutlinesModel>().outlines.length;
+    Navigator.push(context, MaterialPageRoute(builder: (ct) {
+      return Scaffold(
+          appBar: AppBar(title: const Text("Select Outline")),
+          body: ListView.builder(
+              shrinkWrap: true,
+              itemCount: outlines,
+              itemBuilder: _buildOutlineButton));
+    }));
+  }
+
   void _handleMenu(String item) {
     if (item == "delete") {
       _deleteNote();
@@ -132,6 +163,8 @@ class _NoteItemState extends State<NoteItem> {
       _changeNoteTranscript();
     } else if (item == "share") {
       _shareNote();
+    } else if (item == "move") {
+      _moveNote();
     }
   }
 

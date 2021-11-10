@@ -144,10 +144,26 @@ CREATE TABLE outline (
     return result;
   }
 
-  Future<List<Map<String, dynamic>>> getNotesForOutline(Outline outline) async {
+  Future<List<Map<String, dynamic>>> getNotesForOutlineId(
+      String outlineId) async {
     final result = await _database
-        .query("note", where: "outline_id = ?", whereArgs: [outline.id]);
+        .query("note", where: "outline_id = ?", whereArgs: [outlineId]);
     return result;
+  }
+
+  Future<void> moveNote(Note note, String outlineId) async {
+    final nMap = note.map;
+    final toNotes = await getNotesForOutlineId(outlineId);
+    nMap["predecessor_note_id"] = null;
+    final batch = _database.batch();
+    batch.update("note", nMap, where: "id = ?", whereArgs: [note.id]);
+    if (toNotes.isNotEmpty) {
+      final fst = toNotes
+          .firstWhere((element) => element["predecessor_note_id"] == null);
+      batch.rawUpdate("UPDATE note SET predecessor_note_id = ? WHERE id = ?",
+          [note.id, fst["id"]]);
+    }
+    await batch.commit();
   }
 
   Future<Map<String, dynamic>> getOutlineFromId(String outlineId) async {
@@ -198,16 +214,8 @@ CREATE TABLE outline (
     await batch.commit();
   }
 
-  Future<void> deleteNote(Note note, LinkedList<Note> notes) async {
+  Future<void> deleteNote(Note note) async {
     final batch = _database.batch();
-    void update(Note element) {
-      batch.rawUpdate(
-          "UPDATE note SET predecessor_note_id = ?, parent_note_id = ? WHERE id = ?",
-          [element.predecessorNoteId, element.parentNoteId, element.id]);
-    }
-
-    notes.forEach(update);
-    writeOutlineUpdated(batch, note.outlineId);
     batch.delete("note", where: "id = ?", whereArgs: [note.id]);
     await batch.commit();
   }
