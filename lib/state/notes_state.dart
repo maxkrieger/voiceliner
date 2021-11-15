@@ -343,11 +343,10 @@ class NotesModel extends ChangeNotifier {
     } else {
       final dest = notes.elementAt(b - 1);
       noteA.unlink();
-      notes.forEach((entry) {
-        if (entry.parentNoteId == dest.id) {
-          entry.parentNoteId = null;
-        }
-      });
+      final afterDest = dest.next;
+      if (afterDest != null && afterDest.parentNoteId != null) {
+        noteA.parentNoteId = afterDest.parentNoteId;
+      }
       dest.insertAfter(noteA);
     }
     notes.forEach((entry) {

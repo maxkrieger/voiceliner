@@ -82,11 +82,11 @@ class _SettingsViewState extends State<SettingsView> {
                     icon: Icon(Icons.info),
                     aboutBoxChildren: [Text("made by Max Krieger")],
                   ),
-                  const Divider(),
-                  ListTile(
-                      leading: const Icon(Icons.delete_forever),
-                      onTap: _resetDB,
-                      title: const Text("Reset database & files")),
+                  // const Divider(),
+                  // ListTile(
+                  //     leading: const Icon(Icons.delete_forever),
+                  //     onTap: _resetDB,
+                  //     title: const Text("Reset database & files")),
                 ],
               )
             : const CircularProgressIndicator());
