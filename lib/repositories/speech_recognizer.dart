@@ -30,6 +30,13 @@ class SpeechRecognizer {
       await flutterSoundHelper.convertFile(
           path, Codec.aacADTS, outPath, Codec.pcm16);
       final outFile = File(outPath);
+      final exists = await outFile.exists();
+      if (!exists) {
+        await sentry.Sentry.captureMessage(
+            "Could not convert for speech recognition",
+            level: sentry.SentryLevel.error);
+        return const Tuple2(false, null);
+      }
       final outFileBytes = await outFile.readAsBytes();
       final res = await _speechToText.recognize(_config, outFileBytes);
       if (res.results.isEmpty || res.results.first.alternatives.isEmpty) {

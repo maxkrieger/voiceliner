@@ -1,26 +1,27 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_sound (8.3.12):
+  - flutter_sound (8.4.2):
     - Flutter
+    - flutter_sound_core (= 8.4.2)
     - mobile-ffmpeg-audio (= 4.4.LTS)
-    - tau_core (= 8.3.12)
+  - flutter_sound_core (8.4.2)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
   - mobile-ffmpeg-audio (4.4.LTS)
   - package_info_plus (0.4.5):
     - Flutter
-  - path_provider (0.0.1):
+  - path_provider_ios (0.0.1):
     - Flutter
   - "permission_handler (5.1.0+2)":
     - Flutter
-  - Sentry (7.3.0):
-    - Sentry/Core (= 7.3.0)
-  - Sentry/Core (7.3.0)
+  - Sentry (7.5.2):
+    - Sentry/Core (= 7.5.2)
+  - Sentry/Core (7.5.2)
   - sentry_flutter (0.0.1):
     - Flutter
     - FlutterMacOS
-    - Sentry (~> 7.3.0)
+    - Sentry (~> 7.5.1)
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences (0.0.1):
@@ -28,7 +29,6 @@ PODS:
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
-  - tau_core (8.3.12)
   - url_launcher (0.0.1):
     - Flutter
 
@@ -36,7 +36,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
-  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -46,10 +46,10 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - flutter_sound_core
     - FMDB
     - mobile-ffmpeg-audio
     - Sentry
-    - tau_core
 
 EXTERNAL SOURCES:
   Flutter:
@@ -58,8 +58,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_sound/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
-  path_provider:
-    :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
   permission_handler:
     :path: ".symlinks/plugins/permission_handler/ios"
   sentry_flutter:
@@ -75,18 +75,18 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_sound: 49d06bd22a3eddb54af3cf22db63fcbf1c641d52
+  flutter_sound: db1364f901b96c17e00101c831994487186afdf4
+  flutter_sound_core: 55a1665e7ef8cdb95ab9dd06581c746dd9c96e48
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   mobile-ffmpeg-audio: 1e0a053f8a6de57114e50ff48b3a85ff1c60f902
   package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
-  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
   permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
-  Sentry: 9a4e621430e2dae4477d791f2f7e905720b6efbf
-  sentry_flutter: 08fadaed464f44e1233d3fbb0c72b10cebd79487
+  Sentry: 95788d2baa9cc904151c9ac41101c67d9f25e09e
+  sentry_flutter: 4cd99764f9fe01c9415790d1f3fb1c7fd3a5cbe9
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
   shared_preferences: 5033afbb22d372e15aff8ff766df9021b845f273
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
-  tau_core: 4b7be325f37983d3c74e1692d70e41e12b24d9be
   url_launcher: b6e016d912f04be9f5bf6e8e82dc599b7ba59649
 
 PODFILE CHECKSUM: 289b2c470abb1cc51612511117581a1ad35195ef

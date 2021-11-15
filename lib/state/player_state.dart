@@ -103,9 +103,13 @@ class PlayerModel extends ChangeNotifier {
     if (granted) {
       playerState = PlayerState.notReady;
       try {
-        // TODO: play from headphones IF AVAILABLE
-        await _player.openAudioSession();
-        await _recorder.openAudioSession();
+        // Initing recorder before player means bluetooth works properly
+        await _recorder.openAudioSession(
+            audioFlags: outputToSpeaker | allowBlueToothA2DP | allowAirPlay);
+        await _player.openAudioSession(
+            category: SessionCategory.playAndRecord,
+            mode: SessionMode.modeSpokenAudio,
+            focus: AudioFocus.requestFocusAndStopOthers);
         await speechRecognizer.init();
         playerState = PlayerState.ready;
       } catch (e, st) {
