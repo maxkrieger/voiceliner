@@ -53,19 +53,23 @@ class OutlinesModel extends ChangeNotifier {
   Outline getOutlineFromId(String outlineId) =>
       outlines.firstWhere((element) => element.id == outlineId);
 
+  Future<void> loadOutlines() async {
+    final outlineResults = await _dbRepository.getOutlines();
+    outlines.clear();
+    outlines.addAll(
+        outlineResults.map((Map<String, dynamic> res) => Outline.fromMap(res)));
+    outlines.sort((a, b) => b.dateUpdated.compareTo(a.dateUpdated));
+    isReady = true;
+    notifyListeners();
+  }
+
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
     if (db.ready && !isReady) {
       Sentry.addBreadcrumb(
           Breadcrumb(message: "Load outlines", timestamp: DateTime.now()));
       _dbRepository = db;
       _playerModel = playerModel;
-      final outlineResults = await _dbRepository.getOutlines();
-      outlines.clear();
-      outlines.addAll(outlineResults
-          .map((Map<String, dynamic> res) => Outline.fromMap(res)));
-      outlines.sort((a, b) => b.dateUpdated.compareTo(a.dateUpdated));
-      isReady = true;
-      notifyListeners();
+      await loadOutlines();
     }
   }
 }

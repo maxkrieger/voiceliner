@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
@@ -16,24 +18,32 @@ Future<void> main() async {
   if (sharedPrefs.getBool("should_transcribe") == null) {
     sharedPrefs.setBool("should_transcribe", true);
   }
-  await sentry.SentryFlutter.init((config) {
-    config.dsn = const String.fromEnvironment("SENTRY_DSN");
-  },
-      appRunner: () => runApp(MultiProvider(
-              providers: [
-                ChangeNotifierProvider<PlayerModel>(
-                    create: (_) => PlayerModel()..load()),
-                ChangeNotifierProvider<DBRepository>(
-                  create: (_) => DBRepository()..load(),
-                ),
-                ChangeNotifierProxyProvider2<DBRepository, PlayerModel,
-                        OutlinesModel>(
-                    create: (_) => OutlinesModel(),
-                    update: (_, d, p, o) => (o ?? OutlinesModel())..load(p, d))
-              ],
-              child: VoiceOutlinerApp(
-                sharedPreferences: sharedPrefs,
-              ))));
+  if (sharedPrefs.getBool(driveEnabledKey) ?? false) {
+    await googleSignIn.signInSilently();
+  }
+  void appRunner() => runApp(MultiProvider(
+          providers: [
+            ChangeNotifierProvider<PlayerModel>(
+                create: (_) => PlayerModel()..load()),
+            ChangeNotifierProvider<DBRepository>(
+              create: (_) => DBRepository()..load(),
+            ),
+            ChangeNotifierProxyProvider2<DBRepository, PlayerModel,
+                    OutlinesModel>(
+                create: (_) => OutlinesModel(),
+                update: (_, d, p, o) => (o ?? OutlinesModel())..load(p, d))
+          ],
+          child: VoiceOutlinerApp(
+            sharedPreferences: sharedPrefs,
+          )));
+  if (kReleaseMode) {
+    await sentry.SentryFlutter.init((config) {
+      config.dsn = const String.fromEnvironment("SENTRY_DSN");
+    }, appRunner: appRunner);
+  } else {
+    print("debug mode!");
+    appRunner();
+  }
 }
 
 class VoiceOutlinerApp extends StatefulWidget {

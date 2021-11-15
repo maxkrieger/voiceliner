@@ -21,12 +21,16 @@ enum PlayerState {
   // processing
 }
 
+Future<Directory> getRecordingsDir() async {
+  final docsDirectory = await getApplicationDocumentsDirectory();
+  return Directory("${docsDirectory.path}/recordings");
+}
+
 class PlayerModel extends ChangeNotifier {
   final _player = FlutterSoundPlayer(logLevel: Level.warning);
   final _recorder = FlutterSoundRecorder(logLevel: Level.warning);
   final speechRecognizer = SpeechRecognizer();
   late Directory recordingsDirectory;
-  late Directory docsDirectory;
   PlayerState _playerState = PlayerState.notLoaded;
 
   PlayerState get playerState => _playerState;
@@ -92,9 +96,8 @@ class PlayerModel extends ChangeNotifier {
   Future<void> load() async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Load player", timestamp: DateTime.now()));
-    docsDirectory = await getApplicationDocumentsDirectory();
-    recordingsDirectory = await Directory("${docsDirectory.path}/recordings")
-        .create(recursive: true);
+    recordingsDirectory = await getRecordingsDir();
+    recordingsDirectory.create(recursive: true);
     if (playerState == PlayerState.notLoaded) {
       playerState = PlayerState.noPermission;
       notifyListeners();

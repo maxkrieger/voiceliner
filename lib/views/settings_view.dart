@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
+import 'package:voice_outliner/views/drive_settings_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -72,6 +73,15 @@ class _SettingsViewState extends State<SettingsView> {
                           sharedPreferences.setBool("should_transcribe", v);
                         });
                       }),
+                  ListTile(
+                    leading: const Icon(Icons.backup),
+                    title: const Text("Backup"),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DriveSettingsView())),
+                  ),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip),
                     title: const Text("Privacy"),
