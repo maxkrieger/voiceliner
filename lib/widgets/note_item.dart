@@ -182,7 +182,7 @@ class _NoteItemState extends State<NoteItem> {
     } else if (item == "locate") {
       final note = context.read<NotesModel>().notes.elementAt(widget.num);
       MapsLauncher.launchCoordinates(
-          note.latitude!, note.longitude!, note.transcript);
+          note.latitude!, note.longitude!, note.transcript ?? note.infoString);
     }
   }
 
