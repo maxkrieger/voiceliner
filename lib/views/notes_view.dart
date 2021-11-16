@@ -7,6 +7,7 @@ import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
+import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
 
@@ -56,6 +57,10 @@ class _NotesViewState extends State<_NotesView> {
           child: ListTile(
               leading: Icon(Icons.drive_file_rename_outline),
               title: Text("rename outline"))),
+      if (context.read<NotesModel>().shouldLocate)
+        const PopupMenuItem(
+            value: "map",
+            child: ListTile(leading: Icon(Icons.map), title: Text("view map"))),
       const PopupMenuItem(
           value: "export_md",
           child: ListTile(
@@ -142,6 +147,16 @@ class _NotesViewState extends State<_NotesView> {
                   ]));
     } else if (item == "export_md") {
       context.read<NotesModel>().exportToMarkdown(outline);
+    } else if (item == "map") {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => MapView(
+                    outlineId: outlineId,
+                  )));
+    } else if (item == "time") {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(outline.dateCreated.toLocal().toString())));
     } else {
       print("unhandled");
       Sentry.captureMessage("Unhandled item", level: SentryLevel.error);
