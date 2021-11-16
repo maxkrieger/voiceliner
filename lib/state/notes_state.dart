@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 final defaultNote = Note(
@@ -20,6 +22,7 @@ final defaultNote = Note(
 
 class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
+  bool shouldBackup = false;
   bool isReady = false;
   bool isIniting = false;
   final LinkedList<Note> notes = LinkedList<Note>();
@@ -72,20 +75,40 @@ class NotesModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isNoteTranscribing(Note note) {
+    return (shouldTranscribe && !note.transcribed);
+  }
+
+  bool isNoteBackingUp(Note note) {
+    return (shouldBackup && !note.backedUp);
+  }
+
   Future<void> runJobs() async {
-    Sentry.addBreadcrumb(
-        Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
-    notes.forEach((entry) async {
-      if (shouldTranscribe && !entry.transcribed) {
-        final res = await _playerModel.speechRecognizer
-            .recognize(entry, _playerModel.getPathFromFilename(entry.filePath));
-        if (res.item1 && isReady) {
-          entry.transcribed = true;
-          entry.transcript = res.item2;
-          rebuildNote(entry);
+    ConnectivityResult connectivityResult =
+        await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
+      notes.forEach((entry) async {
+        if (shouldTranscribe && !entry.transcribed) {
+          final res = await _playerModel.speechRecognizer.recognize(
+              entry, _playerModel.getPathFromFilename(entry.filePath));
+          if (res.item1 && isReady) {
+            entry.transcribed = true;
+            entry.transcript = res.item2;
+            rebuildNote(entry);
+          }
         }
-      }
-    });
+        if (shouldBackup && !entry.backedUp) {
+          final fileName = _playerModel.getPathFromFilename(entry.filePath);
+          final success = await uploadFile(File(fileName));
+          if (success) {
+            entry.backedUp = true;
+            rebuildNote(entry);
+          }
+        }
+      });
+    }
   }
 
   Future<void> startRecording() async {
@@ -399,6 +422,7 @@ class NotesModel extends ChangeNotifier {
       currentlyPlayingOrRecording = null;
       final prefs = await SharedPreferences.getInstance();
       shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
+      shouldTranscribe = prefs.getBool(driveEnabledKey) ?? false;
       isReady = true;
       notifyListeners();
       isIniting = false;

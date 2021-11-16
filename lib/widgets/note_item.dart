@@ -102,7 +102,10 @@ class _NoteItemState extends State<NoteItem> {
 
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
-    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
+    final isTranscribing =
+        context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
+    final isBackingUp =
+        context.read<NotesModel?>()?.isNoteBackingUp(note) ?? false;
     return [
       const PopupMenuItem(
           value: "share",
@@ -117,12 +120,20 @@ class _NoteItemState extends State<NoteItem> {
       const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
-      if (!note.transcribed && shouldTranscribe)
+      if (isTranscribing)
         const PopupMenuItem(
             child: ListTile(
                 enabled: false,
                 title: Text(
                   "waiting to transcribe...",
+                  style: TextStyle(fontSize: 15),
+                ))),
+      if (isBackingUp)
+        const PopupMenuItem(
+            child: ListTile(
+                enabled: false,
+                title: Text(
+                  "waiting to back up...",
                   style: TextStyle(fontSize: 15),
                 )))
     ];
@@ -177,13 +188,12 @@ class _NoteItemState extends State<NoteItem> {
 
   @override
   Widget build(BuildContext context) {
-    final shouldTranscribe =
-        context.read<NotesModel?>()?.shouldTranscribe ?? false;
     final note = context.select<NotesModel?, Note?>((m) => m == null
         ? null
         : m.notes.length > widget.num
             ? m.notes.elementAt(widget.num)
             : defaultNote);
+
     if (note == null) {
       return Card(
           child: const Center(
@@ -199,6 +209,10 @@ class _NoteItemState extends State<NoteItem> {
           color: const Color.fromRGBO(237, 226, 255, 0.8),
           margin: const EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0));
     }
+    final isTranscribing =
+        context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
+    final isBackingUp =
+        context.read<NotesModel?>()?.isNoteBackingUp(note) ?? false;
     final isCurrent = context.select<NotesModel?, bool>((value) => value == null
         ? false
         : value.currentlyPlayingOrRecording != null &&
@@ -288,26 +302,19 @@ class _NoteItemState extends State<NoteItem> {
                       itemBuilder: _menuBuilder,
                       icon: const Icon(Icons.more_vert),
                       onSelected: _handleMenu)
-                  // IconButton(
-                  //     tooltip: "collapse children",
-                  //     onPressed: () {},
-                  //     icon: const Icon(
-                  //       Icons.keyboard_arrow_down,
-                  //       color: Colors.deepPurple,
-                  //     ))
                 ])
               ],
               title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                        child: shouldTranscribe && !note.transcribed
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ))
+                        child: isTranscribing
+                            ? const Text(
+                                "waiting to transcribe...",
+                                style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
+                              )
                             : Text(
                                 note.transcript == null
                                     ? note.infoString

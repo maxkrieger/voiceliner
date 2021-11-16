@@ -36,14 +36,15 @@ Future<void> main() async {
           child: VoiceOutlinerApp(
             sharedPreferences: sharedPrefs,
           )));
-  if (kReleaseMode) {
-    await sentry.SentryFlutter.init((config) {
-      config.dsn = const String.fromEnvironment("SENTRY_DSN");
-    }, appRunner: appRunner);
-  } else {
-    print("debug mode!");
-    appRunner();
-  }
+  // if (kReleaseMode) {
+  await sentry.SentryFlutter.init((config) {
+    config.dsn = const String.fromEnvironment("SENTRY_DSN");
+    config.diagnosticLevel = sentry.SentryLevel.error;
+  }, appRunner: appRunner);
+  // } else {
+  //   print("debug mode!");
+  // appRunner();
+  // }
 }
 
 class VoiceOutlinerApp extends StatefulWidget {
