@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:tuple/tuple.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/outline_state.dart';
@@ -24,9 +25,9 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
   StreamSubscription? googleAuthSub;
   GoogleSignInAccount? account;
   String usage = "";
-  DateTime? lastBackedUp;
+  List<Tuple2<DateTime, String>> backups = [];
+
   _DriveState _state = _DriveState.initing;
-  int progress = 0;
   @override
   void initState() {
     super.initState();
@@ -37,7 +38,6 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
     sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
       _state = _DriveState.inited;
-      progress = 0;
       account = googleSignIn.currentUser;
       googleAuthSub = googleSignIn.onCurrentUserChanged.listen((event) {
         setState(() {
@@ -58,9 +58,9 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
   Future<void> checkStatus() async {
     if (account != null) {
       usage = await getUsage();
-      lastBackedUp = await lastModified();
-      if (lastBackedUp == null) {
-        await backupAll();
+      backups = await getBackups();
+      if (backups.isEmpty) {
+        await createBackup();
       }
     } else {
       if (sharedPreferences?.getBool(driveEnabledKey) ?? false) {
@@ -83,13 +83,14 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
     setState(() {});
   }
 
-  Future<void> restore() async {
+  Future<void> restore(int idx) async {
+    final backup = backups[idx];
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               title: const Text("Restore from Drive?"),
               content: Text(
-                  "This replaces voice outliner's database currently on your phone. You will lose any notes made after ${lastBackedUp != null ? DateFormat.yMd().add_jm().format(lastBackedUp!.toLocal()) : "never backed up. press cancel"}"),
+                  "This replaces voice outliner's database currently on your phone. You will lose any notes made after ${DateFormat.yMd().add_jm().format(backup.item1.toLocal())}"),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -102,30 +103,27 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                       setState(() {
                         _state = _DriveState.restoring;
                       });
-                      final count = await downloadAll((int p) {
-                        setState(() {
-                          progress = p;
-                        });
+                      await context.read<DBRepository>().closeDB();
+                      await restoreById(backup.item2, () async {
+                        await context.read<DBRepository>().load();
+                        await context.read<OutlinesModel>().loadOutlines();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                "Restored notes from ${DateFormat.yMd().add_jm().format(backup.item1.toLocal())}")));
+                        checkStatus();
                       });
-                      await context.read<DBRepository>().load();
-                      await context.read<OutlinesModel>().loadOutlines();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Restored $count notes")));
-                      checkStatus();
                     },
                     child: const Text("restore"))
               ],
             ));
   }
 
-  Future<void> backupAll() async {
+  Future<void> createBackup() async {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               title: const Text("Back up everything now?"),
-              content: Text(lastBackedUp == null
-                  ? "Please wait for it to finish."
-                  : "You already have a backup from ${DateFormat.yMd().add_jm().format(lastBackedUp!.toLocal())}. If you proceed, it will be overwritten."),
+              content: const Text("Please wait for it to finish."),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -138,16 +136,39 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                       setState(() {
                         _state = _DriveState.backingUp;
                       });
-                      await uploadAll((int p) {
-                        setState(() {
-                          progress = p;
-                        });
-                      });
+                      await makeBackup();
                       ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Backed up notes")));
                       checkStatus();
                     },
                     child: const Text("back up"))
+              ],
+            ));
+  }
+
+  Future<void> deleteIdx(int idx) async {
+    final backup = backups[idx];
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text("Delete this backup?"),
+              content: Text(
+                  "It was made on ${DateFormat.yMd().add_jm().format(backup.item1.toLocal())}"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: const Text("cancel")),
+                TextButton(
+                    onPressed: () async {
+                      Navigator.of(ctx).pop();
+                      await deleteById(backup.item2);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Deleted backup")));
+                      checkStatus();
+                    },
+                    child: const Text("delete"))
               ],
             ));
   }
@@ -170,9 +191,9 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                   const SizedBox(height: 10.0),
                   Text({
                     _DriveState.restoring:
-                        "Restoring note # $progress, please wait until complete",
+                        "Restoring notes, please wait until complete",
                     _DriveState.backingUp:
-                        "Backing up $progress notes, please wait until complete",
+                        "Backing up notes, please wait until complete",
                     _DriveState.inited: "Contacting Drive"
                   }[_state]!)
                 ]),
@@ -185,19 +206,30 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                   leading: const Icon(Icons.backup),
                   title: const Text("Full backup"),
                   subtitle: const Text(
-                      "note that new notes are backed up automatically"),
-                  onTap: backupAll,
+                      "note that backups occur daily when app is open"),
+                  onTap: createBackup,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.settings_backup_restore),
-                  title: const Text("Restore"),
-                  subtitle: lastBackedUp != null
-                      ? Timeago(
-                          date: lastBackedUp!,
-                          builder: (_, t) => Text("last backed up $t"),
-                        )
-                      : const Text("never backed up"),
-                  onTap: restore,
+                ListView.builder(
+                  reverse: true,
+                  itemBuilder: (ctx, idx) {
+                    final backup = backups[idx];
+                    return Card(
+                        key: Key("idx-$idx"),
+                        child: ListTile(
+                          leading: const Icon(Icons.restore),
+                          onLongPress: () => deleteIdx(idx),
+                          title: Text(DateFormat.yMd()
+                              .add_jm()
+                              .format(backup.item1.toLocal())),
+                          subtitle: Timeago(
+                            date: backup.item1,
+                            builder: (_, s) => Text(s),
+                          ),
+                          onTap: () => restore(idx),
+                        ));
+                  },
+                  shrinkWrap: true,
+                  itemCount: backups.length,
                 ),
               ]
             ])

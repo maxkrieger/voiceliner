@@ -1,14 +1,18 @@
 import 'dart:io' as IO;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter_archive/flutter_archive.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:voice_outliner/state/player_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
 
 const driveEnabledKey = "drive_enabled";
+const lastBackupKey = "last_backed_up";
 
 GoogleSignIn googleSignIn = GoogleSignIn(
     clientId:
@@ -21,6 +25,25 @@ Future<DriveApi> getDrive() async {
   }
   final httpClient = (await googleSignIn.authenticatedClient())!;
   return DriveApi(httpClient);
+}
+
+Future<void> ifShouldBackup(SharedPreferences sp) async {
+  final lastBackup = sp.getInt("last_backed_up");
+  final shouldBackup = sp.getBool(driveEnabledKey) ?? false;
+  if (shouldBackup &&
+      (lastBackup == null ||
+          DateTime.now()
+                  .subtract(const Duration(days: 1))
+                  .compareTo(DateTime.fromMillisecondsSinceEpoch(lastBackup)) >
+              0)) {
+    ConnectivityResult connectivityResult =
+        await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      Sentry.addBreadcrumb(Breadcrumb(
+          message: "Initiating auto back up", timestamp: DateTime.now()));
+      await makeBackup();
+    }
+  }
 }
 
 Future<String> getUsage() async {
@@ -37,172 +60,83 @@ Future<String> getUsage() async {
   return "your account has ${filesize(remaining)} left";
 }
 
-Future<bool> uploadFile(IO.File file,
-    {String? folderId, DriveApi? driveApi}) async {
-  try {
-    driveApi ??= await getDrive();
-    if (folderId == null) {
-      final existingRecordings = await driveApi.files.list(
-          spaces: "appDataFolder",
-          q: "name = 'recordings'",
-          orderBy: "modifiedTime");
-      if (existingRecordings.files != null &&
-          existingRecordings.files!.isNotEmpty) {
-        folderId = existingRecordings.files!.first.id!;
-      } else {
-        Sentry.captureMessage(
-            "Could not back up because recordings folder doesn't exist",
-            level: SentryLevel.error);
-        return false;
-      }
-    }
-    final driveFile = File();
-    driveFile.parents = [folderId];
-    driveFile.name = file.uri.pathSegments.last;
-    final length = await file.length();
-    final media = Media(file.openRead(), length);
-    await driveApi.files.create(driveFile, uploadMedia: media);
-    return true;
-  } catch (err) {
-    Sentry.captureException(err);
-    return false;
-  }
-}
-
-Future<DateTime?> lastModified() async {
+Future<List<Tuple2<DateTime, String>>> getBackups() async {
   final driveApi = await getDrive();
-  final existing = await driveApi.files.list(
-      spaces: "appDataFolder",
-      pageSize: 1,
-      q: "name = 'voice_outliner.db'",
-      $fields: "files(modifiedTime)",
-      orderBy: "modifiedTime");
-  if (existing.files != null && existing.files!.isNotEmpty) {
-    return existing.files!.first.modifiedTime;
-  } else {
-    return null;
-  }
-}
-
-Future<void> uploadDb({DriveApi? driveApi}) async {
-  driveApi ??= await getDrive();
-  final docsDir = await getApplicationDocumentsDirectory();
-  final dbFile = IO.File(docsDir.path + "/voice_outliner.db");
-  final driveFile = File();
-  driveFile.modifiedTime = DateTime.now();
-  final length = await dbFile.length();
-  final read = dbFile.openRead();
-  final media = Media(read, length);
-  final existing = await driveApi.files.list(
-    spaces: "appDataFolder",
-    q: "name = 'voice_outliner.db'",
-    orderBy: "modifiedTime",
-  );
-  if (existing.files != null && existing.files!.isNotEmpty) {
-    final id = existing.files!.first.id!;
-    await driveApi.files.update(driveFile, id, uploadMedia: media);
-  } else {
-    driveFile.name = dbFile.uri.pathSegments.last;
-    driveFile.parents = ["appDataFolder"];
-    await driveApi.files.create(driveFile, uploadMedia: media);
-  }
-}
-
-Future<void> deleteAll(DriveApi driveApi) async {
   final existing = await driveApi.files.list(
       spaces: "appDataFolder",
       pageSize: 1000,
-      q: "'appDataFolder' in parents",
-      $fields: "files(id)");
-  if (existing.files != null) {
-    for (var file in existing.files!) {
-      await driveApi.files.delete(file.id!);
-    }
+      q: "name = 'voice_outliner.zip'",
+      $fields: "files(modifiedTime, id)",
+      orderBy: "modifiedTime");
+  if (existing.files != null && existing.files!.isNotEmpty) {
+    return existing.files!.map((e) => Tuple2(e.modifiedTime!, e.id!)).toList();
+  } else {
+    return [];
   }
 }
 
-Future<void> uploadAll(Function(int progress) onProgress) async {
-  Sentry.addBreadcrumb(Breadcrumb(message: "Backing up all"));
-  final driveApi = await getDrive();
-  await deleteAll(driveApi);
-  await uploadDb(driveApi: driveApi);
-  final recordingsDir = await getRecordingsDir();
-  final _driveFolder = File();
-  _driveFolder.parents = const ["appDataFolder"];
-  _driveFolder.name = "recordings";
-  _driveFolder.mimeType = "application/vnd.google-apps.folder";
-  final driveFolder = await driveApi.files.create(_driveFolder);
-  final recordingsId = driveFolder.id;
-  if (recordingsId != null) {
-    final filesList = await recordingsDir.list().toList();
-    int count = filesList.length;
-    onProgress(count);
-    for (var element in filesList) {
-      if (element is IO.File) {
-        count--;
-        onProgress(count);
-        await uploadFile(element, folderId: recordingsId, driveApi: driveApi);
-      }
-    }
-  }
-  Sentry.addBreadcrumb(Breadcrumb(message: "Done backing up"));
-}
-
-Future<void> downloadFile(
-    DriveApi driveApi, File file, IO.Directory directory) async {
-  final contents = (await driveApi.files
-      .get(file.id!, downloadOptions: DownloadOptions.fullMedia)) as Media;
-  final diskFile =
-      await IO.File("${directory.path}/${file.name!}").create(recursive: true);
-  final fileSink = diskFile.openWrite();
-  contents.stream.listen((chunk) {
-    fileSink.add(chunk);
-  }, onDone: () {
-    fileSink.close();
-  });
-}
-
-// Make sure to reload the db after
-Future<int> downloadAll(Function(int progress) onProgress) async {
-  Sentry.addBreadcrumb(Breadcrumb(message: "Restoring from backup"));
-  int count = 0;
+Future<void> makeBackup() async {
   final driveApi = await getDrive();
   final docsDir = await getApplicationDocumentsDirectory();
-  final recordingsDir = await getRecordingsDir();
+  final tmpDir = await getTemporaryDirectory();
+  final tmpZip = IO.File(
+      "${tmpDir.path}/voice_outliner-${DateTime.now().millisecondsSinceEpoch}.zip");
+  try {
+    await ZipFile.createFromDirectory(
+      sourceDir: docsDir,
+      zipFile: tmpZip,
+      recurseSubDirs: true,
+    );
+    final driveFile = File();
+    driveFile.modifiedTime = DateTime.now();
+    final read = tmpZip.openRead();
+    final length = await tmpZip.length();
+    final media = Media(read, length);
+    driveFile.parents = ["appDataFolder"];
+    driveFile.name = "voice_outliner.zip";
+    await driveApi.files.create(driveFile, uploadMedia: media);
+    final sp = await SharedPreferences.getInstance();
+    sp.setInt(lastBackupKey, DateTime.now().millisecondsSinceEpoch);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Done backing up", timestamp: DateTime.now()));
+  } catch (e) {
+    print(e);
+    Sentry.captureException(e);
+  }
+}
 
-  final existingDb = await driveApi.files.list(
-      spaces: "appDataFolder",
-      q: "name = 'voice_outliner.db'",
-      orderBy: "modifiedTime");
-  if (existingDb.files != null && existingDb.files!.isNotEmpty) {
-    downloadFile(driveApi, existingDb.files!.first, docsDir);
+Future<void> restoreById(String id, Function onDone) async {
+  final driveApi = await getDrive();
+  final docsDir = await getApplicationDocumentsDirectory();
+  await docsDir.list().forEach((element) async {
+    await element.delete(recursive: true);
+  });
+  final tmpDir = await getTemporaryDirectory();
+  try {
+    final contents = (await driveApi.files
+        .get(id, downloadOptions: DownloadOptions.fullMedia)) as Media;
+    final diskFile =
+        await IO.File("${tmpDir.path}/voice_outliner.zip").create();
+    final fileSink = diskFile.openWrite();
+    contents.stream.listen((chunk) {
+      fileSink.add(chunk);
+    }, onDone: () async {
+      await fileSink.close();
+      await ZipFile.extractToDirectory(
+          zipFile: diskFile, destinationDir: docsDir);
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Restored backup", timestamp: DateTime.now()));
+      onDone();
+    });
+  } catch (e) {
+    print(e);
+    Sentry.captureException(e);
   }
-  final existingRecordings = await driveApi.files
-      .list(spaces: "appDataFolder", q: "name = 'recordings'");
-  if (existingRecordings.files != null &&
-      existingRecordings.files!.isNotEmpty) {
-    String? pageToken;
-    while (true) {
-      final files = await driveApi.files.list(
-          spaces: "appDataFolder",
-          pageSize: 1000,
-          pageToken: pageToken,
-          $fields: "nextPageToken, files(id, name)",
-          orderBy: "modifiedTime",
-          q: "'${existingRecordings.files!.first.id}' in parents");
-      pageToken = files.nextPageToken;
-      if (files.files != null) {
-        for (var file in files.files!) {
-          count++;
-          onProgress(count);
-          await downloadFile(driveApi, file, recordingsDir);
-        }
-      }
-      if (pageToken == null || files.files == null || files.files!.isEmpty) {
-        break;
-      }
-    }
-  }
-  Sentry.addBreadcrumb(Breadcrumb(message: "Done restoring"));
-  return count;
+}
+
+Future<void> deleteById(String id) async {
+  final driveApi = await getDrive();
+  Sentry.addBreadcrumb(
+      Breadcrumb(message: "Deleting backup", timestamp: DateTime.now()));
+  await driveApi.files.delete(id);
 }

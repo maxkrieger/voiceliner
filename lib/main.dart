@@ -21,6 +21,7 @@ Future<void> main() async {
   if (sharedPrefs.getBool(driveEnabledKey) ?? false) {
     await googleSignIn.signInSilently();
   }
+  ifShouldBackup(sharedPrefs);
   void appRunner() => runApp(MultiProvider(
           providers: [
             ChangeNotifierProvider<PlayerModel>(
@@ -36,15 +37,15 @@ Future<void> main() async {
           child: VoiceOutlinerApp(
             sharedPreferences: sharedPrefs,
           )));
-  // if (kReleaseMode) {
-  await sentry.SentryFlutter.init((config) {
-    config.dsn = const String.fromEnvironment("SENTRY_DSN");
-    config.diagnosticLevel = sentry.SentryLevel.error;
-  }, appRunner: appRunner);
-  // } else {
-  //   print("debug mode!");
-  // appRunner();
-  // }
+  if (kReleaseMode) {
+    await sentry.SentryFlutter.init((config) {
+      config.dsn = const String.fromEnvironment("SENTRY_DSN");
+      config.diagnosticLevel = sentry.SentryLevel.error;
+    }, appRunner: appRunner);
+  } else {
+    print("debug mode!");
+    appRunner();
+  }
 }
 
 class VoiceOutlinerApp extends StatefulWidget {

@@ -22,7 +22,6 @@ final defaultNote = Note(
 
 class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
-  bool shouldBackup = false;
   bool isReady = false;
   bool isIniting = false;
   final LinkedList<Note> notes = LinkedList<Note>();
@@ -79,10 +78,6 @@ class NotesModel extends ChangeNotifier {
     return (shouldTranscribe && !note.transcribed);
   }
 
-  bool isNoteBackingUp(Note note) {
-    return (shouldBackup && !note.backedUp);
-  }
-
   Future<void> runJobs() async {
     ConnectivityResult connectivityResult =
         await (Connectivity().checkConnectivity());
@@ -96,14 +91,6 @@ class NotesModel extends ChangeNotifier {
           if (res.item1 && isReady) {
             entry.transcribed = true;
             entry.transcript = res.item2;
-            rebuildNote(entry);
-          }
-        }
-        if (shouldBackup && !entry.backedUp) {
-          final fileName = _playerModel.getPathFromFilename(entry.filePath);
-          final success = await uploadFile(File(fileName));
-          if (success) {
-            entry.backedUp = true;
             rebuildNote(entry);
           }
         }

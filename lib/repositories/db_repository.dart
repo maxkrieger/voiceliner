@@ -127,6 +127,10 @@ CREATE TABLE outline (
     // if oldVersion < x
   }
 
+  Future<void> closeDB() async {
+    await _database.close();
+  }
+
   Future<void> resetDB() async {
     await _database.close();
     await deleteDatabase(_database.path);

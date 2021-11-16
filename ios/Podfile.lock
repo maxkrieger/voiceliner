@@ -8,6 +8,9 @@ PODS:
     - Flutter
     - Reachability
   - Flutter (1.0.0)
+  - flutter_archive (0.0.1):
+    - Flutter
+    - ZIPFoundation (= 0.9.11)
   - flutter_sound (8.4.2):
     - Flutter
     - flutter_sound_core (= 8.4.2)
@@ -51,10 +54,12 @@ PODS:
     - FMDB (>= 2.7.5)
   - url_launcher (0.0.1):
     - Flutter
+  - ZIPFoundation (0.9.11)
 
 DEPENDENCIES:
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
+  - flutter_archive (from `.symlinks/plugins/flutter_archive/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -77,12 +82,15 @@ SPEC REPOS:
     - mobile-ffmpeg-audio
     - Reachability
     - Sentry
+    - ZIPFoundation
 
 EXTERNAL SOURCES:
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   Flutter:
     :path: Flutter
+  flutter_archive:
+    :path: ".symlinks/plugins/flutter_archive/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
   google_sign_in:
@@ -108,6 +116,7 @@ SPEC CHECKSUMS:
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   connectivity_plus: 5f0eb61093bec56935f21a1699dd2758bc895587
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  flutter_archive: 141014f758a0b31fde29add54952729eb1d61c95
   flutter_sound: db1364f901b96c17e00101c831994487186afdf4
   flutter_sound_core: 55a1665e7ef8cdb95ab9dd06581c746dd9c96e48
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
@@ -126,6 +135,7 @@ SPEC CHECKSUMS:
   shared_preferences: 5033afbb22d372e15aff8ff766df9021b845f273
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   url_launcher: b6e016d912f04be9f5bf6e8e82dc599b7ba59649
+  ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
 PODFILE CHECKSUM: 289b2c470abb1cc51612511117581a1ad35195ef
 

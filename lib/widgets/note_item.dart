@@ -104,8 +104,6 @@ class _NoteItemState extends State<NoteItem> {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
     final isTranscribing =
         context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
-    final isBackingUp =
-        context.read<NotesModel?>()?.isNoteBackingUp(note) ?? false;
     return [
       const PopupMenuItem(
           value: "share",
@@ -128,14 +126,6 @@ class _NoteItemState extends State<NoteItem> {
                   "waiting to transcribe...",
                   style: TextStyle(fontSize: 15),
                 ))),
-      if (isBackingUp)
-        const PopupMenuItem(
-            child: ListTile(
-                enabled: false,
-                title: Text(
-                  "waiting to back up...",
-                  style: TextStyle(fontSize: 15),
-                )))
     ];
   }
 
@@ -211,8 +201,6 @@ class _NoteItemState extends State<NoteItem> {
     }
     final isTranscribing =
         context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
-    final isBackingUp =
-        context.read<NotesModel?>()?.isNoteBackingUp(note) ?? false;
     final isCurrent = context.select<NotesModel?, bool>((value) => value == null
         ? false
         : value.currentlyPlayingOrRecording != null &&
