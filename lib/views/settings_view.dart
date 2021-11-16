@@ -62,12 +62,17 @@ class _SettingsViewState extends State<SettingsView> {
       bool permissioned = await locationInstance.serviceEnabled();
       if (!permissioned) {
         permissioned = await locationInstance.requestService();
-        final testLoc = await locationInstance.getLocation();
-        if (!permissioned || testLoc.latitude == null) {
+        if (!permissioned) {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Couldn't get location")));
           return;
         }
+      }
+      final testLoc = await locationInstance.getLocation();
+      if (testLoc.latitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Couldn't get location")));
+        return;
       }
     }
     setState(() {
