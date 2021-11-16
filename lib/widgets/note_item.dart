@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
@@ -115,6 +116,11 @@ class _NoteItemState extends State<NoteItem> {
           value: "move",
           child: ListTile(
               leading: Icon(Icons.playlist_play), title: Text("move to"))),
+      if (note.latitude != null && note.longitude != null)
+        const PopupMenuItem(
+            value: "locate",
+            child: ListTile(
+                leading: Icon(Icons.location_pin), title: Text("location"))),
       const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
@@ -173,6 +179,10 @@ class _NoteItemState extends State<NoteItem> {
       _shareNote();
     } else if (item == "move") {
       _moveNote();
+    } else if (item == "locate") {
+      final note = context.read<NotesModel>().notes.elementAt(widget.num);
+      MapsLauncher.launchCoordinates(
+          note.latitude!, note.longitude!, note.transcript);
     }
   }
 

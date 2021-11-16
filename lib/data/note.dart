@@ -11,6 +11,8 @@ class Note extends LinkedListEntry<Note> {
   bool transcribed = false;
   bool backedUp = false;
   int? color;
+  double? latitude;
+  double? longitude;
   Duration? duration;
   String? transcript;
   String? parentNoteId;
@@ -25,6 +27,8 @@ class Note extends LinkedListEntry<Note> {
       this.color,
       this.transcript,
       this.duration,
+      this.latitude,
+      this.longitude,
       required this.isCollapsed});
 
   //TODO: color
@@ -35,6 +39,8 @@ class Note extends LinkedListEntry<Note> {
             isUtc: true),
         outlineId = map["outline_id"],
         transcript = map["transcript"],
+        latitude = map["latitude"],
+        longitude = map["longitude"],
         color = map["color"],
         parentNoteId = map["parent_note_id"],
         isComplete = map["is_complete"] == 1,
@@ -65,7 +71,9 @@ class Note extends LinkedListEntry<Note> {
       "is_collapsed": isCollapsed ? 1 : 0,
       "transcribed": transcribed ? 1 : 0,
       "backed_up": backedUp ? 1 : 0,
-      "color": color
+      "color": color,
+      "latitude": latitude,
+      "longitude": longitude
     };
   }
 }

@@ -11,6 +11,8 @@ import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 
+import '../consts.dart';
+
 class DriveSettingsView extends StatefulWidget {
   const DriveSettingsView({Key? key}) : super(key: key);
 
@@ -205,8 +207,7 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                 ListTile(
                   leading: const Icon(Icons.backup),
                   title: const Text("Full backup"),
-                  subtitle: const Text(
-                      "note that backups occur daily when app is open"),
+                  subtitle: const Text("backups occur daily when app is open"),
                   onTap: createBackup,
                 ),
                 ListView.builder(

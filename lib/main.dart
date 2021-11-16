@@ -10,13 +10,16 @@ import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
 
+import 'consts.dart';
+
 final routes = {"/": const OutlinesView(), "/notes": const NotesView()};
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
-  if (sharedPrefs.getBool("should_transcribe") == null) {
-    sharedPrefs.setBool("should_transcribe", true);
+  // TODO: replace with opening intro screen
+  if (sharedPrefs.getBool(shouldTranscribeKey) == null) {
+    sharedPrefs.setBool(shouldTranscribeKey, true);
   }
   if (sharedPrefs.getBool(driveEnabledKey) ?? false) {
     await googleSignIn.signInSilently();

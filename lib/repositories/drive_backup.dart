@@ -11,8 +11,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 
-const driveEnabledKey = "drive_enabled";
-const lastBackupKey = "last_backed_up";
+import '../consts.dart';
 
 GoogleSignIn googleSignIn = GoogleSignIn(
     clientId:

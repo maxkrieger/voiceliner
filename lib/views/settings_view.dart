@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/drive_settings_view.dart';
@@ -56,6 +57,24 @@ class _SettingsViewState extends State<SettingsView> {
             ));
   }
 
+  Future<void> toggleLocation(bool enable) async {
+    if (enable) {
+      bool permissioned = await locationInstance.serviceEnabled();
+      if (!permissioned) {
+        permissioned = await locationInstance.requestService();
+        final testLoc = await locationInstance.getLocation();
+        if (!permissioned || testLoc.latitude == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Couldn't get location")));
+          return;
+        }
+      }
+    }
+    setState(() {
+      sharedPreferences.setBool(shouldLocateKey, enable);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,16 +82,26 @@ class _SettingsViewState extends State<SettingsView> {
         body: isInited
             ? Column(
                 children: [
+                  const SizedBox(height: 10.0),
                   SwitchListTile(
-                      secondary: const Icon(Icons.record_voice_over),
+                      secondary: const Icon(Icons.voicemail),
                       title: const Text("Transcribe recordings"),
-                      value: sharedPreferences.getBool("should_transcribe") ??
+                      subtitle:
+                          const Text("uses Google's transcription service"),
+                      value: sharedPreferences.getBool(shouldTranscribeKey) ??
                           false,
                       onChanged: (v) {
                         setState(() {
-                          sharedPreferences.setBool("should_transcribe", v);
+                          sharedPreferences.setBool(shouldTranscribeKey, v);
                         });
                       }),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.location_pin),
+                    title: const Text("Attach location"),
+                    subtitle: const Text("Remember where you took a note."),
+                    value: sharedPreferences.getBool(shouldLocateKey) ?? false,
+                    onChanged: toggleLocation,
+                  ),
                   ListTile(
                     leading: const Icon(Icons.backup),
                     title: const Text("Backup"),
@@ -90,13 +119,8 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                   const AboutListTile(
                     icon: Icon(Icons.info),
-                    aboutBoxChildren: [Text("made by Max Krieger")],
+                    aboutBoxChildren: [Text("made by Max Krieger (a9.io)")],
                   ),
-                  // const Divider(),
-                  // ListTile(
-                  //     leading: const Icon(Icons.delete_forever),
-                  //     onTap: _resetDB,
-                  //     title: const Text("Reset database & files")),
                 ],
               )
             : const CircularProgressIndicator());

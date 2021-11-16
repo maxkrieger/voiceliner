@@ -10,8 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
-import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/player_state.dart';
+
+import '../consts.dart';
 
 final defaultNote = Note(
     id: "",
@@ -22,6 +23,7 @@ final defaultNote = Note(
 
 class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
+  bool shouldLocate = false;
   bool isReady = false;
   bool isIniting = false;
   final LinkedList<Note> notes = LinkedList<Note>();
@@ -160,6 +162,20 @@ class NotesModel extends ChangeNotifier {
           Breadcrumb(message: "Insert bottom", timestamp: DateTime.now()));
     }
     notifyListeners();
+    if (shouldLocate) {
+      final loc = await locationInstance.getLocation();
+      if (loc.latitude != null &&
+          loc.longitude != null &&
+          loc.accuracy != null &&
+          loc.accuracy! < 1000.0) {
+        note.longitude = loc.longitude;
+        note.latitude = loc.latitude;
+        notifyListeners();
+      } else {
+        Sentry.addBreadcrumb(Breadcrumb(
+            message: "Couldn't locate note", timestamp: DateTime.now()));
+      }
+    }
     await _dbRepository.addNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Added note to db", timestamp: DateTime.now()));
@@ -408,8 +424,8 @@ class NotesModel extends ChangeNotifier {
       currentlyExpanded = null;
       currentlyPlayingOrRecording = null;
       final prefs = await SharedPreferences.getInstance();
-      shouldTranscribe = prefs.getBool("should_transcribe") ?? false;
-      shouldTranscribe = prefs.getBool(driveEnabledKey) ?? false;
+      shouldTranscribe = prefs.getBool(shouldTranscribeKey) ?? false;
+      shouldLocate = prefs.getBool(shouldLocateKey) ?? false;
       isReady = true;
       notifyListeners();
       isIniting = false;

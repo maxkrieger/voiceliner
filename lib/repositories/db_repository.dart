@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 
-const int dbVersion = 3;
+const int dbVersion = 4;
 
 const String noteTableDef = '''
       id TEXT PRIMARY KEY NOT NULL, 
@@ -21,6 +21,8 @@ const String noteTableDef = '''
       parent_note_id TEXT,
       outline_id TEXT NOT NULL,
       color INTEGER,
+      latitude REAL,
+      longitude REAL,
       backed_up INTEGER NOT_NULL DEFAULT 0,
       transcribed INTEGER NOT_NULL DEFAULT 1,
       FOREIGN KEY(parent_note_id) REFERENCES note,
@@ -122,9 +124,12 @@ CREATE TABLE outline (
       batch.execute(
           "ALTER TABLE note ADD COLUMN transcribed INTEGER NOT NULL DEFAULT 1");
     }
+    if (oldVersion < 4) {
+      batch.execute("ALTER TABLE note ADD COLUMN longitude REAL");
+      batch.execute("ALTER TABLE note ADD COLUMN latitude REAL");
+    }
     print("done migrating");
     await batch.commit();
-    // if oldVersion < x
   }
 
   Future<void> closeDB() async {
