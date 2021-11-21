@@ -97,9 +97,14 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
         }
         return PageRouteBuilder(
             pageBuilder: (c, a, aa) => rte,
-            transitionsBuilder: (c, an, an2, child) =>
-                Align(child: FadeTransition(opacity: an, child: child)),
-            transitionDuration: const Duration(milliseconds: 300),
+            transitionsBuilder: (c, an, an2, child) => Align(
+                child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: Offset(0, route.name == "/" ? -1 : 1),
+                      end: Offset.zero,
+                    ).animate(an),
+                    child: child)),
+            transitionDuration: const Duration(milliseconds: 200),
             settings: RouteSettings(
                 name: route.name,
                 arguments: route.arguments ??

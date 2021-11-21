@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago_flutter/timeago_flutter.dart';
-import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
+import 'package:voice_outliner/widgets/outlines_list.dart';
 
 class OutlinesView extends StatefulWidget {
   const OutlinesView({Key? key}) : super(key: key);
@@ -22,7 +21,7 @@ class _OutlinesViewState extends State<OutlinesView> {
             .read<OutlinesModel>()
             .createOutline(_textController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
-        _pushOutline(ctx, outline.id);
+        _pushOutline(outline.id);
       }
     }
 
@@ -61,31 +60,9 @@ class _OutlinesViewState extends State<OutlinesView> {
     super.dispose();
   }
 
-  void _pushOutline(BuildContext ctx, String outlineId) {
-    Navigator.pushNamedAndRemoveUntil(ctx, "/notes", (_) => false,
+  void _pushOutline(String outlineId) {
+    Navigator.pushNamedAndRemoveUntil(context, "/notes", (_) => false,
         arguments: NotesViewArgs(outlineId));
-  }
-
-  Widget _buildOutline(BuildContext ctx, int num) {
-    return Builder(builder: (ct) {
-      final outline = ct.select<OutlinesModel, Outline>((value) =>
-          value.outlines.length > num ? value.outlines[num] : defaultOutline);
-      return Hero(
-          tag: "outline-${outline.id}",
-          child: Card(
-              key: Key("outline-$num"),
-              child: ListTile(
-                title: Text(outline.name),
-                subtitle: Timeago(
-                    builder: (_, t) => Text(t), date: outline.dateUpdated),
-                onLongPress: () {
-                  print("long press");
-                },
-                onTap: () {
-                  _pushOutline(ctx, outline.id);
-                },
-              )));
-    });
   }
 
   void _openSettings() {
@@ -129,9 +106,6 @@ class _OutlinesViewState extends State<OutlinesView> {
                       "create your first outline",
                       style: TextStyle(fontSize: 20.0),
                     )))
-            : ListView.builder(
-                shrinkWrap: true,
-                itemCount: numOutlines,
-                itemBuilder: _buildOutline));
+            : OutlinesList(onTap: _pushOutline));
   }
 }

@@ -211,58 +211,57 @@ class _NotesViewState extends State<_NotesView> {
               onSelected: (String item) => _handleMenu(item, outlineId))
         ],
       ),
-      body: Hero(
-          tag: "outline-$outlineId",
-          child: (playerState == PlayerState.notReady
-              ? const Center(child: Text("setting up..."))
-              : playerState == PlayerState.error
-                  ? const Center(child: Text("error"))
-                  : playerState == PlayerState.noPermission
+      body: (playerState == PlayerState.notReady
+          ? const Center(child: Text("setting up..."))
+          : playerState == PlayerState.error
+              ? const Center(child: Text("error"))
+              : playerState == PlayerState.noPermission
+                  ? Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                          const Text("to start recording notes,",
+                              style: TextStyle(fontSize: 20.0)),
+                          ElevatedButton(
+                              onPressed: () {
+                                context.read<PlayerModel>().tryPermission();
+                              },
+                              child: const Text("grant microphone access"))
+                        ]))
+                  : (noteCount == 0)
                       ? Center(
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                              const Text("to start recording notes,",
-                                  style: TextStyle(fontSize: 20.0)),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    context.read<PlayerModel>().tryPermission();
-                                  },
-                                  child: const Text("grant microphone access"))
+                              children: const [
+                              Text("no notes yet!",
+                                  style: TextStyle(
+                                      fontSize: 40.0,
+                                      color: Color.fromRGBO(0, 0, 0, 0.5))),
+                              SizedBox(
+                                height: 12.0,
+                              ),
+                              Text(
+                                "swipe notes to indent them",
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
+                              )
                             ]))
-                      : (noteCount == 0)
-                          ? Center(
-                              child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: const [
-                                  Text("no notes yet!",
-                                      style: TextStyle(
-                                          fontSize: 40.0,
-                                          color: Color.fromRGBO(0, 0, 0, 0.5))),
-                                  SizedBox(
-                                    height: 12.0,
-                                  ),
-                                  Text(
-                                    "swipe notes to indent them",
-                                    style: TextStyle(
-                                        fontSize: 20.0,
-                                        color: Color.fromRGBO(0, 0, 0, 0.5)),
-                                  )
-                                ]))
-                          : ReorderableListView.builder(
-                              onReorder: (a, b) {
-                                context.read<NotesModel>().swapNotes(a, b);
-                                HapticFeedback.mediumImpact();
-                              },
-                              scrollController: scrollController,
-                              padding: const EdgeInsets.only(bottom: 150),
-                              shrinkWrap: true,
-                              itemBuilder: (_, int idx) =>
-                                  NoteItem(key: Key("note-$idx"), num: idx),
-                              itemCount: noteCount,
-                            ))),
+                      : Scrollbar(
+                          child: ReorderableListView.builder(
+                          onReorder: (a, b) {
+                            context.read<NotesModel>().swapNotes(a, b);
+                            HapticFeedback.mediumImpact();
+                          },
+                          scrollController: scrollController,
+                          padding: const EdgeInsets.only(bottom: 150),
+                          shrinkWrap: true,
+                          itemBuilder: (_, int idx) =>
+                              NoteItem(key: Key("note-$idx"), num: idx),
+                          itemCount: noteCount,
+                        ))),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
