@@ -92,7 +92,7 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
         builder: (ctx) => AlertDialog(
               title: const Text("Restore from Drive?"),
               content: Text(
-                  "This replaces voice outliner's database currently on your phone. You will lose any notes made after ${DateFormat.yMd().add_jm().format(backup.item1.toLocal())}"),
+                  "This replaces Voiceliner's database currently on your phone. You will lose any notes made after ${DateFormat.yMd().add_jm().format(backup.item1.toLocal())}"),
               actions: [
                 TextButton(
                     onPressed: () {

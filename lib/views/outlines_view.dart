@@ -30,7 +30,6 @@ class _OutlinesViewState extends State<OutlinesView> {
     _textController.selection = TextSelection(
         baseOffset: 0, extentOffset: _textController.value.text.length);
     await showDialog(
-        barrierDismissible: false,
         context: context,
         builder: (dialogCtx) => AlertDialog(
                 title: const Text("New Outline"),
@@ -85,7 +84,7 @@ class _OutlinesViewState extends State<OutlinesView> {
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: const Text("Voice Outliner"),
+          title: const Text("Voiceliner"),
           actions: [
             IconButton(
                 onPressed: _openSettings,

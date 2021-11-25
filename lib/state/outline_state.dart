@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 final defaultOutline = Outline(
@@ -70,6 +71,7 @@ class OutlinesModel extends ChangeNotifier {
       _dbRepository = db;
       _playerModel = playerModel;
       await loadOutlines();
+      await ifShouldBackup();
     }
   }
 }

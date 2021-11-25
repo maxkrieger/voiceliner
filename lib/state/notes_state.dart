@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,11 +27,13 @@ class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
   bool shouldLocate = false;
   bool isReady = false;
+  Completer<bool> _readyCompleter = Completer();
   bool isIniting = false;
   final LinkedList<Note> notes = LinkedList<Note>();
-  final scrollController = ScrollController();
+  final AutoScrollController scrollController = AutoScrollController();
   Note? currentlyExpanded;
   Note? _currentlyPlayingOrRecording;
+  Future<bool> get finishedInit => _readyCompleter.future;
   Note? get currentlyPlayingOrRecording => _currentlyPlayingOrRecording;
   set currentlyPlayingOrRecording(Note? note) {
     _currentlyPlayingOrRecording = note;
@@ -427,6 +431,8 @@ class NotesModel extends ChangeNotifier {
       shouldTranscribe = prefs.getBool(shouldTranscribeKey) ?? false;
       shouldLocate = prefs.getBool(shouldLocateKey) ?? false;
       isReady = true;
+      _readyCompleter.complete(true);
+      _readyCompleter = Completer();
       notifyListeners();
       isIniting = false;
       await runJobs();

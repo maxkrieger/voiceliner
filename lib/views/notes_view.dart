@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
@@ -11,9 +12,12 @@ import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
 
+import '../consts.dart';
+
 class NotesViewArgs {
   final String outlineId;
-  NotesViewArgs(this.outlineId);
+  final String? scrollToNoteId;
+  NotesViewArgs(this.outlineId, {this.scrollToNoteId});
 }
 
 class NotesView extends StatelessWidget {
@@ -21,19 +25,18 @@ class NotesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outlineId =
-        (ModalRoute.of(context)!.settings.arguments as NotesViewArgs).outlineId;
+    final args = (ModalRoute.of(context)!.settings.arguments as NotesViewArgs);
     return ChangeNotifierProxyProvider2<PlayerModel, DBRepository, NotesModel>(
-      child: _NotesView(outlineId: outlineId),
-      create: (BuildContext context) => NotesModel(outlineId),
-      update: (_, pl, db, n) => (n ?? NotesModel(outlineId))..load(pl, db),
+      child: _NotesView(args: args),
+      create: (BuildContext context) => NotesModel(args.outlineId),
+      update: (_, pl, db, n) => (n ?? NotesModel(args.outlineId))..load(pl, db),
     );
   }
 }
 
 class _NotesView extends StatefulWidget {
-  final String outlineId;
-  const _NotesView({Key? key, required this.outlineId}) : super(key: key);
+  final NotesViewArgs args;
+  const _NotesView({Key? key, required this.args}) : super(key: key);
 
   @override
   _NotesViewState createState() => _NotesViewState();
@@ -48,8 +51,37 @@ class _NotesViewState extends State<_NotesView> {
     _renameController.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    tryScroll();
+  }
+
+  Future<void> tryScroll() async {
+    await context.read<NotesModel>().finishedInit;
+    await Future.delayed(const Duration(milliseconds: 200));
+    final model = context.read<NotesModel>();
+    final scrollController = model.scrollController;
+    if (scrollController.hasClients) {
+      if (widget.args.scrollToNoteId == null) {
+        scrollController.animateTo(scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.fastOutSlowIn);
+      } else {
+        final idx = model.notes
+            .toList(growable: false)
+            .indexWhere((element) => element.id == widget.args.scrollToNoteId);
+        scrollController.scrollToIndex(idx,
+            preferPosition: AutoScrollPosition.middle);
+        scrollController.highlight(idx);
+        final note = model.notes.elementAt(idx);
+        model.setCurrentlyExpanded(note);
+      }
+    }
+  }
+
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
-    final outlineId = widget.outlineId;
+    final outlineId = widget.args.outlineId;
     final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
     return [
       const PopupMenuItem(
@@ -123,7 +155,6 @@ class _NotesViewState extends State<_NotesView> {
       _renameController.selection = TextSelection(
           baseOffset: 0, extentOffset: _renameController.value.text.length);
       showDialog(
-          barrierDismissible: false,
           context: context,
           builder: (dialogCtx) => AlertDialog(
                   title: Text("Rename Outline '${outline.name}'"),
@@ -176,7 +207,7 @@ class _NotesViewState extends State<_NotesView> {
   }
 
   Widget buildChild(BuildContext context) {
-    final outlineId = widget.outlineId;
+    final outlineId = widget.args.outlineId;
     final currentOutlineName = context.select<OutlinesModel, String>((value) =>
         value.outlines
             .firstWhere((element) => element.id == outlineId,
@@ -184,7 +215,7 @@ class _NotesViewState extends State<_NotesView> {
             .name);
     final noteCount =
         context.select<NotesModel, int>((value) => value.notes.length);
-    final scrollController = context.select<NotesModel, ScrollController>(
+    final scrollController = context.select<NotesModel, AutoScrollController>(
         (value) => value.scrollController);
     final playerState =
         context.select<PlayerModel, PlayerState>((value) => value.playerState);
@@ -250,18 +281,25 @@ class _NotesViewState extends State<_NotesView> {
                               )
                             ]))
                       : Scrollbar(
+                          controller: scrollController,
+                          interactive: true,
                           child: ReorderableListView.builder(
-                          onReorder: (a, b) {
-                            context.read<NotesModel>().swapNotes(a, b);
-                            HapticFeedback.mediumImpact();
-                          },
-                          scrollController: scrollController,
-                          padding: const EdgeInsets.only(bottom: 150),
-                          shrinkWrap: true,
-                          itemBuilder: (_, int idx) =>
-                              NoteItem(key: Key("note-$idx"), num: idx),
-                          itemCount: noteCount,
-                        ))),
+                            onReorder: (a, b) {
+                              context.read<NotesModel>().swapNotes(a, b);
+                              HapticFeedback.mediumImpact();
+                            },
+                            scrollController: scrollController,
+                            padding: const EdgeInsets.only(bottom: 150),
+                            shrinkWrap: true,
+                            itemBuilder: (_, int idx) => AutoScrollTag(
+                                key: ValueKey(idx),
+                                controller: scrollController,
+                                highlightColor: classicPurple.withOpacity(0.5),
+                                index: idx,
+                                child:
+                                    NoteItem(key: Key("note-$idx"), num: idx)),
+                            itemCount: noteCount,
+                          ))),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

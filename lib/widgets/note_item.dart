@@ -52,7 +52,6 @@ class _NoteItemState extends State<NoteItem> {
     _renameController.selection = TextSelection(
         baseOffset: 0, extentOffset: _renameController.value.text.length);
     showDialog(
-        barrierDismissible: false,
         context: context,
         builder: (dialogCtx) => AlertDialog(
                 title: const Text("Change text"),

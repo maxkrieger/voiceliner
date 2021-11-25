@@ -37,9 +37,9 @@ class _MapViewState extends State<MapView> {
     loadPins();
   }
 
-  void pushOutline(BuildContext ctx, String outlineId) {
+  void pushOutline(BuildContext ctx, String outlineId, String noteId) {
     Navigator.pushNamedAndRemoveUntil(ctx, "/notes", (_) => false,
-        arguments: NotesViewArgs(outlineId));
+        arguments: NotesViewArgs(outlineId, scrollToNoteId: noteId));
   }
 
   Future<void> loadPins() async {
@@ -103,8 +103,8 @@ class _MapViewState extends State<MapView> {
                                     style: ElevatedButton.styleFrom(
                                         primary: Colors.deepPurpleAccent
                                             .withOpacity(0.5)),
-                                    onPressed: () =>
-                                        pushOutline(ctx, note.outlineId),
+                                    onPressed: () => pushOutline(
+                                        ctx, note.outlineId, note.id),
                                     child: Text(
                                       note.label,
                                       overflow: TextOverflow.fade,

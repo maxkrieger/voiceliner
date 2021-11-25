@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
@@ -104,7 +105,7 @@ class _RecordButtonState extends State<RecordButton> {
                         offset: offset + const Offset(-100, -95))
                 ],
                 borderRadius: BorderRadius.circular(100.0),
-                color: const Color.fromRGBO(169, 129, 234, 0.9),
+                color: classicPurple.withOpacity(0.9),
               )),
         ));
   }

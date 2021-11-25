@@ -26,7 +26,10 @@ Future<DriveApi> getDrive() async {
   return DriveApi(httpClient);
 }
 
-Future<void> ifShouldBackup(SharedPreferences sp) async {
+bool backingUp = false;
+
+Future<void> ifShouldBackup() async {
+  final sp = await SharedPreferences.getInstance();
   final lastBackup = sp.getInt("last_backed_up");
   final shouldBackup = sp.getBool(driveEnabledKey) ?? false;
   if (shouldBackup &&
@@ -37,10 +40,12 @@ Future<void> ifShouldBackup(SharedPreferences sp) async {
               0)) {
     ConnectivityResult connectivityResult =
         await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    if (connectivityResult != ConnectivityResult.none && !backingUp) {
       Sentry.addBreadcrumb(Breadcrumb(
           message: "Initiating auto back up", timestamp: DateTime.now()));
+      backingUp = true;
       await makeBackup();
+      backingUp = false;
     }
   }
 }

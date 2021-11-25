@@ -24,7 +24,6 @@ Future<void> main() async {
   if (sharedPrefs.getBool(driveEnabledKey) ?? false) {
     await googleSignIn.signInSilently();
   }
-  ifShouldBackup(sharedPrefs);
   void appRunner() => runApp(MultiProvider(
           providers: [
             ChangeNotifierProvider<PlayerModel>(
@@ -88,7 +87,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
       return const Center(child: CircularProgressIndicator());
     }
     return MaterialApp(
-      title: 'Voice Outliner',
+      title: 'Voiceliner',
       onGenerateRoute: (RouteSettings route) {
         saveRoute(route);
         final rte = routes[route.name];
