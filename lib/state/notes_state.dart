@@ -26,6 +26,7 @@ final defaultNote = Note(
 class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
   bool shouldLocate = false;
+  bool showCompleted = true;
   bool isReady = false;
   Completer<bool> _readyCompleter = Completer();
   bool isIniting = false;
@@ -43,8 +44,15 @@ class NotesModel extends ChangeNotifier {
   final String _outlineId;
   late PlayerModel _playerModel;
   late DBRepository _dbRepository;
+  late SharedPreferences prefs;
 
   NotesModel(this._outlineId);
+
+  Future<void> toggleShowCompleted() async {
+    showCompleted = !showCompleted;
+    await prefs.setBool(showCompletedKey, showCompleted);
+    notifyListeners();
+  }
 
   @override
   void dispose() {
@@ -97,7 +105,7 @@ class NotesModel extends ChangeNotifier {
           if (res.item1 && isReady) {
             entry.transcribed = true;
             entry.transcript = res.item2;
-            rebuildNote(entry);
+            await rebuildNote(entry);
           }
         }
       });
@@ -319,16 +327,14 @@ class NotesModel extends ChangeNotifier {
         Breadcrumb(message: "Deleted note", timestamp: DateTime.now()));
   }
 
-  // Snapshot hack
+  // HACK: forces rendering
   Future<void> rebuildNote(Note note) async {
-    final newNote = Note.fromMap(note.map);
-    note.insertAfter(newNote);
-    note.unlink();
-    if (currentlyExpanded != null && currentlyExpanded!.id == note.id) {
-      currentlyExpanded = newNote;
-    }
+    note.dateCreated = note.dateCreated.add(const Duration(microseconds: 1));
     notifyListeners();
-    await _dbRepository.updateNote(newNote);
+    // note.dateCreated =
+    //     note.dateCreated.subtract(const Duration(milliseconds: 1));
+    // notifyListeners();
+    await _dbRepository.updateNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Rebuilt note", timestamp: DateTime.now()));
   }
@@ -336,11 +342,6 @@ class NotesModel extends ChangeNotifier {
   Future<void> setNoteTranscript(Note note, String transcript) async {
     note.transcript = transcript;
     note.transcribed = true;
-    await rebuildNote(note);
-  }
-
-  Future<void> setNoteComplete(Note note, bool complete) async {
-    note.isComplete = complete;
     await rebuildNote(note);
   }
 
@@ -357,6 +358,17 @@ class NotesModel extends ChangeNotifier {
     return isDescendantOf(
         notes.firstWhere((element) => element.id == candidate.parentNoteId),
         of);
+  }
+
+  Future<void> setNoteComplete(Note note, bool complete) async {
+    note.isComplete = complete;
+    for (Note entry in notes) {
+      if (isDescendantOf(entry, note)) {
+        entry.isComplete = complete;
+        await rebuildNote(entry);
+      }
+    }
+    await rebuildNote(note);
   }
 
   Future<void> swapNotes(int a, int b) async {
@@ -427,9 +439,10 @@ class NotesModel extends ChangeNotifier {
       }
       currentlyExpanded = null;
       currentlyPlayingOrRecording = null;
-      final prefs = await SharedPreferences.getInstance();
+      prefs = await SharedPreferences.getInstance();
       shouldTranscribe = prefs.getBool(shouldTranscribeKey) ?? false;
       shouldLocate = prefs.getBool(shouldLocateKey) ?? false;
+      showCompleted = prefs.getBool(showCompletedKey) ?? true;
       isReady = true;
       _readyCompleter.complete(true);
       _readyCompleter = Completer();

@@ -5,6 +5,7 @@ const driveEnabledKey = "drive_enabled";
 const lastBackupKey = "last_backed_up";
 const shouldTranscribeKey = "should_transcribe";
 const shouldLocateKey = "should_locate";
+const showCompletedKey = "show_completed";
 
 const classicPurple = Color.fromRGBO(169, 129, 234, 1.0);
 final locationInstance = Location();

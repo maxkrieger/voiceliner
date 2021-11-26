@@ -8,7 +8,11 @@ import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 final defaultOutline = Outline(
-    name: "", id: "", dateCreated: DateTime.now(), dateUpdated: DateTime.now());
+    name: "",
+    id: "",
+    dateCreated: DateTime.now(),
+    dateUpdated: DateTime.now(),
+    archived: false);
 
 class OutlinesModel extends ChangeNotifier {
   OutlinesModel();
@@ -24,7 +28,8 @@ class OutlinesModel extends ChangeNotifier {
         name: name,
         id: uuid.v4(),
         dateCreated: DateTime.now().toUtc(),
-        dateUpdated: DateTime.now().toUtc());
+        dateUpdated: DateTime.now().toUtc(),
+        archived: false);
     outlines.insert(0, outline);
     notifyListeners();
     await _dbRepository.addOutline(outline);

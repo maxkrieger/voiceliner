@@ -34,7 +34,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    loadPins();
+    Future.delayed(Duration.zero, () => loadPins());
   }
 
   void pushOutline(BuildContext ctx, String outlineId, String noteId) {
@@ -44,12 +44,13 @@ class _MapViewState extends State<MapView> {
 
   Future<void> loadPins() async {
     List<Map<String, dynamic>> results = [];
+    // completed = 0
     if (widget.outlineId != null) {
       results.addAll(await context
           .read<DBRepository>()
           .getNotesForOutlineId(widget.outlineId!));
     } else {
-      //  TODO: getAllNotes
+      results.addAll(await context.read<DBRepository>().getAllNotes());
     }
     final filtered = results
         .where((element) => element["latitude"] != null)

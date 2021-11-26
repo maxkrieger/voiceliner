@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 class Note extends LinkedListEntry<Note> {
   final String id;
   final String filePath;
-  final DateTime dateCreated;
+  DateTime dateCreated;
   bool isComplete;
   bool isCollapsed;
   bool transcribed = false;

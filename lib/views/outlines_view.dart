@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_outliner/state/outline_state.dart';
+import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
 import 'package:voice_outliner/widgets/outlines_list.dart';
@@ -69,6 +70,27 @@ class _OutlinesViewState extends State<OutlinesView> {
         context, MaterialPageRoute(builder: (_) => const SettingsView()));
   }
 
+  List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
+    return [
+      const PopupMenuItem(
+          value: "map",
+          child: ListTile(leading: Icon(Icons.map), title: Text("map"))),
+      const PopupMenuItem(
+          value: "settings",
+          child:
+              ListTile(leading: Icon(Icons.settings), title: Text("settings"))),
+    ];
+  }
+
+  void _handleMenu(String item) {
+    if (item == "settings") {
+      _openSettings();
+    } else if (item == "map") {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const MapView()));
+    }
+  }
+
   @override
   Widget build(BuildContext ct) {
     final ready = context.select<OutlinesModel, bool>((value) => value.isReady);
@@ -86,10 +108,10 @@ class _OutlinesViewState extends State<OutlinesView> {
           automaticallyImplyLeading: false,
           title: const Text("Voiceliner"),
           actions: [
-            IconButton(
-                onPressed: _openSettings,
-                tooltip: "settings",
-                icon: const Icon(Icons.settings))
+            PopupMenuButton(
+                icon: const Icon(Icons.more_vert),
+                itemBuilder: _menuBuilder,
+                onSelected: (String item) => _handleMenu(item))
           ],
         ),
         floatingActionButton: FloatingActionButton(

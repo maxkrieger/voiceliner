@@ -15,7 +15,9 @@ import 'outlines_list.dart';
 
 class NoteItem extends StatefulWidget {
   final int num;
-  const NoteItem({Key? key, required this.num}) : super(key: key);
+  final bool showCompleted;
+  const NoteItem({Key? key, required this.num, required this.showCompleted})
+      : super(key: key);
 
   @override
   _NoteItemState createState() => _NoteItemState();
@@ -115,7 +117,7 @@ class _NoteItemState extends State<NoteItem> {
       const PopupMenuItem(
           value: "move",
           child: ListTile(
-              leading: Icon(Icons.playlist_play), title: Text("move to"))),
+              leading: Icon(Icons.playlist_play), title: Text("move"))),
       if (note.latitude != null && note.longitude != null)
         const PopupMenuItem(
             value: "locate",
@@ -194,6 +196,19 @@ class _NoteItemState extends State<NoteItem> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           color: const Color.fromRGBO(237, 226, 255, 0.8),
           margin: const EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0));
+    }
+
+    // HACK: forces rendering
+    final dateCreated = context.select<NotesModel?, DateTime?>((m) {
+      return m == null
+          ? null
+          : m.notes.length > widget.num
+              ? m.notes.elementAt(widget.num).dateCreated
+              : defaultNote.dateCreated;
+    });
+
+    if (note.isComplete && !widget.showCompleted) {
+      return const SizedBox(height: 0);
     }
     final isTranscribing =
         context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
@@ -281,7 +296,7 @@ class _NoteItemState extends State<NoteItem> {
                             style: const TextStyle(
                                 color: Color.fromRGBO(0, 0, 0, .5)),
                           ),
-                      date: note.dateCreated),
+                      date: dateCreated!),
                   PopupMenuButton(
                       itemBuilder: _menuBuilder,
                       icon: const Icon(Icons.more_vert),

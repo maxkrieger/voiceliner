@@ -84,15 +84,25 @@ class _NotesViewState extends State<_NotesView> {
     final outlineId = widget.args.outlineId;
     final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
     return [
+      if (context.read<NotesModel>().shouldLocate)
+        const PopupMenuItem(
+            value: "map",
+            child: ListTile(leading: Icon(Icons.map), title: Text("map"))),
+      PopupMenuItem(
+          value: "show_completed",
+          child: context.read<NotesModel>().showCompleted
+              ? const ListTile(
+                  leading: Icon(Icons.unpublished),
+                  title: Text("hide completed"))
+              : const ListTile(
+                  leading: Icon(Icons.check_circle),
+                  title: Text("show completed"))),
+      const PopupMenuDivider(),
       const PopupMenuItem(
           value: "rename",
           child: ListTile(
               leading: Icon(Icons.drive_file_rename_outline),
               title: Text("rename outline"))),
-      if (context.read<NotesModel>().shouldLocate)
-        const PopupMenuItem(
-            value: "map",
-            child: ListTile(leading: Icon(Icons.map), title: Text("view map"))),
       const PopupMenuItem(
           value: "export_md",
           child: ListTile(
@@ -188,6 +198,8 @@ class _NotesViewState extends State<_NotesView> {
     } else if (item == "time") {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(outline.dateCreated.toLocal().toString())));
+    } else if (item == "show_completed") {
+      context.read<NotesModel>().toggleShowCompleted();
     } else {
       print("unhandled");
       Sentry.captureMessage("Unhandled item", level: SentryLevel.error);
@@ -219,6 +231,8 @@ class _NotesViewState extends State<_NotesView> {
         (value) => value.scrollController);
     final playerState =
         context.select<PlayerModel, PlayerState>((value) => value.playerState);
+    final showCompleted =
+        context.select<NotesModel, bool>((value) => value.showCompleted);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -296,8 +310,11 @@ class _NotesViewState extends State<_NotesView> {
                                 controller: scrollController,
                                 highlightColor: classicPurple.withOpacity(0.5),
                                 index: idx,
-                                child:
-                                    NoteItem(key: Key("note-$idx"), num: idx)),
+                                child: NoteItem(
+                                  key: Key("note-$idx"),
+                                  num: idx,
+                                  showCompleted: showCompleted,
+                                )),
                             itemCount: noteCount,
                           ))),
       floatingActionButton: const RecordButton(),

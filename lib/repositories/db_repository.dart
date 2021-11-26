@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 
-const int dbVersion = 4;
+const int dbVersion = 5;
 
 const String noteTableDef = '''
       id TEXT PRIMARY KEY NOT NULL, 
@@ -51,7 +51,8 @@ CREATE TABLE outline (
       id TEXT PRIMARY KEY NOT NULL, 
       name TEXT NOT NULL,
       date_created INTEGER NOT NULL,
-      date_updated INTEGER NOT NULL
+      date_updated INTEGER NOT NULL,
+      archived INTEGER NOT NULL DEFAULT 0
 )''');
     batch.execute("CREATE TABLE note($noteTableDef)");
     await batch.commit(noResult: true);
@@ -128,6 +129,10 @@ CREATE TABLE outline (
       batch.execute("ALTER TABLE note ADD COLUMN longitude REAL");
       batch.execute("ALTER TABLE note ADD COLUMN latitude REAL");
     }
+    if (oldVersion < 5) {
+      batch.execute(
+          "ALTER TABLE outline ADD COLUMN archived INTEGER NOT NULL DEFAULT 0");
+    }
     print("done migrating");
     await batch.commit();
   }
@@ -153,6 +158,12 @@ CREATE TABLE outline (
     return result;
   }
 
+  Future<List<Map<String, dynamic>>> getAllNotes() async {
+    // TODO: probably filter for if done
+    final result = await _database.query("note");
+    return result;
+  }
+
   Future<List<Map<String, dynamic>>> getNotesForOutlineId(
       String outlineId) async {
     final result = await _database
@@ -172,6 +183,7 @@ CREATE TABLE outline (
       batch.rawUpdate("UPDATE note SET predecessor_note_id = ? WHERE id = ?",
           [note.id, fst["id"]]);
     }
+    writeOutlineUpdated(batch, outlineId);
     await batch.commit();
   }
 
