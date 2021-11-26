@@ -6,15 +6,24 @@ import 'package:voice_outliner/state/outline_state.dart';
 
 class OutlinesList extends StatelessWidget {
   final Function(String) onTap;
-  const OutlinesList({Key? key, required this.onTap}) : super(key: key);
+  final bool showArchived;
+  const OutlinesList({Key? key, required this.onTap, this.showArchived = false})
+      : super(key: key);
 
   Widget _buildOutline(BuildContext ctx, int num) {
     return Builder(builder: (ct) {
       final outline = ct.select<OutlinesModel, Outline>((value) =>
           value.outlines.length > num ? value.outlines[num] : defaultOutline);
+      if (!showArchived && outline.archived) {
+        return const SizedBox(height: 0);
+      }
       return Card(
           key: Key("outline-$num"),
           child: ListTile(
+            leading: outline.archived ? const Icon(Icons.archive) : null,
+            tileColor: outline.archived
+                ? const Color.fromRGBO(175, 175, 175, 0.1)
+                : null,
             title: Text(outline.name),
             subtitle:
                 Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),

@@ -44,13 +44,14 @@ class _MapViewState extends State<MapView> {
 
   Future<void> loadPins() async {
     List<Map<String, dynamic>> results = [];
-    // completed = 0
     if (widget.outlineId != null) {
       results.addAll(await context
           .read<DBRepository>()
-          .getNotesForOutlineId(widget.outlineId!));
+          .getNotesForOutlineId(widget.outlineId!, requireUncomplete: true));
     } else {
-      results.addAll(await context.read<DBRepository>().getAllNotes());
+      results.addAll(await context
+          .read<DBRepository>()
+          .getAllNotes(requireUncomplete: true));
     }
     final filtered = results
         .where((element) => element["latitude"] != null)
@@ -88,6 +89,8 @@ class _MapViewState extends State<MapView> {
               ? FlutterMap(
                   options: MapOptions(
                       bounds: bounds,
+                      interactiveFlags:
+                          InteractiveFlag.all - InteractiveFlag.rotate,
                       boundsOptions:
                           const FitBoundsOptions(padding: EdgeInsets.all(8.0))),
                   layers: [

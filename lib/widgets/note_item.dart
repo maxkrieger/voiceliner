@@ -332,6 +332,7 @@ class _NoteItemState extends State<NoteItem> {
                     )
                   ]),
               leading: IconButton(
+                  tooltip: "play note",
                   padding: EdgeInsets.zero,
                   onPressed: () => context.read<NotesModel>().playNote(note),
                   icon: isCurrent

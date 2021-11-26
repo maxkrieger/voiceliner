@@ -108,11 +108,22 @@ class _NotesViewState extends State<_NotesView> {
           child: ListTile(
               leading: Icon(Icons.receipt_long),
               title: Text("export markdown"))),
-      const PopupMenuItem(
-          value: "delete",
-          child: ListTile(
-              leading: Icon(Icons.delete_forever),
-              title: Text("delete outline"))),
+      if (outline.archived) ...[
+        const PopupMenuItem(
+            value: "unarchive",
+            child: ListTile(
+                leading: Icon(Icons.unarchive),
+                title: Text("unarchive outline"))),
+        const PopupMenuItem(
+            value: "delete",
+            child: ListTile(
+                leading: Icon(Icons.delete_forever),
+                title: Text("delete outline")))
+      ] else
+        const PopupMenuItem(
+            value: "archive",
+            child: ListTile(
+                leading: Icon(Icons.archive), title: Text("archive outline"))),
       const PopupMenuDivider(),
       PopupMenuItem(
           value: "time",
@@ -128,7 +139,8 @@ class _NotesViewState extends State<_NotesView> {
     ];
   }
 
-  void _handleMenu(String item, String outlineId) {
+  void _handleMenu(String item) {
+    final outlineId = widget.args.outlineId;
     final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
     if (item == "delete") {
       showDialog(
@@ -200,10 +212,18 @@ class _NotesViewState extends State<_NotesView> {
           SnackBar(content: Text(outline.dateCreated.toLocal().toString())));
     } else if (item == "show_completed") {
       context.read<NotesModel>().toggleShowCompleted();
+    } else if (item == "archive" || item == "unarchive") {
+      _toggleArchive();
     } else {
       print("unhandled");
       Sentry.captureMessage("Unhandled item", level: SentryLevel.error);
     }
+  }
+
+  void _toggleArchive() {
+    final outline =
+        context.read<OutlinesModel>().getOutlineFromId(widget.args.outlineId);
+    context.read<OutlinesModel>().toggleArchive(outline);
   }
 
   @override
@@ -225,6 +245,11 @@ class _NotesViewState extends State<_NotesView> {
             .firstWhere((element) => element.id == outlineId,
                 orElse: () => defaultOutline)
             .name);
+    final currentOutlineArchived = context.select<OutlinesModel, bool>(
+        (value) => value.outlines
+            .firstWhere((element) => element.id == outlineId,
+                orElse: () => defaultOutline)
+            .archived);
     final noteCount =
         context.select<NotesModel, int>((value) => value.notes.length);
     final scrollController = context.select<NotesModel, AutoScrollController>(
@@ -239,21 +264,29 @@ class _NotesViewState extends State<_NotesView> {
         title: TextButton(
           style: TextButton.styleFrom(
               primary: Colors.white, textStyle: const TextStyle(fontSize: 20)),
-          child: Text(
-            currentOutlineName,
-          ),
-          onPressed: () => _handleMenu("rename", outlineId),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(
+              currentOutlineName,
+            )
+          ]),
+          onPressed: () => _handleMenu("rename"),
         ),
         leading: IconButton(
+            tooltip: "all outlines",
             onPressed: () {
               Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
             },
             icon: const Icon(Icons.view_list_rounded)),
         actions: [
+          if (currentOutlineArchived)
+            IconButton(
+                tooltip: "currently archived - unarchive?",
+                icon: const Icon(Icons.unarchive),
+                onPressed: _toggleArchive),
           PopupMenuButton(
               icon: const Icon(Icons.more_vert),
               itemBuilder: _menuBuilder,
-              onSelected: (String item) => _handleMenu(item, outlineId))
+              onSelected: (String item) => _handleMenu(item))
         ],
       ),
       body: (playerState == PlayerState.notReady

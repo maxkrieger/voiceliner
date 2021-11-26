@@ -7,7 +7,7 @@ class Outline {
       required this.archived});
   String name;
   final String id;
-  final bool archived;
+  bool archived;
   final DateTime dateCreated;
   final DateTime dateUpdated;
 

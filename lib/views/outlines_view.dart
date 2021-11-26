@@ -75,6 +75,14 @@ class _OutlinesViewState extends State<OutlinesView> {
       const PopupMenuItem(
           value: "map",
           child: ListTile(leading: Icon(Icons.map), title: Text("map"))),
+      PopupMenuItem(
+          value: "show_archived",
+          child: context.read<OutlinesModel>().showArchived
+              ? const ListTile(
+                  leading: Icon(Icons.archive), title: Text("hide archived"))
+              : const ListTile(
+                  leading: Icon(Icons.unarchive),
+                  title: Text("show archived"))),
       const PopupMenuItem(
           value: "settings",
           child:
@@ -88,6 +96,8 @@ class _OutlinesViewState extends State<OutlinesView> {
     } else if (item == "map") {
       Navigator.push(
           context, MaterialPageRoute(builder: (_) => const MapView()));
+    } else if (item == "show_archived") {
+      context.read<OutlinesModel>().toggleShowArchived();
     }
   }
 
@@ -96,6 +106,8 @@ class _OutlinesViewState extends State<OutlinesView> {
     final ready = context.select<OutlinesModel, bool>((value) => value.isReady);
     final numOutlines =
         context.select<OutlinesModel, int>((value) => value.outlines.length);
+    final showArchived =
+        context.select<OutlinesModel, bool>((value) => value.showArchived);
     if (!ready) {
       return const Scaffold(
           body: Center(
@@ -127,6 +139,9 @@ class _OutlinesViewState extends State<OutlinesView> {
                       "create your first outline",
                       style: TextStyle(fontSize: 20.0),
                     )))
-            : OutlinesList(onTap: _pushOutline));
+            : OutlinesList(
+                onTap: _pushOutline,
+                showArchived: showArchived,
+              ));
   }
 }

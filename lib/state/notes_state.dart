@@ -331,9 +331,6 @@ class NotesModel extends ChangeNotifier {
   Future<void> rebuildNote(Note note) async {
     note.dateCreated = note.dateCreated.add(const Duration(microseconds: 1));
     notifyListeners();
-    // note.dateCreated =
-    //     note.dateCreated.subtract(const Duration(milliseconds: 1));
-    // notifyListeners();
     await _dbRepository.updateNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Rebuilt note", timestamp: DateTime.now()));

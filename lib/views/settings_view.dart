@@ -103,7 +103,7 @@ class _SettingsViewState extends State<SettingsView> {
                   SwitchListTile(
                     secondary: const Icon(Icons.location_pin),
                     title: const Text("Attach location"),
-                    subtitle: const Text("Remember where you took a note."),
+                    subtitle: const Text("remember where you took a note"),
                     value: sharedPreferences.getBool(shouldLocateKey) ?? false,
                     onChanged: toggleLocation,
                   ),

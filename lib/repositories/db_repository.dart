@@ -158,14 +158,23 @@ CREATE TABLE outline (
     return result;
   }
 
-  Future<List<Map<String, dynamic>>> getAllNotes() async {
-    // TODO: probably filter for if done
+  Future<List<Map<String, dynamic>>> getAllNotes(
+      {bool requireUncomplete = false}) async {
+    if (requireUncomplete) {
+      final result = await _database.query("note", where: "is_complete = 0");
+      return result;
+    }
     final result = await _database.query("note");
     return result;
   }
 
-  Future<List<Map<String, dynamic>>> getNotesForOutlineId(
-      String outlineId) async {
+  Future<List<Map<String, dynamic>>> getNotesForOutlineId(String outlineId,
+      {bool requireUncomplete = false}) async {
+    if (requireUncomplete) {
+      final result = await _database.query("note",
+          where: "outline_id = ? AND is_complete = 0", whereArgs: [outlineId]);
+      return result;
+    }
     final result = await _database
         .query("note", where: "outline_id = ?", whereArgs: [outlineId]);
     return result;
@@ -215,6 +224,14 @@ CREATE TABLE outline (
     final batch = _database.batch();
     batch.rawUpdate(
         "UPDATE outline SET name = ? WHERE id = ?", [outline.name, outline.id]);
+    writeOutlineUpdated(batch, outline.id);
+    await batch.commit();
+  }
+
+  Future<void> archiveToggleOutline(Outline outline) async {
+    final batch = _database.batch();
+    batch.rawUpdate("UPDATE outline SET archived = ? WHERE id = ?",
+        [outline.archived ? 1 : 0, outline.id]);
     writeOutlineUpdated(batch, outline.id);
     await batch.commit();
   }
