@@ -161,10 +161,29 @@ CREATE TABLE outline (
   Future<List<Map<String, dynamic>>> getAllNotes(
       {bool requireUncomplete = false}) async {
     if (requireUncomplete) {
-      final result = await _database.query("note", where: "is_complete = 0");
+      final result = await _database.rawQuery(
+        "SELECT * FROM note WHERE is_complete = 0 AND NOT EXISTS (SELECT 1 FROM outline WHERE id = note.outline_id AND archived = 1)",
+      );
       return result;
     }
     final result = await _database.query("note");
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> searchOutlines(String query,
+      {bool requireUnarchived = false}) async {
+    final result = await _database.query("outline",
+        where: "${requireUnarchived ? 'archived = 0 AND ' : ''}name LIKE ?",
+        whereArgs: ["%$query%"]);
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> searchNotes(String query,
+      {bool requireUncomplete = false}) async {
+    final result = await _database.query("note",
+        where:
+            "${requireUncomplete ? 'is_complete = 0 AND ' : ''}transcript IS NOT NULL AND transcript LIKE ?",
+        whereArgs: ["%$query%"]);
     return result;
   }
 

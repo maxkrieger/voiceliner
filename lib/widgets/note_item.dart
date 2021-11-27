@@ -277,18 +277,26 @@ class _NoteItemState extends State<NoteItem> {
                     .read<NotesModel>()
                     .setCurrentlyExpanded(st ? note : null);
               },
-              trailing: const SizedBox(width: 0),
-              tilePadding: EdgeInsets.zero,
+              trailing: Padding(
+                child: Text(
+                  note.duration != null ? "${note.duration!.inSeconds}s" : "",
+                  style: const TextStyle(color: Color.fromRGBO(0, 0, 0, .5)),
+                ),
+                padding: const EdgeInsets.only(right: 10),
+              ),
+              tilePadding: const EdgeInsets.only(left: 10),
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  Checkbox(
-                      value: note.isComplete,
-                      onChanged: (v) {
-                        context
-                            .read<NotesModel>()
-                            .setNoteComplete(note, v ?? false);
-                        HapticFeedback.mediumImpact();
-                      }),
+                  Tooltip(
+                      message: "mark note complete",
+                      child: Checkbox(
+                          value: note.isComplete,
+                          onChanged: (v) {
+                            context
+                                .read<NotesModel>()
+                                .setNoteComplete(note, v ?? false);
+                            HapticFeedback.mediumImpact();
+                          })),
                   const Spacer(),
                   Timeago(
                       builder: (_, t) => Text(
@@ -303,37 +311,26 @@ class _NoteItemState extends State<NoteItem> {
                       onSelected: _handleMenu)
                 ])
               ],
-              title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                        child: isTranscribing
-                            ? const Text(
-                                "waiting to transcribe...",
-                                style: TextStyle(
-                                    fontStyle: FontStyle.italic,
-                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
-                              )
-                            : Text(
-                                note.transcript == null
-                                    ? note.infoString
-                                    : note.transcript!,
-                                style: TextStyle(
-                                    decoration: note.isComplete
-                                        ? TextDecoration.lineThrough
-                                        : null),
-                              )),
-                    Text(
-                      note.duration != null
-                          ? "${note.duration!.inSeconds}s"
-                          : "",
-                      style:
-                          const TextStyle(color: Color.fromRGBO(0, 0, 0, .5)),
+              title: isTranscribing
+                  ? const Text(
+                      "waiting to transcribe...",
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Color.fromRGBO(0, 0, 0, 0.5)),
                     )
-                  ]),
+                  : Text(
+                      note.transcript == null
+                          ? note.infoString
+                          : note.transcript!,
+                      style: TextStyle(
+                          decoration: note.isComplete
+                              ? TextDecoration.lineThrough
+                              : null),
+                    ),
               leading: IconButton(
                   tooltip: "play note",
                   padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () => context.read<NotesModel>().playNote(note),
                   icon: isCurrent
                       ? const Icon(Icons.stop_circle_outlined)

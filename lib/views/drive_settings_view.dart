@@ -210,7 +210,8 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                   subtitle: const Text("backups occur daily when app is open"),
                   onTap: createBackup,
                 ),
-                ListView.builder(
+                Expanded(
+                    child: ListView.builder(
                   reverse: true,
                   itemBuilder: (ctx, idx) {
                     final backup = backups[idx];
@@ -231,7 +232,7 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                   },
                   shrinkWrap: true,
                   itemCount: backups.length,
-                ),
+                )),
               ]
             ])
           : const Center(child: CircularProgressIndicator()),

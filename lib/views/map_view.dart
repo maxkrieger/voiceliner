@@ -69,9 +69,6 @@ class _MapViewState extends State<MapView> {
         notes = filtered;
         bounds = LatLngBounds.fromPoints(filtered.map((e) => e.point).toList());
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No notes have locations")));
     }
     setState(() {
       loading = false;

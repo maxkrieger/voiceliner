@@ -65,7 +65,7 @@ class _NotesViewState extends State<_NotesView> {
     if (scrollController.hasClients) {
       if (widget.args.scrollToNoteId == null) {
         scrollController.animateTo(scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 100),
             curve: Curves.fastOutSlowIn);
       } else {
         final idx = model.notes

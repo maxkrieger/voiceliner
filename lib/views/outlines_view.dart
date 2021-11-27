@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:voice_outliner/consts.dart';
+import 'package:voice_outliner/data/note.dart';
+import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
 import 'package:voice_outliner/widgets/outlines_list.dart';
+import 'package:voice_outliner/widgets/search_results_list.dart';
 
 class OutlinesView extends StatefulWidget {
   const OutlinesView({Key? key}) : super(key: key);
@@ -14,6 +18,8 @@ class OutlinesView extends StatefulWidget {
 }
 
 class _OutlinesViewState extends State<OutlinesView> {
+  bool searchFocused = false;
+  List<GroupedResult> searchResults = [];
   final _textController = TextEditingController();
   Future<void> _addOutline() async {
     Future<void> _onSubmitted(BuildContext ctx) async {
@@ -101,6 +107,45 @@ class _OutlinesViewState extends State<OutlinesView> {
     }
   }
 
+  Future<void> performSearch(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        searchResults = [];
+      });
+      return;
+    }
+    final dbModel = context.read<DBRepository>();
+    final outlinesModel = context.read<OutlinesModel>();
+    // HACK: leaky I know
+    final showCompleted = outlinesModel.prefs.getBool(showCompletedKey) ?? true;
+    final notesResults =
+        await dbModel.searchNotes(query, requireUncomplete: !showCompleted);
+    final outlinesResults = await dbModel.searchOutlines(query,
+        requireUnarchived: !outlinesModel.showArchived);
+    Map<String, GroupedResult> results = {};
+    for (var outlineRes in outlinesResults) {
+      results[outlineRes["id"]] = GroupedResult(
+          outlinesModel.outlines
+              .firstWhere((element) => element.id == outlineRes["id"]),
+          []);
+    }
+    for (var noteRes in notesResults) {
+      if (!results.containsKey(noteRes["outline_id"])) {
+        results[noteRes["outline_id"]] = GroupedResult(
+            outlinesModel.outlines
+                .firstWhere((element) => element.id == noteRes["outline_id"]),
+            []);
+      }
+      results[noteRes["outline_id"]]?.notes.add(Note.fromMap(noteRes));
+    }
+    setState(() {
+      searchResults = results.values
+          .where((element) =>
+              outlinesModel.showArchived || !element.outline.archived)
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext ct) {
     final ready = context.select<OutlinesModel, bool>((value) => value.isReady);
@@ -116,32 +161,73 @@ class _OutlinesViewState extends State<OutlinesView> {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text("Voiceliner"),
-          actions: [
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AnimatedSwitcher(
+          child: searchFocused
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => setState(() {
+                    searchFocused = false;
+                  }),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => setState(() {
+                    searchFocused = true;
+                  }),
+                ),
+          duration: const Duration(milliseconds: 300),
+        ),
+        title: AnimatedSwitcher(
+            child: searchFocused
+                ? TextField(
+                    onChanged: performSearch,
+                    controller: _textController,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                        hintText: "search outlines and notes",
+                        suffixIcon: IconButton(
+                            color: Colors.white,
+                            onPressed: _textController.clear,
+                            icon: const Icon(Icons.clear)),
+                        hintStyle: const TextStyle(color: Colors.white)),
+                    autocorrect: false,
+                  )
+                : const Text("Voiceliner"),
+            duration: const Duration(milliseconds: 300)),
+        actions: [
+          if (!searchFocused)
             PopupMenuButton(
                 icon: const Icon(Icons.more_vert),
                 itemBuilder: _menuBuilder,
                 onSelected: (String item) => _handleMenu(item))
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          tooltip: "Add Outline",
-          onPressed: _addOutline,
-          child: const Icon(Icons.post_add_rounded),
-        ),
-        body: numOutlines == 0
-            ? Center(
-                child: ElevatedButton(
-                    onPressed: _addOutline,
-                    child: const Text(
-                      "create your first outline",
-                      style: TextStyle(fontSize: 20.0),
-                    )))
-            : OutlinesList(
-                onTap: _pushOutline,
-                showArchived: showArchived,
-              ));
+        ],
+      ),
+      floatingActionButton: !searchFocused
+          ? FloatingActionButton(
+              tooltip: "Add Outline",
+              onPressed: _addOutline,
+              child: const Icon(Icons.post_add_rounded),
+            )
+          : null,
+      body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: searchFocused
+              ? SearchResultsList(searchResults: searchResults)
+              : numOutlines == 0
+                  ? Center(
+                      child: ElevatedButton(
+                          onPressed: _addOutline,
+                          child: const Text(
+                            "create your first outline",
+                            style: TextStyle(fontSize: 20.0),
+                          )))
+                  : OutlinesList(
+                      onTap: _pushOutline,
+                      showArchived: showArchived,
+                    )),
+    );
   }
 }
