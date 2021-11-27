@@ -1,4 +1,5 @@
-# voice_outliner
+# Voiceliner
+An app written in Flutter.
 
 ## Building
 * `assets/speech_acct.json` needs to be a google speech to text service account credentials.
