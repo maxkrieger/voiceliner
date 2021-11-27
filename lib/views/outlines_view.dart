@@ -166,12 +166,14 @@ class _OutlinesViewState extends State<OutlinesView> {
         leading: AnimatedSwitcher(
           child: searchFocused
               ? IconButton(
+                  tooltip: "exit search",
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => setState(() {
                     searchFocused = false;
                   }),
                 )
               : IconButton(
+                  tooltip: "search outlines & notes",
                   icon: const Icon(Icons.search),
                   onPressed: () => setState(() {
                     searchFocused = true;
@@ -182,6 +184,8 @@ class _OutlinesViewState extends State<OutlinesView> {
         title: AnimatedSwitcher(
             child: searchFocused
                 ? TextField(
+                    showCursor: true,
+                    cursorColor: Colors.white,
                     onChanged: performSearch,
                     controller: _textController,
                     autofocus: true,
@@ -200,6 +204,7 @@ class _OutlinesViewState extends State<OutlinesView> {
         actions: [
           if (!searchFocused)
             PopupMenuButton(
+                tooltip: "settings & more",
                 icon: const Icon(Icons.more_vert),
                 itemBuilder: _menuBuilder,
                 onSelected: (String item) => _handleMenu(item))
@@ -212,22 +217,24 @@ class _OutlinesViewState extends State<OutlinesView> {
               child: const Icon(Icons.post_add_rounded),
             )
           : null,
-      body: AnimatedSwitcher(
+      body: AnimatedCrossFade(
+          crossFadeState: searchFocused
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 300),
-          child: searchFocused
-              ? SearchResultsList(searchResults: searchResults)
-              : numOutlines == 0
-                  ? Center(
-                      child: ElevatedButton(
-                          onPressed: _addOutline,
-                          child: const Text(
-                            "create your first outline",
-                            style: TextStyle(fontSize: 20.0),
-                          )))
-                  : OutlinesList(
-                      onTap: _pushOutline,
-                      showArchived: showArchived,
-                    )),
+          secondChild: SearchResultsList(searchResults: searchResults),
+          firstChild: numOutlines == 0
+              ? Center(
+                  child: ElevatedButton(
+                      onPressed: _addOutline,
+                      child: const Text(
+                        "create your first outline",
+                        style: TextStyle(fontSize: 20.0),
+                      )))
+              : OutlinesList(
+                  onTap: _pushOutline,
+                  showArchived: showArchived,
+                )),
     );
   }
 }

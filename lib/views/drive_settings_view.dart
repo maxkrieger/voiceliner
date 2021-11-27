@@ -212,14 +212,14 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                 ),
                 Expanded(
                     child: ListView.builder(
-                  reverse: true,
                   itemBuilder: (ctx, idx) {
-                    final backup = backups[idx];
+                    final index = backups.length - 1 - idx;
+                    final backup = backups[index];
                     return Card(
-                        key: Key("idx-$idx"),
+                        key: Key("idx-$index"),
                         child: ListTile(
                           leading: const Icon(Icons.restore),
-                          onLongPress: () => deleteIdx(idx),
+                          onLongPress: () => deleteIdx(index),
                           title: Text(DateFormat.yMd()
                               .add_jm()
                               .format(backup.item1.toLocal())),
@@ -227,7 +227,7 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                             date: backup.item1,
                             builder: (_, s) => Text(s),
                           ),
-                          onTap: () => restore(idx),
+                          onTap: () => restore(index),
                         ));
                   },
                   shrinkWrap: true,

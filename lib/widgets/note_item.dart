@@ -306,6 +306,7 @@ class _NoteItemState extends State<NoteItem> {
                           ),
                       date: dateCreated!),
                   PopupMenuButton(
+                      tooltip: "note options",
                       itemBuilder: _menuBuilder,
                       icon: const Icon(Icons.more_vert),
                       onSelected: _handleMenu)

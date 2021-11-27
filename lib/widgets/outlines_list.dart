@@ -27,9 +27,6 @@ class OutlinesList extends StatelessWidget {
             title: Text(outline.name),
             subtitle:
                 Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
-            onLongPress: () {
-              print("long press");
-            },
             onTap: () {
               onTap(outline.id);
             },

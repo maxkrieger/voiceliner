@@ -29,14 +29,22 @@ class _ResultNoteState extends State<ResultNote> {
             tooltip: "play note",
             padding: EdgeInsets.zero,
             onPressed: () {
-              setState(() {
-                playing = true;
-              });
-              context.read<PlayerModel>().playNote(widget.note, () {
+              final playerModel = context.read<PlayerModel>();
+              if (playing) {
                 setState(() {
                   playing = false;
                 });
-              });
+                playerModel.stopPlaying();
+              } else {
+                setState(() {
+                  playing = true;
+                });
+                playerModel.playNote(widget.note, () {
+                  setState(() {
+                    playing = false;
+                  });
+                });
+              }
             },
             constraints: const BoxConstraints(),
             icon: playing
@@ -76,7 +84,6 @@ class ResultGroup extends StatelessWidget {
     );
   }
 }
-// push to stack dont clear it
 
 class SearchResultsList extends StatelessWidget {
   final List<GroupedResult> searchResults;
@@ -88,13 +95,26 @@ class SearchResultsList extends StatelessWidget {
   Widget build(BuildContext context) {
     //FutureProvider thing - await result of query and show spinner
     if (searchResults.isEmpty) {
-      return const Center(child: Text("no results"));
+      return const Center(
+          child: Text(
+        "no results",
+        style: TextStyle(fontSize: 24, color: Color.fromRGBO(0, 0, 0, 0.5)),
+      ));
     }
-    return ListView(
-      children: searchResults
-          .map((e) => ResultGroup(groupedResult: e))
-          .toList(growable: false),
-      shrinkWrap: true,
-    );
+    // HACK to hide keyboard https://stackoverflow.com/questions/51652897/how-to-hide-soft-input-keyboard-on-flutter-after-clicking-outside-textfield-anyw
+    return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) {
+          final currentFocus = FocusScope.of(context);
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        child: ListView(
+          children: searchResults
+              .map((e) => ResultGroup(groupedResult: e))
+              .toList(growable: false),
+          shrinkWrap: true,
+        ));
   }
 }

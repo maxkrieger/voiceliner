@@ -261,16 +261,20 @@ class _NotesViewState extends State<_NotesView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: TextButton(
-          style: TextButton.styleFrom(
-              primary: Colors.white, textStyle: const TextStyle(fontSize: 20)),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(
-              currentOutlineName,
-            )
-          ]),
-          onPressed: () => _handleMenu("rename"),
-        ),
+        title: Tooltip(
+            message: "rename outline",
+            child: TextButton(
+              style: TextButton.styleFrom(
+                  primary: Colors.white,
+                  textStyle: const TextStyle(fontSize: 20)),
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(
+                  currentOutlineName,
+                )
+              ]),
+              onPressed: () => _handleMenu("rename"),
+            )),
         leading: IconButton(
             tooltip: "all outlines",
             onPressed: () {
@@ -284,6 +288,7 @@ class _NotesViewState extends State<_NotesView> {
                 icon: const Icon(Icons.unarchive),
                 onPressed: _toggleArchive),
           PopupMenuButton(
+              tooltip: "outline options",
               icon: const Icon(Icons.more_vert),
               itemBuilder: _menuBuilder,
               onSelected: (String item) => _handleMenu(item))
