@@ -31,7 +31,6 @@ class Note extends LinkedListEntry<Note> {
       this.longitude,
       required this.isCollapsed});
 
-  //TODO: color
   Note.fromMap(Map<String, dynamic> map)
       : id = map["id"],
         filePath = map["file_path"],

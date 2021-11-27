@@ -166,7 +166,7 @@ class NotesModel extends ChangeNotifier {
     } else {
       notes.add(note);
       if (scrollController.hasClients) {
-        scrollController.animateTo(scrollController.position.maxScrollExtent,
+        scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn);
       }
@@ -188,6 +188,7 @@ class NotesModel extends ChangeNotifier {
             message: "Couldn't locate note", timestamp: DateTime.now()));
       }
     }
+    // TODO: do this on note start and update here to prevent foreignkey data loss
     await _dbRepository.addNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Added note to db", timestamp: DateTime.now()));
