@@ -63,11 +63,7 @@ class _NotesViewState extends State<_NotesView> {
     final model = context.read<NotesModel>();
     final scrollController = model.scrollController;
     if (scrollController.hasClients) {
-      if (widget.args.scrollToNoteId == null) {
-        scrollController.animateTo(scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastOutSlowIn);
-      } else {
+      if (widget.args.scrollToNoteId != null) {
         final idx = model.notes
             .toList(growable: false)
             .indexWhere((element) => element.id == widget.args.scrollToNoteId);
@@ -336,23 +332,32 @@ class _NotesViewState extends State<_NotesView> {
                           controller: scrollController,
                           interactive: true,
                           child: ReorderableListView.builder(
+                            reverse: true,
                             onReorder: (a, b) {
-                              context.read<NotesModel>().swapNotes(a, b);
+                              // Normalize due to reversing
+                              final A = noteCount - 1 - a;
+                              final B = noteCount - b;
+                              context.read<NotesModel>().swapNotes(A, B);
                               HapticFeedback.mediumImpact();
                             },
                             scrollController: scrollController,
                             padding: const EdgeInsets.only(bottom: 150),
                             shrinkWrap: true,
-                            itemBuilder: (_, int idx) => AutoScrollTag(
-                                key: ValueKey(idx),
-                                controller: scrollController,
-                                highlightColor: classicPurple.withOpacity(0.5),
-                                index: idx,
-                                child: NoteItem(
-                                  key: Key("note-$idx"),
-                                  num: idx,
-                                  showCompleted: showCompleted,
-                                )),
+                            itemBuilder: (_, int idx) {
+                              // So that it starts at the bottom with reverse true
+                              final index = noteCount - 1 - idx;
+                              return AutoScrollTag(
+                                  key: ValueKey(index),
+                                  controller: scrollController,
+                                  highlightColor:
+                                      classicPurple.withOpacity(0.5),
+                                  index: index,
+                                  child: NoteItem(
+                                    key: Key("note-$index"),
+                                    num: index,
+                                    showCompleted: showCompleted,
+                                  ));
+                            },
                             itemCount: noteCount,
                           ))),
       floatingActionButton: const RecordButton(),
