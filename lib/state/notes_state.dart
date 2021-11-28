@@ -135,16 +135,21 @@ class NotesModel extends ChangeNotifier {
         parentNoteId: parent,
         isCollapsed: false);
     await _playerModel.startRecording(note);
+    await _dbRepository.addNote(note);
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "added note to db", timestamp: DateTime.now()));
     currentlyPlayingOrRecording = note;
+    notifyListeners();
   }
 
   Future<void> stopRecording(int color) async {
-    // prevent cutoff
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
+    // This delay prevents cutoff
     await Future.delayed(const Duration(milliseconds: 300));
     final note = currentlyPlayingOrRecording;
     currentlyPlayingOrRecording = null;
+    // HACK
     _playerModel.playerState = PlayerState.ready;
     notifyListeners();
     if (note == null) {
@@ -161,10 +166,14 @@ class NotesModel extends ChangeNotifier {
     if (currentlyExpanded != null) {
       note.parentNoteId = currentlyExpanded!.id;
       currentlyExpanded!.insertAfter(note);
+      await _dbRepository.updateNote(note);
+      // Due to notes below/nonstandard insertion point
+      await _dbRepository.realignNotes(notes);
       Sentry.addBreadcrumb(Breadcrumb(
           message: "Insert after expanded", timestamp: DateTime.now()));
     } else {
       notes.add(note);
+      await _dbRepository.updateNote(note);
       if (scrollController.hasClients) {
         scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300),
@@ -182,20 +191,13 @@ class NotesModel extends ChangeNotifier {
           loc.accuracy! < 1000.0) {
         note.longitude = loc.longitude;
         note.latitude = loc.latitude;
+        await _dbRepository.updateNote(note);
         notifyListeners();
       } else {
         Sentry.addBreadcrumb(Breadcrumb(
             message: "Couldn't locate note", timestamp: DateTime.now()));
       }
     }
-    // TODO: do this on note start and update here to prevent foreignkey data loss
-    await _dbRepository.addNote(note);
-    Sentry.addBreadcrumb(
-        Breadcrumb(message: "Added note to db", timestamp: DateTime.now()));
-    // NOTE: always realign when inserting
-    await _dbRepository.realignNotes(notes);
-    Sentry.addBreadcrumb(
-        Breadcrumb(message: "Realigned notes", timestamp: DateTime.now()));
     runJobs();
   }
 
