@@ -97,7 +97,8 @@ class NotesModel extends ChangeNotifier {
   Future<void> runJobs() async {
     ConnectivityResult connectivityResult =
         await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    // iOS can use offline tx
+    if (Platform.isIOS || connectivityResult != ConnectivityResult.none) {
       Sentry.addBreadcrumb(
           Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
       notes.forEach((entry) async {
@@ -144,8 +145,8 @@ class NotesModel extends ChangeNotifier {
         outlineId: _outlineId,
         parentNoteId: parent,
         isCollapsed: false);
-    await _playerModel.startRecording(note);
     HapticFeedback.mediumImpact();
+    await _playerModel.startRecording(note);
     await _dbRepository.addNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "added note to db", timestamp: DateTime.now()));
