@@ -16,6 +16,8 @@ PODS:
     - flutter_sound_core (= 8.4.2)
     - mobile-ffmpeg-audio (= 4.4.LTS)
   - flutter_sound_core (8.4.2)
+  - flutter_vibrate (0.0.1):
+    - Flutter
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
@@ -65,6 +67,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_archive (from `.symlinks/plugins/flutter_archive/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
+  - flutter_vibrate (from `.symlinks/plugins/flutter_vibrate/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - maps_launcher (from `.symlinks/plugins/maps_launcher/ios`)
@@ -99,6 +102,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_archive/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
+  flutter_vibrate:
+    :path: ".symlinks/plugins/flutter_vibrate/ios"
   google_sign_in:
     :path: ".symlinks/plugins/google_sign_in/ios"
   location:
@@ -129,6 +134,7 @@ SPEC CHECKSUMS:
   flutter_archive: 141014f758a0b31fde29add54952729eb1d61c95
   flutter_sound: db1364f901b96c17e00101c831994487186afdf4
   flutter_sound_core: 55a1665e7ef8cdb95ab9dd06581c746dd9c96e48
+  flutter_vibrate: 9f4c2ab57008965f78969472367c329dd77eb801
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_sign_in: c5cecea71f3be43282263550556e311c4cc03582
   GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213

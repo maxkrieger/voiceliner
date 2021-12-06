@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -145,7 +145,6 @@ class NotesModel extends ChangeNotifier {
         outlineId: _outlineId,
         parentNoteId: parent,
         isCollapsed: false);
-    HapticFeedback.mediumImpact();
     await _playerModel.startRecording(note);
     await _dbRepository.addNote(note);
     Sentry.addBreadcrumb(
@@ -172,7 +171,7 @@ class NotesModel extends ChangeNotifier {
     }
     note.color = color;
     note.duration = await _playerModel.stopRecording(note: note);
-    HapticFeedback.mediumImpact();
+    Vibrate.feedback(FeedbackType.medium);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 

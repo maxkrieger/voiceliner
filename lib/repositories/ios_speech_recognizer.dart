@@ -11,11 +11,9 @@ Future<String?> recognizeNoteIOS(String path) async {
     if (platformRes is String) {
       return platformRes;
     } else {
-      print(platformRes);
       return null;
     }
   } catch (err) {
-    print(err);
     return null;
   }
 }

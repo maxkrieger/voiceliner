@@ -29,7 +29,6 @@ import Speech
             // Print the speech that has been recognized so far
             if res.isFinal {
                 result(String(res.bestTranscription.formattedString))
-               print("Speech in the file is \(res.bestTranscription.formattedString)")
             }
          }
   }

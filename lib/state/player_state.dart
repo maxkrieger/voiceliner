@@ -102,6 +102,18 @@ class PlayerModel extends ChangeNotifier {
     await load();
   }
 
+  // Attempt to warm up cache
+  Future<void> makeDummyRecording() async {
+    final tempDir = await getTemporaryDirectory();
+    await _recorder.startRecorder(
+        codec: Codec.aacADTS,
+        toFile: "${tempDir.path}/tmp.aac",
+        sampleRate: 44100,
+        bitRate: 128000);
+    await Future.delayed(const Duration(milliseconds: 200));
+    await _recorder.stopRecorder();
+  }
+
   Future<void> load() async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Load player", timestamp: DateTime.now()));
@@ -122,8 +134,12 @@ class PlayerModel extends ChangeNotifier {
             category: SessionCategory.playAndRecord,
             mode: SessionMode.modeSpokenAudio,
             focus: AudioFocus.requestFocusAndStopOthers);
-        await speechRecognizer.init();
+        if (Platform.isAndroid) {
+          await speechRecognizer.init();
+        }
         playerState = PlayerState.ready;
+        notifyListeners();
+        await makeDummyRecording();
       } catch (e, st) {
         playerState = PlayerState.error;
         await sentry.Sentry.captureException(e, stackTrace: st);

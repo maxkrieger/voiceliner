@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/state/notes_state.dart';
@@ -37,6 +38,7 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _playEffect(LongPressDownDetails d) {
+    Vibrate.feedback(FeedbackType.impact);
     setState(() {
       offset = d.localPosition;
     });

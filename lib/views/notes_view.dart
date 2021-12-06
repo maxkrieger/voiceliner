@@ -263,12 +263,10 @@ class _NotesViewState extends State<_NotesView> {
               style: TextButton.styleFrom(
                   primary: Colors.white,
                   textStyle: const TextStyle(fontSize: 20)),
-              child:
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(
-                  currentOutlineName,
-                )
-              ]),
+              child: Text(
+                currentOutlineName,
+                textAlign: TextAlign.center,
+              ),
               onPressed: () => _handleMenu("rename"),
             )),
         leading: IconButton(
