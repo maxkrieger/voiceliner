@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/state/notes_state.dart';
@@ -24,7 +23,6 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
-    HapticFeedback.mediumImpact();
     int magnitude =
         ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt();
     await context.read<NotesModel>().stopRecording(magnitude);
@@ -39,7 +37,6 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _playEffect(LongPressDownDetails d) {
-    HapticFeedback.mediumImpact();
     setState(() {
       offset = d.localPosition;
     });

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -12,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 import '../consts.dart';
@@ -100,11 +102,19 @@ class NotesModel extends ChangeNotifier {
           Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
       notes.forEach((entry) async {
         if (shouldTranscribe && !entry.transcribed) {
-          final res = await _playerModel.speechRecognizer.recognize(
-              entry, _playerModel.getPathFromFilename(entry.filePath));
-          if (res.item1 && isReady) {
+          final path = _playerModel.getPathFromFilename(entry.filePath);
+          if (Platform.isAndroid) {
+            final res =
+                await _playerModel.speechRecognizer.recognize(entry, path);
+            if (res.item1 && isReady) {
+              entry.transcribed = true;
+              entry.transcript = res.item2;
+              await rebuildNote(entry);
+            }
+          } else if (Platform.isIOS) {
+            final res = await recognizeNoteIOS(path);
             entry.transcribed = true;
-            entry.transcript = res.item2;
+            entry.transcript = res;
             await rebuildNote(entry);
           }
         }
@@ -135,6 +145,7 @@ class NotesModel extends ChangeNotifier {
         parentNoteId: parent,
         isCollapsed: false);
     await _playerModel.startRecording(note);
+    HapticFeedback.mediumImpact();
     await _dbRepository.addNote(note);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "added note to db", timestamp: DateTime.now()));
@@ -160,6 +171,7 @@ class NotesModel extends ChangeNotifier {
     }
     note.color = color;
     note.duration = await _playerModel.stopRecording(note: note);
+    HapticFeedback.mediumImpact();
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 

@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
+import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
 enum PlayerState {
@@ -74,6 +75,7 @@ class PlayerModel extends ChangeNotifier {
         sampleRate: 44100,
         bitRate: 128000);
     playerState = PlayerState.recording;
+    notifyListeners();
   }
 
   Future<Duration?> stopRecording({Note? note}) async {
@@ -88,9 +90,16 @@ class PlayerModel extends ChangeNotifier {
 
   Future<void> tryPermission() async {
     final status = await Permission.microphone.request();
-    if (status == PermissionStatus.granted) {
-      await load();
+    if (status != PermissionStatus.granted) {
+      return;
     }
+    if (Platform.isIOS) {
+      final txStatus = await tryTxPermissionIOS();
+      if (!txStatus) {
+        return;
+      }
+    }
+    await load();
   }
 
   Future<void> load() async {

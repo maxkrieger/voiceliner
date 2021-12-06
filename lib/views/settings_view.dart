@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/drive_settings_view.dart';
 
@@ -68,10 +71,16 @@ class _SettingsViewState extends State<SettingsView> {
           return;
         }
       }
-      final testLoc = await locationInstance.getLocation();
-      if (testLoc.latitude == null) {
+      try {
+        final testLoc = await locationInstance.getLocation();
+        if (testLoc.latitude == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Couldn't get location")));
+          return;
+        }
+      } catch (err) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Couldn't get location")));
+            const SnackBar(content: Text("Couldn't get location permission")));
         return;
       }
     }
@@ -91,11 +100,22 @@ class _SettingsViewState extends State<SettingsView> {
                   SwitchListTile(
                       secondary: const Icon(Icons.voicemail),
                       title: const Text("Transcribe recordings"),
-                      subtitle:
-                          const Text("uses Google's transcription service"),
+                      subtitle: Text(Platform.isIOS
+                          ? "uses iOS's transcription"
+                          : "uses Google's transcription service"),
                       value: sharedPreferences.getBool(shouldTranscribeKey) ??
                           false,
-                      onChanged: (v) {
+                      onChanged: (v) async {
+                        if (Platform.isIOS && v) {
+                          final res = await tryTxPermissionIOS();
+                          if (!res) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        "Couldn't get permission to transcribe")));
+                            return;
+                          }
+                        }
                         setState(() {
                           sharedPreferences.setBool(shouldTranscribeKey, v);
                         });

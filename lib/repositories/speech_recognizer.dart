@@ -24,6 +24,10 @@ class SpeechRecognizer {
   }
 
   Future<Tuple2<bool, String?>> recognize(Note note, String path) async {
+    if (note.duration != null &&
+        note.duration!.compareTo(const Duration(minutes: 10)) > 0) {
+      return const Tuple2(true, null);
+    }
     try {
       final tempDir = await getTemporaryDirectory();
       final outPath = "${tempDir.path}/${note.id}.wav";
