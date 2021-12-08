@@ -209,11 +209,13 @@ CREATE TABLE outline (
 
   Future<void> moveNoteGroup(LinkedList<Note> notes, String outlineId) async {
     final batch = _database.batch();
+    writeOutlineUpdated(batch, notes.first.outlineId);
     final lastNoteList = await getLastNoteInOutline(outlineId);
     final notesSerialized = notes
         .map((e) => e.map..["outline_id"] = outlineId)
         .toList(growable: false);
-    notesSerialized.first["predecessor_note_id"] = lastNoteList.first["id"];
+    notesSerialized.first["predecessor_note_id"] =
+        lastNoteList.isEmpty ? null : lastNoteList.first["id"];
     for (Map<String, dynamic> noteSerialized in notesSerialized) {
       batch.update("note", noteSerialized,
           where: "id = ?", whereArgs: [noteSerialized["id"]]);
