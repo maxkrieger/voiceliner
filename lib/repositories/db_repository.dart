@@ -199,17 +199,24 @@ CREATE TABLE outline (
     return result;
   }
 
-  Future<void> moveNote(Note note, String outlineId) async {
-    final nMap = note.map;
-    final toNotes = await getNotesForOutlineId(outlineId);
-    nMap["predecessor_note_id"] = null;
+  Future<List<Map<String, dynamic>>> getLastNoteInOutline(
+      String outlineId) async {
+    const query =
+        "SELECT n.* FROM note n WHERE n.outline_id = ? AND NOT EXISTS (select 1 from note m WHERE m.outline_id = n.outline_id AND m.predecessor_note_id = n.id)";
+    final result = await _database.rawQuery(query, [outlineId]);
+    return result;
+  }
+
+  Future<void> moveNoteGroup(LinkedList<Note> notes, String outlineId) async {
     final batch = _database.batch();
-    batch.update("note", nMap, where: "id = ?", whereArgs: [note.id]);
-    if (toNotes.isNotEmpty) {
-      final fst = toNotes
-          .firstWhere((element) => element["predecessor_note_id"] == null);
-      batch.rawUpdate("UPDATE note SET predecessor_note_id = ? WHERE id = ?",
-          [note.id, fst["id"]]);
+    final lastNoteList = await getLastNoteInOutline(outlineId);
+    final notesSerialized = notes
+        .map((e) => e.map..["outline_id"] = outlineId)
+        .toList(growable: false);
+    notesSerialized.first["predecessor_note_id"] = lastNoteList.first["id"];
+    for (Map<String, dynamic> noteSerialized in notesSerialized) {
+      batch.update("note", noteSerialized,
+          where: "id = ?", whereArgs: [noteSerialized["id"]]);
     }
     writeOutlineUpdated(batch, outlineId);
     await batch.commit();

@@ -95,32 +95,35 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> runJobs() async {
-    ConnectivityResult connectivityResult =
-        await (Connectivity().checkConnectivity());
-    // iOS can use offline tx
-    if (Platform.isIOS || connectivityResult != ConnectivityResult.none) {
-      Sentry.addBreadcrumb(
-          Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
-      notes.forEach((entry) async {
-        if (shouldTranscribe && !entry.transcribed) {
-          final path = _playerModel.getPathFromFilename(entry.filePath);
-          if (Platform.isAndroid) {
-            final res =
-                await _playerModel.speechRecognizer.recognize(entry, path);
-            if (res.item1 && isReady) {
-              entry.transcribed = true;
-              entry.transcript = res.item2;
-              await rebuildNote(entry);
-            }
-          } else if (Platform.isIOS) {
-            final res = await recognizeNoteIOS(path);
+    // Need internet for android tx
+    if (Platform.isAndroid) {
+      ConnectivityResult connectivityResult =
+          await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
+        return;
+      }
+    }
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
+    notes.forEach((entry) async {
+      if (shouldTranscribe && !entry.transcribed) {
+        final path = _playerModel.getPathFromFilename(entry.filePath);
+        if (Platform.isAndroid) {
+          final res =
+              await _playerModel.speechRecognizer.recognize(entry, path);
+          if (res.item1 && isReady) {
             entry.transcribed = true;
-            entry.transcript = res;
+            entry.transcript = res.item2;
             await rebuildNote(entry);
           }
+        } else if (Platform.isIOS) {
+          final res = await recognizeNoteIOS(path);
+          entry.transcribed = true;
+          entry.transcript = res;
+          await rebuildNote(entry);
         }
-      });
-    }
+      }
+    });
   }
 
   Future<void> startRecording() async {
@@ -295,6 +298,22 @@ class NotesModel extends ChangeNotifier {
     await _dbRepository.updateNote(noteToOutdent);
   }
 
+  bool isDescendantOf(Note candidate, Note of) {
+    if (candidate.parentNoteId == null) {
+      return false;
+    }
+    // Is this a useful condition? Identity = true?
+    if (candidate.id == of.id) {
+      return true;
+    }
+    if (candidate.parentNoteId == of.id) {
+      return true;
+    }
+    return isDescendantOf(
+        notes.firstWhere((element) => element.id == candidate.parentNoteId),
+        of);
+  }
+
   Future<void> moveNote(Note note, String outlineId) async {
     if (currentlyExpanded != null && currentlyExpanded!.id == note.id) {
       currentlyExpanded = null;
@@ -303,15 +322,23 @@ class NotesModel extends ChangeNotifier {
         currentlyPlayingOrRecording!.id == note.id) {
       currentlyPlayingOrRecording = null;
     }
-    notes.forEach((entry) {
-      if (entry.parentNoteId == note.id) {
-        entry.parentNoteId = note.parentNoteId;
-      }
-    });
-    note.unlink();
+    final noteAndChildren = LinkedList<Note>();
+    final children = notes
+        .where(
+            (element) => isDescendantOf(element, note) && element.id != note.id)
+        .toList(growable: false);
+    final newNotes = notes
+        .where((element) =>
+            !isDescendantOf(element, note) && element.id != note.id)
+        .toList(growable: false);
+    notes
+      ..clear()
+      ..addAll(newNotes);
     note.parentNoteId = null;
-    note.outlineId = outlineId;
-    await _dbRepository.moveNote(note, outlineId);
+    noteAndChildren
+      ..add(note)
+      ..addAll(children);
+    await _dbRepository.moveNoteGroup(noteAndChildren, outlineId);
     notifyListeners();
     await _dbRepository.realignNotes(notes);
   }
@@ -355,21 +382,6 @@ class NotesModel extends ChangeNotifier {
     note.transcript = transcript;
     note.transcribed = true;
     await rebuildNote(note);
-  }
-
-  bool isDescendantOf(Note candidate, Note of) {
-    if (candidate.parentNoteId == null) {
-      return false;
-    }
-    if (candidate.id == of.id) {
-      return true;
-    }
-    if (candidate.parentNoteId == of.id) {
-      return true;
-    }
-    return isDescendantOf(
-        notes.firstWhere((element) => element.id == candidate.parentNoteId),
-        of);
   }
 
   Future<void> setNoteComplete(Note note, bool complete) async {

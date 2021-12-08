@@ -291,7 +291,9 @@ class _NotesViewState extends State<_NotesView> {
       body: (playerState == PlayerState.notReady
           ? const Center(child: Text("setting up..."))
           : playerState == PlayerState.error
-              ? const Center(child: Text("error"))
+              ? const Center(
+                  child: Text(
+                      "Audio error. If another app is using the microphone, close it and relaunch this app."))
               : playerState == PlayerState.noPermission
                   ? Center(
                       child: Column(

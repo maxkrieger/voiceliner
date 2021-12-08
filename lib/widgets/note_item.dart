@@ -147,14 +147,18 @@ class _NoteItemState extends State<NoteItem> {
   }
 
   Future<void> _moveNote() async {
+    final note = context.read<NotesModel>().notes.elementAt(widget.num);
     Navigator.push(context, MaterialPageRoute(builder: (ct) {
       return Scaffold(
           appBar: AppBar(title: const Text("Select Outline")),
-          body: OutlinesList(onTap: (String outlineId) {
-            final note = context.read<NotesModel>().notes.elementAt(widget.num);
-            context.read<NotesModel>().moveNote(note, outlineId);
-            Navigator.pop(ct);
-          }));
+          body: OutlinesList(
+              excludeItem: note.outlineId,
+              onTap: (String outlineId) {
+                final note =
+                    context.read<NotesModel>().notes.elementAt(widget.num);
+                context.read<NotesModel>().moveNote(note, outlineId);
+                Navigator.pop(ct);
+              }));
     }));
   }
 
