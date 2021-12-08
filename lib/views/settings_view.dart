@@ -102,7 +102,7 @@ class _SettingsViewState extends State<SettingsView> {
                       title: const Text("Transcribe recordings"),
                       subtitle: Text(Platform.isIOS
                           ? "uses iOS's transcription"
-                          : "uses Google's transcription service"),
+                          : "uses Azure's transcription service"),
                       value: sharedPreferences.getBool(shouldTranscribeKey) ??
                           false,
                       onChanged: (v) async {
