@@ -1,9 +1,11 @@
 name: deploy_android
 
 on:
-  push:
-    tags: ['*']
-    branches: [master]
+  release:
+    types:
+      - published
+      - released
+      - prereleased
 
 jobs:
   deploy_android:
