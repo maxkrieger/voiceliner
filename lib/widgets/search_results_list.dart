@@ -91,6 +91,13 @@ class SearchResultsList extends StatelessWidget {
   const SearchResultsList({Key? key, required this.searchResults})
       : super(key: key);
 
+  void _removeFocus(BuildContext context) {
+    final currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.unfocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     //FutureProvider thing - await result of query and show spinner
@@ -104,17 +111,17 @@ class SearchResultsList extends StatelessWidget {
     // HACK to hide keyboard https://stackoverflow.com/questions/51652897/how-to-hide-soft-input-keyboard-on-flutter-after-clicking-outside-textfield-anyw
     return GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: (_) {
-          final currentFocus = FocusScope.of(context);
-          if (!currentFocus.hasPrimaryFocus) {
-            currentFocus.unfocus();
-          }
-        },
-        child: ListView(
-          children: searchResults
-              .map((e) => ResultGroup(groupedResult: e))
-              .toList(growable: false),
-          shrinkWrap: true,
-        ));
+        onPanStart: (_) => _removeFocus(context),
+        onTapDown: (_) => _removeFocus(context),
+        child: Column(children: [
+          Expanded(
+              child: Scrollbar(
+                  child: ListView(
+            shrinkWrap: true,
+            children: searchResults
+                .map((e) => ResultGroup(groupedResult: e))
+                .toList(growable: false),
+          )))
+        ]));
   }
 }
