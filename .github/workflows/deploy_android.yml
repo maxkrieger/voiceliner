@@ -2,6 +2,7 @@ name: deploy_android
 
 on:
   push:
+    tags: ['*']
     branches: [master]
 
 jobs:
@@ -38,11 +39,6 @@ jobs:
         with:
           channel: "stable"
 
-      - name: Inject google service account file
-        run: |
-          echo "${{ secrets.SPEECH_JSON }}" >> speech_acct.b64
-          base64 -d -i speech_acct.b64 > ./assets/speech_acct.json
-
       - name: Install tools
         run: |
           flutter pub get
@@ -50,7 +46,7 @@ jobs:
       - name: Flutter build release
         run: |
           unset ANDROID_NDK_HOME
-          flutter build appbundle --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          flutter build appbundle --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }},AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
 
       - name: Deploy beta to Play Store
         run: |

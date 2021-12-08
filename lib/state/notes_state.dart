@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
+import 'package:voice_outliner/repositories/azure_speech_recognizer.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/player_state.dart';
@@ -109,8 +110,7 @@ class NotesModel extends ChangeNotifier {
       if (shouldTranscribe && !entry.transcribed) {
         final path = _playerModel.getPathFromFilename(entry.filePath);
         if (Platform.isAndroid) {
-          final res =
-              await _playerModel.speechRecognizer.recognize(entry, path);
+          final res = await azureRecognize(entry, path);
           if (res.item1 && isReady) {
             entry.transcribed = true;
             entry.transcript = res.item2;
@@ -163,8 +163,6 @@ class NotesModel extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 300));
     final note = currentlyPlayingOrRecording;
     currentlyPlayingOrRecording = null;
-    // HACK
-    _playerModel.playerState = PlayerState.ready;
     notifyListeners();
     if (note == null) {
       Sentry.captureMessage("Attempted to stop recording on an empty note",

@@ -9,7 +9,6 @@ import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
-import 'package:voice_outliner/repositories/speech_recognizer.dart';
 
 enum PlayerState {
   notLoaded,
@@ -30,7 +29,6 @@ Future<Directory> getRecordingsDir() async {
 class PlayerModel extends ChangeNotifier {
   final _player = FlutterSoundPlayer(logLevel: Level.warning);
   final _recorder = FlutterSoundRecorder(logLevel: Level.warning);
-  final speechRecognizer = SpeechRecognizer();
   late Directory recordingsDirectory;
   PlayerState _playerState = PlayerState.notLoaded;
 
@@ -80,6 +78,8 @@ class PlayerModel extends ChangeNotifier {
 
   Future<Duration?> stopRecording({Note? note}) async {
     await _recorder.stopRecorder();
+    playerState = PlayerState.ready;
+    notifyListeners();
     if (note == null) {
       return null;
     }
@@ -134,14 +134,12 @@ class PlayerModel extends ChangeNotifier {
             category: SessionCategory.playAndRecord,
             mode: SessionMode.modeSpokenAudio,
             focus: AudioFocus.requestFocusAndStopOthers);
-        if (Platform.isAndroid) {
-          await speechRecognizer.init();
-        }
         playerState = PlayerState.ready;
         notifyListeners();
         await makeDummyRecording();
       } catch (e, st) {
         playerState = PlayerState.error;
+        notifyListeners();
         await sentry.Sentry.captureException(e, stackTrace: st);
       }
     }

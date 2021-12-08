@@ -2,6 +2,7 @@ name: deploy_ios
 
 on:
   push:
+    tags: ['*']
     branches: [master]
 
 jobs:
@@ -38,11 +39,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Inject google service account file
-        run: |
-          echo "${{ secrets.SPEECH_JSON }}" >> speech_acct.b64
-          base64 -d -i speech_acct.b64 > ./assets/speech_acct.json
-
       - name: Install tools
         run: |
           flutter pub get
@@ -50,7 +46,7 @@ jobs:
 
       - name: Flutter build release
         run: |
-          flutter build ios --release --no-codesign --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          flutter build ios --release --no-codesign --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }},AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
 
       - name: Deploy to TestFlight
         run: |
