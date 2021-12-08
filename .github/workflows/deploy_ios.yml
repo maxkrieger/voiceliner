@@ -3,7 +3,6 @@ name: deploy_ios
 on:
   release:
     types:
-      - published
       - released
       - prereleased
 
