@@ -3,7 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/views/settings_view.dart';
 
 import '../consts.dart';
 import 'notes_view.dart';
@@ -33,8 +35,9 @@ class _MapViewState extends State<MapView> {
   List<Pin> notes = [];
   LatLngBounds bounds = LatLngBounds(LatLng(0, 0), LatLng(0, 0));
   LatLng? currentLoc;
-  bool fitAll = false;
+  bool fitAll = true;
   final controller = MapController();
+  SharedPreferences? sharedPreferences;
   @override
   void initState() {
     super.initState();
@@ -47,6 +50,7 @@ class _MapViewState extends State<MapView> {
   }
 
   Future<void> loadPins() async {
+    sharedPreferences = await SharedPreferences.getInstance();
     List<Map<String, dynamic>> results = [];
     if (widget.outlineId != null) {
       results.addAll(await context
@@ -77,23 +81,22 @@ class _MapViewState extends State<MapView> {
     setState(() {
       loading = false;
     });
-    try {
+    if (sharedPreferences?.getBool(shouldLocateKey) ?? false) {
       final loc = await locationInstance.getLocation();
       final ll = LatLng(loc.latitude!, loc.longitude!);
       if (loc.latitude != null && loc.longitude != null) {
         setState(() {
           currentLoc = ll;
         });
-        controller.move(ll, 15.0);
       }
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Couldn't get current location")));
     }
   }
 
   void toggleFit() {
+    if (currentLoc == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Location unavailable, enable it in settings")));
+    }
     if (fitAll && currentLoc != null) {
       controller.move(currentLoc!, 15.0);
     } else {
@@ -103,6 +106,14 @@ class _MapViewState extends State<MapView> {
     setState(() {
       fitAll = !fitAll;
     });
+  }
+
+  void _openSettings() {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SettingsView()),
+    );
   }
 
   @override
@@ -154,7 +165,18 @@ class _MapViewState extends State<MapView> {
                             .toList())
                   ],
                 )
-              : const Center(child: Text("No notes have locations")))
+              : (sharedPreferences?.getBool(shouldLocateKey) ?? false
+                  ? const Center(child: Text("No notes have locations"))
+                  : Center(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Location attachment is off"),
+                        ElevatedButton(
+                            onPressed: _openSettings,
+                            child: const Text("open settings"))
+                      ],
+                    ))))
           : const Center(child: CircularProgressIndicator()),
     );
   }
