@@ -54,7 +54,7 @@ CREATE TABLE outline (
       emoji TEXT NOT NULL,
       date_created INTEGER NOT NULL,
       date_updated INTEGER NOT NULL,
-      archived INTEGER NOT NULL DEFAULT 0,
+      archived INTEGER NOT NULL DEFAULT 0
 )''');
     batch.execute("CREATE TABLE note($noteTableDef)");
     await batch.commit(noResult: true);

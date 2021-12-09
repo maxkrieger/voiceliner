@@ -118,9 +118,12 @@ class NotesModel extends ChangeNotifier {
           }
         } else if (Platform.isIOS) {
           final res = await recognizeNoteIOS(path);
-          entry.transcribed = true;
-          entry.transcript = res;
-          await rebuildNote(entry);
+          // Guard against writing after user went back
+          if (isReady) {
+            entry.transcribed = true;
+            entry.transcript = res;
+            await rebuildNote(entry);
+          }
         }
       }
     });

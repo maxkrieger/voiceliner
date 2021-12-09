@@ -34,6 +34,12 @@ class _OutlinesViewState extends State<OutlinesView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    context.read<OutlinesModel>().loadOutlines();
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
     super.dispose();

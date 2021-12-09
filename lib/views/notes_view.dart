@@ -263,7 +263,7 @@ class _NotesViewState extends State<_NotesView> {
             onPressed: () {
               Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
             },
-            icon: const Icon(Icons.view_list_rounded)),
+            icon: const Icon(Icons.chevron_left)),
         actions: [
           if (currentOutlineArchived)
             IconButton(
@@ -272,7 +272,7 @@ class _NotesViewState extends State<_NotesView> {
                 onPressed: _toggleArchive),
           PopupMenuButton(
               tooltip: "outline options",
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_horiz),
               itemBuilder: _menuBuilder,
               onSelected: (String item) => _handleMenu(item))
         ],
