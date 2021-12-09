@@ -72,10 +72,11 @@ class ResultGroup extends StatelessWidget {
           subtitle: Column(
               children: groupedResult.notes
                   .map((e) => Card(
+                      elevation: 0,
                       clipBehavior: Clip.hardEdge,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
-                      color: computeColor(e.color).withOpacity(0.6),
+                      color: computeColor(e.color).withOpacity(0.2),
                       margin: const EdgeInsets.all(5.0),
                       child: ResultNote(
                         note: e,
