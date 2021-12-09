@@ -67,7 +67,7 @@ class _OutlineWizardState extends State<OutlineWizard> {
                 width: 300,
                 child: EmojiPicker(
                   onEmojiSelected: _selectEmoji,
-                  config: const Config(bgColor: Colors.white),
+                  config: Config(bgColor: Theme.of(context).cardColor),
                 ))
             : Column(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
@@ -90,12 +90,16 @@ class _OutlineWizardState extends State<OutlineWizard> {
               ]),
         actions: [
           TextButton(
-              child: const Text("cancel"),
+              child: Text("cancel",
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface)),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
               }),
           TextButton(
-              child: Text(widget.confirm),
+              child: Text(widget.confirm,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface)),
               onPressed: () => _onSubmitted(context))
         ]);
   }

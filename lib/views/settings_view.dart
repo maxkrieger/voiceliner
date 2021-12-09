@@ -46,7 +46,11 @@ class _SettingsViewState extends State<SettingsView> {
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("cancel")),
+                    child: Text(
+                      "cancel",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    )),
                 TextButton(
                     onPressed: () async {
                       await ctx.read<DBRepository>().resetDB();
@@ -56,7 +60,11 @@ class _SettingsViewState extends State<SettingsView> {
                           .delete(recursive: true);
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("reset"))
+                    child: Text(
+                      "reset",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    ))
               ],
             ));
   }

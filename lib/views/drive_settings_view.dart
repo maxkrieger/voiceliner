@@ -98,7 +98,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("cancel")),
+                    child: Text(
+                      "cancel",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    )),
                 TextButton(
                     onPressed: () async {
                       Navigator.of(ctx).pop();
@@ -115,7 +119,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                         checkStatus();
                       });
                     },
-                    child: const Text("restore"))
+                    child: Text(
+                      "restore",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    ))
               ],
             ));
   }
@@ -131,7 +139,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("cancel")),
+                    child: Text(
+                      "cancel",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    )),
                 TextButton(
                     onPressed: () async {
                       Navigator.of(ctx).pop();
@@ -143,7 +155,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                           const SnackBar(content: Text("Backed up notes")));
                       checkStatus();
                     },
-                    child: const Text("back up"))
+                    child: Text(
+                      "back up",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    ))
               ],
             ));
   }
@@ -161,7 +177,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("cancel")),
+                    child: Text(
+                      "cancel",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    )),
                 TextButton(
                     onPressed: () async {
                       Navigator.of(ctx).pop();
@@ -170,7 +190,11 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                           const SnackBar(content: Text("Deleted backup")));
                       checkStatus();
                     },
-                    child: const Text("delete"))
+                    child: Text(
+                      "delete",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    ))
               ],
             ));
   }

@@ -147,14 +147,22 @@ class _NotesViewState extends State<_NotesView> {
                       onPressed: () {
                         Navigator.of(ctx).pop();
                       },
-                      child: const Text("cancel")),
+                      child: Text(
+                        "cancel",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      )),
                   TextButton(
                       onPressed: () async {
                         ctx.read<OutlinesModel>().deleteOutline(outline);
                         await Navigator.pushNamedAndRemoveUntil(
                             ctx, "/", (route) => false);
                       },
-                      child: const Text("delete"))
+                      child: Text(
+                        "delete",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ))
                 ],
               ));
     } else if (item == "rename") {
@@ -232,6 +240,10 @@ class _NotesViewState extends State<_NotesView> {
     final showCompleted =
         context.select<NotesModel, bool>((value) => value.showCompleted);
     return Scaffold(
+      backgroundColor:
+          MediaQuery.of(context).platformBrightness == Brightness.light
+              ? const Color.fromRGBO(242, 241, 246, 1)
+              : null,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Row(children: [
@@ -286,11 +298,11 @@ class _NotesViewState extends State<_NotesView> {
                               child: const Text("grant microphone access"))
                         ]))
                   : (noteCount == 0)
-                      ? const Center(
+                      ? Center(
                           child: Text("no notes yet!",
                               style: TextStyle(
                                   fontSize: 40.0,
-                                  color: Color.fromRGBO(0, 0, 0, 0.5))),
+                                  color: Theme.of(context).hintColor)),
                         )
                       : Scrollbar(
                           controller: scrollController,

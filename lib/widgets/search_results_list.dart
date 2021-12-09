@@ -49,7 +49,7 @@ class _ResultNoteState extends State<ResultNote> {
             constraints: const BoxConstraints(),
             icon: playing
                 ? const Icon(Icons.stop_circle_outlined)
-                : const Icon(Icons.play_circle_outlined)),
+                : const Icon(Icons.play_circle)),
         onTap: () => Navigator.pushNamed(context, "/notes",
             arguments: NotesViewArgs(widget.note.outlineId,
                 scrollToNoteId: widget.note.id)),
@@ -75,7 +75,7 @@ class ResultGroup extends StatelessWidget {
                       clipBehavior: Clip.hardEdge,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
-                      color: computeColor(e.color),
+                      color: computeColor(e.color).withOpacity(0.6),
                       margin: const EdgeInsets.all(5.0),
                       child: ResultNote(
                         note: e,
@@ -102,10 +102,10 @@ class SearchResultsList extends StatelessWidget {
   Widget build(BuildContext context) {
     //FutureProvider thing - await result of query and show spinner
     if (searchResults.isEmpty) {
-      return const Center(
+      return Center(
           child: Text(
         "no results",
-        style: TextStyle(fontSize: 24, color: Color.fromRGBO(0, 0, 0, 0.5)),
+        style: TextStyle(fontSize: 24, color: Theme.of(context).hintColor),
       ));
     }
     // HACK to hide keyboard https://stackoverflow.com/questions/51652897/how-to-hide-soft-input-keyboard-on-flutter-after-clicking-outside-textfield-anyw

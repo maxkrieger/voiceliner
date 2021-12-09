@@ -11,6 +11,7 @@ import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
+import '../consts.dart';
 import 'outlines_list.dart';
 
 class NoteItem extends StatefulWidget {
@@ -24,8 +25,8 @@ class NoteItem extends StatefulWidget {
 }
 
 Color computeColor(int? magnitude) {
-  Color a = const Color.fromRGBO(237, 226, 255, 1);
-  Color b = const Color.fromRGBO(255, 191, 217, 1.0);
+  Color a = const Color.fromRGBO(163, 95, 255, 1);
+  Color b = const Color.fromRGBO(241, 52, 125, 1.0);
   double t = magnitude != null && magnitude <= 100 ? magnitude / 100 : 0;
   return Color.lerp(a, b, t)!;
 }
@@ -67,12 +68,20 @@ class _NoteItemState extends State<NoteItem> {
                     textCapitalization: TextCapitalization.sentences),
                 actions: [
                   TextButton(
-                      child: const Text("cancel"),
+                      child: Text(
+                        "cancel",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
                       onPressed: () {
                         Navigator.of(dialogCtx, rootNavigator: true).pop();
                       }),
                   TextButton(
-                      child: const Text("set"),
+                      child: Text(
+                        "set",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
                       onPressed: () => _onSubmitted(dialogCtx))
                 ]));
   }
@@ -88,7 +97,11 @@ class _NoteItemState extends State<NoteItem> {
                     onPressed: () {
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("cancel")),
+                    child: Text(
+                      "cancel",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    )),
                 TextButton(
                     onPressed: () {
                       final note = context
@@ -98,7 +111,11 @@ class _NoteItemState extends State<NoteItem> {
                       context.read<NotesModel>().deleteNote(note);
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text("delete"))
+                    child: Text(
+                      "delete",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface),
+                    ))
               ],
             ));
   }
@@ -268,14 +285,15 @@ class _NoteItemState extends State<NoteItem> {
         ])),
         key: Key("dismissable-${note.id}-$currentlyExpanded"),
         child: Card(
+            elevation: 0,
             clipBehavior: Clip.hardEdge,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0)),
             color: note.isComplete
-                ? const Color.fromRGBO(229, 229, 229, 1.0)
-                : computeColor(note.color),
+                ? const Color.fromRGBO(229, 229, 229, 0.3)
+                : computeColor(note.color).withOpacity(0.2),
             margin: EdgeInsets.only(
-                top: 10.0, left: 10.0 + 30.0 * min(depth, 5), right: 10.0),
+                top: 6.0, left: 10.0 + 30.0 * min(depth, 5), right: 10.0),
             child: ExpansionTile(
               initiallyExpanded: currentlyExpanded,
               onExpansionChanged: (bool st) {
@@ -283,21 +301,14 @@ class _NoteItemState extends State<NoteItem> {
                     .read<NotesModel>()
                     .setCurrentlyExpanded(st ? note : null);
               },
-              trailing: Padding(
-                child: Text(
-                  note.duration != null ? "${note.duration!.inSeconds}s" : "",
-                  style: const TextStyle(color: Color.fromRGBO(0, 0, 0, .5)),
-                ),
-                padding: const EdgeInsets.only(right: 10),
-              ),
               tilePadding: const EdgeInsets.only(left: 10),
+              trailing: const SizedBox(width: 0, height: 0),
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Tooltip(
                       message: "mark note complete",
                       child: Checkbox(
-                          fillColor:
-                              MaterialStateProperty.all(Colors.deepPurple),
+                          activeColor: Colors.deepPurple,
                           value: note.isComplete,
                           onChanged: (v) {
                             context
@@ -305,19 +316,24 @@ class _NoteItemState extends State<NoteItem> {
                                 .setNoteComplete(note, v ?? false);
                             HapticFeedback.mediumImpact();
                           })),
+                  const SizedBox(width: 10),
+                  Text(
+                      note.duration != null
+                          ? "${note.duration!.inSeconds}s"
+                          : "",
+                      style: TextStyle(color: Theme.of(context).hintColor)),
                   const Spacer(),
                   Timeago(
                       builder: (_, t) => Text(
                             t,
-                            style: const TextStyle(
-                                color: Color.fromRGBO(0, 0, 0, .5)),
+                            style:
+                                TextStyle(color: Theme.of(context).hintColor),
                           ),
                       date: dateCreated!),
                   PopupMenuButton(
                       tooltip: "note options",
                       itemBuilder: _menuBuilder,
-                      icon:
-                          const Icon(Icons.more_vert, color: Colors.deepPurple),
+                      icon: const Icon(Icons.more_vert),
                       onSelected: _handleMenu)
                 ])
               ],
@@ -325,28 +341,30 @@ class _NoteItemState extends State<NoteItem> {
                   ? const Text(
                       "waiting to transcribe...",
                       style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Color.fromRGBO(0, 0, 0, 0.5)),
+                        fontStyle: FontStyle.italic,
+                      ),
                     )
-                  : Text(
-                      note.transcript == null
-                          ? note.infoString
-                          : note.transcript!,
-                      style: TextStyle(
-                          color: Colors.deepPurple,
-                          decoration: note.isComplete
-                              ? TextDecoration.lineThrough
-                              : null),
-                    ),
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        note.transcript == null
+                            ? note.infoString
+                            : note.transcript!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            decoration: note.isComplete
+                                ? TextDecoration.lineThrough
+                                : null),
+                      )),
               leading: IconButton(
-                  color: Colors.deepPurple,
                   tooltip: "play note",
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
+                  color: classicPurple,
                   onPressed: () => context.read<NotesModel>().playNote(note),
                   icon: isCurrent
                       ? const Icon(Icons.stop_circle_outlined)
-                      : const Icon(Icons.play_circle_outlined)),
+                      : const Icon(Icons.play_circle)),
             )));
   }
 }
