@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
+import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/drive_settings_view.dart';
 
@@ -91,6 +92,8 @@ class _SettingsViewState extends State<SettingsView> {
 
   @override
   Widget build(BuildContext context) {
+    final showArchived =
+        context.select<OutlinesModel, bool>((value) => value.showArchived);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
@@ -129,6 +132,13 @@ class _SettingsViewState extends State<SettingsView> {
                     subtitle: const Text("remember where you took a note"),
                     value: sharedPreferences.getBool(shouldLocateKey) ?? false,
                     onChanged: toggleLocation,
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.archive),
+                    title: const Text("Show archived outlines"),
+                    value: showArchived,
+                    onChanged: (_) =>
+                        context.read<OutlinesModel>().toggleShowArchived(),
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup),

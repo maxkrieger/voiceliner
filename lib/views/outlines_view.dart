@@ -76,37 +76,6 @@ class _OutlinesViewState extends State<OutlinesView> {
         context, MaterialPageRoute(builder: (_) => const SettingsView()));
   }
 
-  List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
-    return [
-      const PopupMenuItem(
-          value: "map",
-          child: ListTile(leading: Icon(Icons.map), title: Text("map"))),
-      PopupMenuItem(
-          value: "show_archived",
-          child: context.read<OutlinesModel>().showArchived
-              ? const ListTile(
-                  leading: Icon(Icons.archive), title: Text("hide archived"))
-              : const ListTile(
-                  leading: Icon(Icons.unarchive),
-                  title: Text("show archived"))),
-      const PopupMenuItem(
-          value: "settings",
-          child:
-              ListTile(leading: Icon(Icons.settings), title: Text("settings"))),
-    ];
-  }
-
-  void _handleMenu(String item) {
-    if (item == "settings") {
-      _openSettings();
-    } else if (item == "map") {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (_) => const MapView()));
-    } else if (item == "show_archived") {
-      context.read<OutlinesModel>().toggleShowArchived();
-    }
-  }
-
   Future<void> performSearch(String query) async {
     if (query.isEmpty) {
       setState(() {
@@ -199,11 +168,17 @@ class _OutlinesViewState extends State<OutlinesView> {
                     searchFocused = true;
                   }),
                 ),
-                PopupMenuButton(
-                    tooltip: "settings & more",
-                    icon: const Icon(Icons.more_vert),
-                    itemBuilder: _menuBuilder,
-                    onSelected: (String item) => _handleMenu(item))
+                IconButton(
+                  tooltip: "map",
+                  icon: const Icon(Icons.map),
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const MapView())),
+                ),
+                IconButton(
+                  tooltip: "settings",
+                  icon: const Icon(Icons.settings),
+                  onPressed: _openSettings,
+                )
               ]
             : [],
       ),
@@ -211,6 +186,7 @@ class _OutlinesViewState extends State<OutlinesView> {
           ? FloatingActionButton(
               tooltip: "Add Outline",
               onPressed: _addOutline,
+              backgroundColor: classicPurple,
               child: const Icon(Icons.post_add_rounded),
             )
           : null,
