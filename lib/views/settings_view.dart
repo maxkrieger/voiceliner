@@ -150,14 +150,29 @@ class _SettingsViewState extends State<SettingsView> {
                             builder: (_) => const DriveSettingsView())),
                   ),
                   ListTile(
+                    leading: const Icon(Icons.bug_report),
+                    title: const Text("Report Issue"),
+                    onTap: () => launch(
+                        "https://github.com/maxkrieger/voiceliner/issues"),
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.privacy_tip),
                     title: const Text("Privacy"),
                     onTap: () => launch(
                         "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823"),
                   ),
-                  const AboutListTile(
-                    icon: Icon(Icons.info),
-                    aboutBoxChildren: [Text("made by Max Krieger (a9.io)")],
+                  AboutListTile(
+                    icon: const Icon(Icons.info),
+                    aboutBoxChildren: [
+                      const Text(
+                        "made by Max Krieger",
+                        textAlign: TextAlign.center,
+                      ),
+                      TextButton(
+                          onPressed: () => launch(
+                              "https://github.com/maxkrieger/voiceliner"),
+                          child: const Text("fork on GitHub"))
+                    ],
                   ),
                 ],
               )
