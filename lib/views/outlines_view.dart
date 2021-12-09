@@ -24,7 +24,6 @@ class _OutlinesViewState extends State<OutlinesView> {
   final _textController = TextEditingController();
   Future<void> _addOutline() async {
     final now = DateTime.now();
-                actions: [
     final name = "${now.month}/${now.day}/${now.year - 2000}";
     await launchOutlineWizard(name, defaultEmoji, context, "create",
         (name, emoji) async {
