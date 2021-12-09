@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 
+import '../consts.dart';
 import 'notes_view.dart';
 
 class MapView extends StatefulWidget {
@@ -31,6 +32,9 @@ class _MapViewState extends State<MapView> {
   bool loading = true;
   List<Pin> notes = [];
   LatLngBounds bounds = LatLngBounds(LatLng(0, 0), LatLng(0, 0));
+  LatLng? currentLoc;
+  bool fitAll = false;
+  final controller = MapController();
   @override
   void initState() {
     super.initState();
@@ -73,6 +77,32 @@ class _MapViewState extends State<MapView> {
     setState(() {
       loading = false;
     });
+    try {
+      final loc = await locationInstance.getLocation();
+      final ll = LatLng(loc.latitude!, loc.longitude!);
+      if (loc.latitude != null && loc.longitude != null) {
+        setState(() {
+          currentLoc = ll;
+        });
+        controller.move(ll, 15.0);
+      }
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Couldn't get current location")));
+    }
+  }
+
+  void toggleFit() {
+    if (fitAll && currentLoc != null) {
+      controller.move(currentLoc!, 15.0);
+    } else {
+      final cz = controller.centerZoomFitBounds(bounds);
+      controller.move(cz.center, cz.zoom);
+    }
+    setState(() {
+      fitAll = !fitAll;
+    });
   }
 
   @override
@@ -80,16 +110,26 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Map"),
+        actions: [
+          IconButton(
+              tooltip: fitAll ? "go to current location" : "see all notes",
+              onPressed: toggleFit,
+              icon: fitAll
+                  ? const Icon(Icons.gps_fixed)
+                  : const Icon(Icons.place))
+        ],
       ),
       body: !loading
           ? (notes.isNotEmpty
               ? FlutterMap(
+                  mapController: controller,
                   options: MapOptions(
-                      bounds: bounds,
-                      interactiveFlags:
-                          InteractiveFlag.all - InteractiveFlag.rotate,
-                      boundsOptions:
-                          const FitBoundsOptions(padding: EdgeInsets.all(8.0))),
+                    bounds: bounds,
+                    boundsOptions:
+                        const FitBoundsOptions(padding: EdgeInsets.all(8.0)),
+                    interactiveFlags:
+                        InteractiveFlag.all - InteractiveFlag.rotate,
+                  ),
                   layers: [
                     TileLayerOptions(
                         urlTemplate:
