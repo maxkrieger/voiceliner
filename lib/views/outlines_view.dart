@@ -164,52 +164,48 @@ class _OutlinesViewState extends State<OutlinesView> {
       appBar: AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
-        leading: AnimatedSwitcher(
-          child: searchFocused
-              ? IconButton(
-                  tooltip: "exit search",
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => setState(() {
-                    searchFocused = false;
-                  }),
-                )
-              : IconButton(
+        leading: searchFocused
+            ? IconButton(
+                tooltip: "exit search",
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() {
+                  searchFocused = false;
+                }),
+              )
+            : null,
+        title: AnimatedSwitcher(
+            child: searchFocused
+                ? TextField(
+                    showCursor: true,
+                    onChanged: performSearch,
+                    controller: _textController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: "search outlines and notes",
+                      suffixIcon: IconButton(
+                          onPressed: _textController.clear,
+                          icon: const Icon(Icons.clear)),
+                    ),
+                    autocorrect: false,
+                  )
+                : const Text("Outlines"),
+            duration: const Duration(milliseconds: 300)),
+        actions: !(searchFocused)
+            ? [
+                IconButton(
                   tooltip: "search outlines & notes",
                   icon: const Icon(Icons.search),
                   onPressed: () => setState(() {
                     searchFocused = true;
                   }),
                 ),
-          duration: const Duration(milliseconds: 300),
-        ),
-        title: AnimatedSwitcher(
-            child: searchFocused
-                ? TextField(
-                    showCursor: true,
-                    cursorColor: Colors.white,
-                    onChanged: performSearch,
-                    controller: _textController,
-                    autofocus: true,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                        hintText: "search outlines and notes",
-                        suffixIcon: IconButton(
-                            color: Colors.white,
-                            onPressed: _textController.clear,
-                            icon: const Icon(Icons.clear)),
-                        hintStyle: const TextStyle(color: Colors.white)),
-                    autocorrect: false,
-                  )
-                : const Text("Voiceliner"),
-            duration: const Duration(milliseconds: 300)),
-        actions: [
-          if (!searchFocused)
-            PopupMenuButton(
-                tooltip: "settings & more",
-                icon: const Icon(Icons.more_vert),
-                itemBuilder: _menuBuilder,
-                onSelected: (String item) => _handleMenu(item))
-        ],
+                PopupMenuButton(
+                    tooltip: "settings & more",
+                    icon: const Icon(Icons.more_vert),
+                    itemBuilder: _menuBuilder,
+                    onSelected: (String item) => _handleMenu(item))
+              ]
+            : [],
       ),
       floatingActionButton: !searchFocused
           ? FloatingActionButton(

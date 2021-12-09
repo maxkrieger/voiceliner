@@ -99,7 +99,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
             transitionsBuilder: (c, an, an2, child) => Align(
                 child: SlideTransition(
                     position: Tween<Offset>(
-                      begin: Offset(0, route.name == "/" ? -1 : 1),
+                      begin: Offset(route.name == "/" ? -1 : 1, 0),
                       end: Offset.zero,
                     ).animate(an),
                     child: child)),
@@ -113,9 +113,14 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
       },
       initialRoute: lastRoute ?? "/",
       theme: ThemeData(
-          primarySwatch: Colors.deepPurple,
-          primaryColor: const Color.fromRGBO(169, 129, 234, 1)),
-      color: const Color.fromRGBO(169, 129, 234, 1),
+        fontFamily: "Work Sans",
+        appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white, foregroundColor: Colors.black87),
+        focusColor: classicPurple,
+        primarySwatch: Colors.deepPurple,
+        primaryColor: classicPurple,
+      ),
+      color: classicPurple,
     );
   }
 }

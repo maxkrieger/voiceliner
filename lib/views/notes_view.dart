@@ -262,7 +262,7 @@ class _NotesViewState extends State<_NotesView> {
             message: "rename outline",
             child: TextButton(
               style: TextButton.styleFrom(
-                  primary: Colors.white,
+                  primary: Colors.black87,
                   textStyle: const TextStyle(fontSize: 20)),
               child: Text(
                 currentOutlineName,

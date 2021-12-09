@@ -22,20 +22,19 @@ class OutlinesList extends StatelessWidget {
       if (outline.id == excludeItem || (!showArchived && outline.archived)) {
         return const SizedBox(height: 0);
       }
-      return Card(
-          key: Key("outline-$num"),
-          child: ListTile(
-            leading: outline.archived ? const Icon(Icons.archive) : null,
-            tileColor: outline.archived
-                ? const Color.fromRGBO(175, 175, 175, 0.1)
-                : null,
-            title: Text(outline.name),
-            subtitle:
-                Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
-            onTap: () {
-              onTap(outline.id);
-            },
-          ));
+      return ListTile(
+        key: Key("outline-$num"),
+        leading: outline.archived ? const Icon(Icons.archive) : null,
+        tileColor:
+            outline.archived ? const Color.fromRGBO(175, 175, 175, 0.1) : null,
+        trailing: const Icon(Icons.chevron_right),
+        title: Text(outline.name),
+        subtitle:
+            Timeago(builder: (_, t) => Text(t), date: outline.dateUpdated),
+        onTap: () {
+          onTap(outline.id);
+        },
+      );
     });
   }
 
