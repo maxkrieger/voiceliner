@@ -1,0 +1,60 @@
+name: deploy_android
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy_android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: true
+
+      - name: Bundle install
+        run: cd ./android && bundle install
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "11.x"
+
+      - name: Dump Secrets
+        run: |
+          cd android/
+          echo "${{secrets.KEYSTORE}}" > keystore.b64
+          base64 -d -i keystore.b64 > keystore.jks
+          echo "${{secrets.KEY_PROPERTIES}}" > key.properties
+          echo "${{secrets.GOOGLE_PLAY_JSON_CONTENT}}" > google_play.b64
+          base64 -d -i google_play.b64 > google_play.json
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+
+      - name: Inject google service account file
+        run: |
+          echo "${{ secrets.SPEECH_JSON }}" >> speech_acct.b64
+          base64 -d -i speech_acct.b64 > ./assets/speech_acct.json
+
+      - name: Install tools
+        run: |
+          flutter pub get
+
+      - name: Flutter build release
+        run: |
+          unset ANDROID_NDK_HOME
+          flutter build appbundle --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Deploy beta to Play Store
+        run: |
+          cd ./android && bundle exec fastlane beta
+        env:
+          GOOGLE_PLAY_JSON: google_play.json
+          PLAY_APP_IDENTIFIER: ${{ secrets.PLAY_APP_IDENTIFIER }}
