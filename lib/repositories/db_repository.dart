@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 
-const int dbVersion = 5;
+const int dbVersion = 6;
 
 const String noteTableDef = '''
       id TEXT PRIMARY KEY NOT NULL, 
@@ -50,9 +51,10 @@ class DBRepository extends ChangeNotifier {
 CREATE TABLE outline (
       id TEXT PRIMARY KEY NOT NULL, 
       name TEXT NOT NULL,
+      emoji TEXT NOT NULL,
       date_created INTEGER NOT NULL,
       date_updated INTEGER NOT NULL,
-      archived INTEGER NOT NULL DEFAULT 0
+      archived INTEGER NOT NULL DEFAULT 0,
 )''');
     batch.execute("CREATE TABLE note($noteTableDef)");
     await batch.commit(noResult: true);
@@ -132,6 +134,10 @@ CREATE TABLE outline (
     if (oldVersion < 5) {
       batch.execute(
           "ALTER TABLE outline ADD COLUMN archived INTEGER NOT NULL DEFAULT 0");
+    }
+    if (oldVersion < 6) {
+      batch.execute(
+          "ALTER TABLE outline ADD COLUMN emoji TEXT NOT NULL DEFAULT '$defaultEmoji'");
     }
     print("done migrating");
     await batch.commit();
@@ -250,8 +256,8 @@ CREATE TABLE outline (
 
   Future<void> renameOutline(Outline outline) async {
     final batch = _database.batch();
-    batch.rawUpdate(
-        "UPDATE outline SET name = ? WHERE id = ?", [outline.name, outline.id]);
+    batch.rawUpdate("UPDATE outline SET name = ?, emoji = ? WHERE id = ?",
+        [outline.name, outline.emoji, outline.id]);
     writeOutlineUpdated(batch, outline.id);
     await batch.commit();
   }

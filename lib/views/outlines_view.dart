@@ -7,6 +7,7 @@ import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
+import 'package:voice_outliner/widgets/outline_wizard.dart';
 import 'package:voice_outliner/widgets/outlines_list.dart';
 import 'package:voice_outliner/widgets/search_results_list.dart';
 
@@ -22,42 +23,15 @@ class _OutlinesViewState extends State<OutlinesView> {
   List<GroupedResult> searchResults = [];
   final _textController = TextEditingController();
   Future<void> _addOutline() async {
-    Future<void> _onSubmitted(BuildContext ctx) async {
-      if (_textController.value.text.isNotEmpty) {
-        final outline = await ctx
-            .read<OutlinesModel>()
-            .createOutline(_textController.value.text);
-        Navigator.of(ctx, rootNavigator: true).pop();
-        _pushOutline(outline.id);
-      }
-    }
-
     final now = DateTime.now();
-    _textController.text = "${now.month}/${now.day}/${now.year - 2000}";
-    _textController.selection = TextSelection(
-        baseOffset: 0, extentOffset: _textController.value.text.length);
-    await showDialog(
-        context: context,
-        builder: (dialogCtx) => AlertDialog(
-                title: const Text("New Outline"),
-                content: TextField(
-                    decoration:
-                        const InputDecoration(hintText: "Outline Title"),
-                    controller: _textController,
-                    autofocus: true,
-                    autocorrect: false,
-                    onSubmitted: (_) => _onSubmitted(dialogCtx),
-                    textCapitalization: TextCapitalization.words),
                 actions: [
-                  TextButton(
-                      child: const Text("cancel"),
-                      onPressed: () {
-                        Navigator.of(dialogCtx, rootNavigator: true).pop();
-                      }),
-                  TextButton(
-                      child: const Text("create"),
-                      onPressed: () => _onSubmitted(dialogCtx))
-                ]));
+    final name = "${now.month}/${now.day}/${now.year - 2000}";
+    await launchOutlineWizard(name, defaultEmoji, context, "create",
+        (name, emoji) async {
+      final outline =
+          await context.read<OutlinesModel>().createOutline(name, emoji);
+      _pushOutline(outline.id);
+    }, autofocus: true);
   }
 
   @override

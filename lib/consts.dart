@@ -10,3 +10,4 @@ const showArchivedKey = "show_archived";
 
 const classicPurple = Color.fromRGBO(169, 129, 234, 1.0);
 final locationInstance = Location();
+const defaultEmoji = "🤠";

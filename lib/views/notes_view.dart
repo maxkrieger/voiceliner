@@ -10,6 +10,7 @@ import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
+import 'package:voice_outliner/widgets/outline_wizard.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
 
 import '../consts.dart';
@@ -43,12 +44,9 @@ class _NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<_NotesView> {
-  final _renameController = TextEditingController();
-
   @override
   void dispose() {
     super.dispose();
-    _renameController.dispose();
   }
 
   @override
@@ -160,40 +158,14 @@ class _NotesViewState extends State<_NotesView> {
                 ],
               ));
     } else if (item == "rename") {
-      Future<void> _onSubmitted(BuildContext ctx) async {
-        if (_renameController.value.text.isNotEmpty) {
-          await ctx
+      launchOutlineWizard(
+          outline.name,
+          outline.emoji,
+          context,
+          "edit",
+          (name, emoji) => context
               .read<OutlinesModel>()
-              .renameOutline(outline, _renameController.value.text);
-          Navigator.of(ctx, rootNavigator: true).pop();
-        }
-      }
-
-      _renameController.text = outline.name;
-      _renameController.selection = TextSelection(
-          baseOffset: 0, extentOffset: _renameController.value.text.length);
-      showDialog(
-          context: context,
-          builder: (dialogCtx) => AlertDialog(
-                  title: Text("Rename Outline '${outline.name}'"),
-                  content: TextField(
-                      decoration:
-                          const InputDecoration(hintText: "Outline Title"),
-                      controller: _renameController,
-                      autofocus: true,
-                      autocorrect: false,
-                      onSubmitted: (_) => _onSubmitted(dialogCtx),
-                      textCapitalization: TextCapitalization.words),
-                  actions: [
-                    TextButton(
-                        child: const Text("cancel"),
-                        onPressed: () {
-                          Navigator.of(dialogCtx, rootNavigator: true).pop();
-                        }),
-                    TextButton(
-                        child: const Text("rename"),
-                        onPressed: () => _onSubmitted(dialogCtx))
-                  ]));
+              .renameOutline(outline, name, emoji));
     } else if (item == "export_md") {
       context.read<NotesModel>().exportToMarkdown(outline);
     } else if (item == "map") {
@@ -241,6 +213,11 @@ class _NotesViewState extends State<_NotesView> {
             .firstWhere((element) => element.id == outlineId,
                 orElse: () => defaultOutline)
             .name);
+    final currentOutlineEmoji = context.select<OutlinesModel, String>((value) =>
+        value.outlines
+            .firstWhere((element) => element.id == outlineId,
+                orElse: () => defaultOutline)
+            .emoji);
     final currentOutlineArchived = context.select<OutlinesModel, bool>(
         (value) => value.outlines
             .firstWhere((element) => element.id == outlineId,
@@ -258,18 +235,20 @@ class _NotesViewState extends State<_NotesView> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         centerTitle: false,
-        title: Tooltip(
-            message: "rename outline",
-            child: TextButton(
-              style: TextButton.styleFrom(
-                  primary: Colors.black87,
-                  textStyle: const TextStyle(fontSize: 20)),
-              child: Text(
-                currentOutlineName,
-                textAlign: TextAlign.center,
-              ),
-              onPressed: () => _handleMenu("rename"),
-            )),
+        title: Row(children: [
+          Tooltip(
+              message: "rename outline",
+              child: TextButton(
+                style: TextButton.styleFrom(
+                    primary: Colors.black87,
+                    textStyle: const TextStyle(fontSize: 20)),
+                child: Text(
+                  "$currentOutlineEmoji $currentOutlineName",
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => _handleMenu("rename"),
+              ))
+        ]),
         leading: IconButton(
             tooltip: "all outlines",
             onPressed: () {

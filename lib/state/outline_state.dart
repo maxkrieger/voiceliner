@@ -11,6 +11,7 @@ import 'package:voice_outliner/state/player_state.dart';
 
 final defaultOutline = Outline(
     name: "",
+    emoji: "📓",
     id: "",
     dateCreated: DateTime.now(),
     dateUpdated: DateTime.now(),
@@ -27,12 +28,14 @@ class OutlinesModel extends ChangeNotifier {
   bool isReady = false;
   bool showArchived = false;
 
-  Future<Outline> createOutline(String name) async {
+  Future<Outline> createOutline(String name, String emoji) async {
+    final now = DateTime.now();
     final outline = Outline(
         name: name,
+        emoji: emoji,
         id: uuid.v4(),
-        dateCreated: DateTime.now().toUtc(),
-        dateUpdated: DateTime.now().toUtc(),
+        dateCreated: now.toUtc(),
+        dateUpdated: now.toUtc(),
         archived: false);
     outlines.insert(0, outline);
     notifyListeners();
@@ -54,8 +57,9 @@ class OutlinesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> renameOutline(Outline outline, String renameTo) async {
-    outline.name = renameTo;
+  Future<void> renameOutline(Outline outline, String name, String emoji) async {
+    outline.name = name;
+    outline.emoji = emoji;
     notifyListeners();
     await _dbRepository.renameOutline(outline);
   }

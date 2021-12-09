@@ -4,6 +4,8 @@ import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 
+import '../consts.dart';
+
 class OutlinesList extends StatelessWidget {
   final Function(String) onTap;
   final bool showArchived;
@@ -24,7 +26,15 @@ class OutlinesList extends StatelessWidget {
       }
       return ListTile(
         key: Key("outline-$num"),
-        leading: outline.archived ? const Icon(Icons.archive) : null,
+        leading: outline.archived
+            ? const Icon(Icons.archive)
+            : CircleAvatar(
+                child: Text(
+                  outline.emoji,
+                  textScaleFactor: 1.5,
+                ),
+                backgroundColor: classicPurple.withOpacity(0.2),
+              ),
         tileColor:
             outline.archived ? const Color.fromRGBO(175, 175, 175, 0.1) : null,
         trailing: const Icon(Icons.chevron_right),

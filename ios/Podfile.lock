@@ -7,6 +7,8 @@ PODS:
   - connectivity_plus (0.0.1):
     - Flutter
     - Reachability
+  - emoji_picker_flutter (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_archive (0.0.1):
     - Flutter
@@ -64,6 +66,7 @@ PODS:
 
 DEPENDENCIES:
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
+  - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
   - Flutter (from `Flutter`)
   - flutter_archive (from `.symlinks/plugins/flutter_archive/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
@@ -96,6 +99,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
+  emoji_picker_flutter:
+    :path: ".symlinks/plugins/emoji_picker_flutter/ios"
   Flutter:
     :path: Flutter
   flutter_archive:
@@ -130,6 +135,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   connectivity_plus: 5f0eb61093bec56935f21a1699dd2758bc895587
+  emoji_picker_flutter: 4f9a1ac31d355e1bf9622a1e821a809149130127
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_archive: 141014f758a0b31fde29add54952729eb1d61c95
   flutter_sound: db1364f901b96c17e00101c831994487186afdf4
