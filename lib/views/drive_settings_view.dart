@@ -182,7 +182,6 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Drive Backup"),
-        centerTitle: false,
       ),
       body: _state != _DriveState.initing
           ? Column(children: [

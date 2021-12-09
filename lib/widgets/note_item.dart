@@ -152,7 +152,6 @@ class _NoteItemState extends State<NoteItem> {
       return Scaffold(
           appBar: AppBar(
             title: const Text("Select Outline"),
-            centerTitle: false,
           ),
           body: OutlinesList(
               excludeItem: note.outlineId,

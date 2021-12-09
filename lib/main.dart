@@ -115,7 +115,10 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
       theme: ThemeData(
         fontFamily: "Work Sans",
         appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white, foregroundColor: Colors.black87),
+            elevation: 0.4,
+            centerTitle: false,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black87),
         focusColor: classicPurple,
         primarySwatch: Colors.deepPurple,
         primaryColor: classicPurple,

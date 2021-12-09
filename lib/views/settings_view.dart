@@ -97,7 +97,6 @@ class _SettingsViewState extends State<SettingsView> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
-          centerTitle: false,
         ),
         body: isInited
             ? Column(

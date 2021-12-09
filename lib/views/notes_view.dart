@@ -234,7 +234,6 @@ class _NotesViewState extends State<_NotesView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        centerTitle: false,
         title: Row(children: [
           Tooltip(
               message: "rename outline",
