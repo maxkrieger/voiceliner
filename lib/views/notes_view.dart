@@ -236,17 +236,15 @@ class _NotesViewState extends State<_NotesView> {
         automaticallyImplyLeading: false,
         title: Row(children: [
           Tooltip(
-              message: "rename outline",
-              child: TextButton(
-                style: TextButton.styleFrom(
-                    primary: Colors.black87,
-                    textStyle: const TextStyle(fontSize: 20)),
+            message: "rename outline",
+            child: InkWell(
+                onTap: () => _handleMenu("rename"),
+                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                 child: Text(
                   "$currentOutlineEmoji $currentOutlineName",
                   textAlign: TextAlign.center,
-                ),
-                onPressed: () => _handleMenu("rename"),
-              ))
+                )),
+          )
         ]),
         leading: IconButton(
             tooltip: "all outlines",

@@ -296,6 +296,8 @@ class _NoteItemState extends State<NoteItem> {
                   Tooltip(
                       message: "mark note complete",
                       child: Checkbox(
+                          fillColor:
+                              MaterialStateProperty.all(Colors.deepPurple),
                           value: note.isComplete,
                           onChanged: (v) {
                             context
@@ -314,7 +316,8 @@ class _NoteItemState extends State<NoteItem> {
                   PopupMenuButton(
                       tooltip: "note options",
                       itemBuilder: _menuBuilder,
-                      icon: const Icon(Icons.more_vert),
+                      icon:
+                          const Icon(Icons.more_vert, color: Colors.deepPurple),
                       onSelected: _handleMenu)
                 ])
               ],
@@ -330,11 +333,13 @@ class _NoteItemState extends State<NoteItem> {
                           ? note.infoString
                           : note.transcript!,
                       style: TextStyle(
+                          color: Colors.deepPurple,
                           decoration: note.isComplete
                               ? TextDecoration.lineThrough
                               : null),
                     ),
               leading: IconButton(
+                  color: Colors.deepPurple,
                   tooltip: "play note",
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

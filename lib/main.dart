@@ -14,6 +14,18 @@ import 'consts.dart';
 
 final routes = {"/": const OutlinesView(), "/notes": const NotesView()};
 
+final theme = ThemeData(
+  fontFamily: "Work Sans",
+  appBarTheme: const AppBarTheme(
+      elevation: 0.4,
+      centerTitle: false,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black87),
+  focusColor: classicPurple,
+  primarySwatch: Colors.deepPurple,
+  primaryColor: classicPurple,
+);
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
@@ -112,17 +124,13 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
                         : null)));
       },
       initialRoute: lastRoute ?? "/",
-      theme: ThemeData(
-        fontFamily: "Work Sans",
-        appBarTheme: const AppBarTheme(
-            elevation: 0.4,
-            centerTitle: false,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black87),
-        focusColor: classicPurple,
-        primarySwatch: Colors.deepPurple,
-        primaryColor: classicPurple,
-      ),
+      themeMode: ThemeMode.system,
+      theme: theme,
+      darkTheme: ThemeData(
+          fontFamily: "Work Sans",
+          brightness: Brightness.dark,
+          primaryColor: classicPurple,
+          primarySwatch: Colors.deepPurple),
       color: classicPurple,
     );
   }
