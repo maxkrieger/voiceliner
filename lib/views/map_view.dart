@@ -80,6 +80,7 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Map"),
+        centerTitle: false,
       ),
       body: !loading
           ? (notes.isNotEmpty

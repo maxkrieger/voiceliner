@@ -180,7 +180,10 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
     final driveEnabled = sharedPreferences?.getBool(driveEnabledKey) ?? false;
     final signedIn = account != null;
     return Scaffold(
-      appBar: AppBar(title: const Text("Drive Backup")),
+      appBar: AppBar(
+        title: const Text("Drive Backup"),
+        centerTitle: false,
+      ),
       body: _state != _DriveState.initing
           ? Column(children: [
               SwitchListTile(

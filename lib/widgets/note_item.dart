@@ -150,7 +150,10 @@ class _NoteItemState extends State<NoteItem> {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
     Navigator.push(context, MaterialPageRoute(builder: (ct) {
       return Scaffold(
-          appBar: AppBar(title: const Text("Select Outline")),
+          appBar: AppBar(
+            title: const Text("Select Outline"),
+            centerTitle: false,
+          ),
           body: OutlinesList(
               excludeItem: note.outlineId,
               onTap: (String outlineId) {

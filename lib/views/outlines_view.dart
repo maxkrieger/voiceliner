@@ -162,6 +162,7 @@ class _OutlinesViewState extends State<OutlinesView> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         automaticallyImplyLeading: false,
         leading: AnimatedSwitcher(
           child: searchFocused

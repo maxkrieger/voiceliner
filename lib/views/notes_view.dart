@@ -257,6 +257,7 @@ class _NotesViewState extends State<_NotesView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        centerTitle: false,
         title: Tooltip(
             message: "rename outline",
             child: TextButton(
@@ -309,25 +310,12 @@ class _NotesViewState extends State<_NotesView> {
                               child: const Text("grant microphone access"))
                         ]))
                   : (noteCount == 0)
-                      ? Center(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: const [
-                              Text("no notes yet!",
-                                  style: TextStyle(
-                                      fontSize: 40.0,
-                                      color: Color.fromRGBO(0, 0, 0, 0.5))),
-                              SizedBox(
-                                height: 12.0,
-                              ),
-                              Text(
-                                "swipe notes to indent them",
-                                style: TextStyle(
-                                    fontSize: 20.0,
-                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
-                              )
-                            ]))
+                      ? const Center(
+                          child: Text("no notes yet!",
+                              style: TextStyle(
+                                  fontSize: 40.0,
+                                  color: Color.fromRGBO(0, 0, 0, 0.5))),
+                        )
                       : Scrollbar(
                           controller: scrollController,
                           interactive: true,
