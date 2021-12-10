@@ -1,0 +1,137 @@
+import 'package:flutter/material.dart';
+import 'package:introduction_screen/introduction_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:voice_outliner/consts.dart';
+import 'package:voice_outliner/state/player_state.dart';
+
+class OnboardingView extends StatefulWidget {
+  const OnboardingView({Key? key}) : super(key: key);
+
+  @override
+  _OnboardingViewState createState() => _OnboardingViewState();
+}
+
+class _OnboardingViewState extends State<OnboardingView> {
+  SharedPreferences? sharedPreferences;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () async {
+      sharedPreferences = await SharedPreferences.getInstance();
+      setState(() {});
+    });
+  }
+
+  Future<void> enableLocation() async {
+    try {
+      bool permissioned = await locationInstance.requestService();
+      if (!permissioned) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Couldn't get location")));
+        return;
+      }
+      final testLoc = await locationInstance.getLocation();
+      if (testLoc.latitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Couldn't get location")));
+        return;
+      }
+      setState(() {
+        sharedPreferences?.setBool(shouldLocateKey, true);
+      });
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Couldn't get location")));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool playerReady = context.select<PlayerModel, bool>(
+        (value) => value.playerState == PlayerState.ready);
+    bool locationOn = sharedPreferences?.getBool(shouldLocateKey) ?? false;
+    return IntroductionScreen(
+      color: classicPurple,
+      dotsDecorator: const DotsDecorator(activeColor: classicPurple),
+      showDoneButton: true,
+      showNextButton: true,
+      isTopSafeArea: true,
+      next: Text(
+        "Next",
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      ),
+      done: Text(
+        "Done",
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      ),
+      onDone: () {
+        Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
+      },
+      pages: [
+        PageViewModel(
+            title: "Welcome to Voiceliner",
+            bodyWidget: Column(children: [
+              const Text(
+                "Save outlines of auto-transcribed voice.",
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                  onPressed: playerReady
+                      ? null
+                      : () {
+                          context.read<PlayerModel>().tryPermission();
+                        },
+                  child: Text(
+                      playerReady ? "all set!" : "grant microphone access"))
+            ]),
+            image: Center(
+                child: Image.asset(
+              "assets/onboarding/1.png",
+            ))),
+        PageViewModel(
+            title: "Tap and hold the microphone to record notes",
+            body:
+                "While holding, drag up to change the temperature (color) of the note.",
+            image: Center(
+                child: Image.asset(
+              "assets/onboarding/2.png",
+            ))),
+        PageViewModel(
+            title: "Swipe left or right to indent notes",
+            body: "Drag them to reorder.",
+            image: Center(
+                child: Image.asset(
+              "assets/onboarding/3.png",
+            ))),
+        PageViewModel(
+            title: "See where you took notes",
+            bodyWidget: Column(children: [
+              const Text(
+                "Attach your location, situate memories.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                  onPressed: locationOn ? null : enableLocation,
+                  child: Text(locationOn ? "all set!" : "enable location"))
+            ]),
+            image: Center(
+                child: Image.asset(
+              "assets/onboarding/4.png",
+            ))),
+        PageViewModel(
+            title: "Organize your notes into outlines",
+            body: "emojis included!",
+            image: Center(
+                child: Image.asset(
+              "assets/onboarding/5.png",
+            )))
+      ],
+    );
+  }
+}

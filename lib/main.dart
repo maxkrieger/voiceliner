@@ -8,11 +8,16 @@ import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
+import 'package:voice_outliner/views/onboarding_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
 
 import 'consts.dart';
 
-final routes = {"/": const OutlinesView(), "/notes": const NotesView()};
+final routes = {
+  "/": const OutlinesView(),
+  "/notes": const NotesView(),
+  "/onboarding": const OnboardingView()
+};
 
 final theme = ThemeData(
   fontFamily: "Work Sans",
@@ -79,8 +84,8 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
   void initState() {
     super.initState();
     setState(() {
-      lastRoute = widget.sharedPreferences.getString("last_route");
-      lastOutline = widget.sharedPreferences.getString("last_outline");
+      lastRoute = widget.sharedPreferences.getString(lastRouteKey);
+      lastOutline = widget.sharedPreferences.getString(lastOutlineKey);
     });
   }
 
@@ -123,7 +128,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
                         ? NotesViewArgs(lastOutline!)
                         : null)));
       },
-      initialRoute: lastRoute ?? "/",
+      initialRoute: lastRoute ?? "/onboarding",
       themeMode: ThemeMode.system,
       theme: theme,
       darkTheme: ThemeData(

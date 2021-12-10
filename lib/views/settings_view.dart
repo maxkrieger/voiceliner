@@ -98,6 +98,10 @@ class _SettingsViewState extends State<SettingsView> {
     });
   }
 
+  void showOnboarding() {
+    Navigator.pushNamedAndRemoveUntil(context, "/onboarding", (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final showArchived =
@@ -112,7 +116,7 @@ class _SettingsViewState extends State<SettingsView> {
                   const SizedBox(height: 10.0),
                   SwitchListTile(
                       secondary: const Icon(Icons.voicemail),
-                      title: const Text("Transcribe recordings"),
+                      title: const Text("Transcribe Recordings"),
                       subtitle: Text(Platform.isIOS
                           ? "uses iOS's transcription"
                           : "uses Azure's transcription service"),
@@ -135,14 +139,14 @@ class _SettingsViewState extends State<SettingsView> {
                       }),
                   SwitchListTile(
                     secondary: const Icon(Icons.location_pin),
-                    title: const Text("Attach location"),
+                    title: const Text("Attach Location"),
                     subtitle: const Text("remember where you took a note"),
                     value: sharedPreferences.getBool(shouldLocateKey) ?? false,
                     onChanged: toggleLocation,
                   ),
                   SwitchListTile(
                     secondary: const Icon(Icons.archive),
-                    title: const Text("Show archived outlines"),
+                    title: const Text("Show Archived Outlines"),
                     value: showArchived,
                     onChanged: (_) =>
                         context.read<OutlinesModel>().toggleShowArchived(),
@@ -178,9 +182,17 @@ class _SettingsViewState extends State<SettingsView> {
                       TextButton(
                           onPressed: () => launch(
                               "https://github.com/maxkrieger/voiceliner"),
-                          child: const Text("fork on GitHub"))
+                          child: Text(
+                            "fork on GitHub",
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface),
+                          ))
                     ],
                   ),
+                  ListTile(
+                      leading: const Icon(Icons.help),
+                      title: const Text("Show Tutorial"),
+                      onTap: showOnboarding),
                 ],
               )
             : const CircularProgressIndicator());
