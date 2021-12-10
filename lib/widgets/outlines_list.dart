@@ -25,6 +25,7 @@ class OutlinesList extends StatelessWidget {
         return const SizedBox(height: 0);
       }
       return ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 17),
         key: Key("outline-$num"),
         leading: outline.archived
             ? const Icon(Icons.archive)
@@ -54,6 +55,7 @@ class OutlinesList extends StatelessWidget {
         context.select<OutlinesModel, int>((value) => value.outlines.length);
     return Scrollbar(
         child: ListView.builder(
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             itemCount: numOutlines,
             itemBuilder: _buildOutline));

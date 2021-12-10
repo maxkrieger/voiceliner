@@ -120,23 +120,23 @@ class _OutlinesViewState extends State<OutlinesView> {
                 }),
               )
             : null,
-        title: AnimatedSwitcher(
-            child: searchFocused
-                ? TextField(
-                    showCursor: true,
-                    onChanged: performSearch,
-                    controller: _textController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: "search outlines and notes",
-                      suffixIcon: IconButton(
-                          onPressed: _textController.clear,
-                          icon: const Icon(Icons.clear)),
-                    ),
-                    autocorrect: false,
-                  )
-                : const Text("Outlines"),
-            duration: const Duration(milliseconds: 300)),
+        title: searchFocused
+            ? TextField(
+                showCursor: true,
+                onChanged: performSearch,
+                controller: _textController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: "search outlines and notes",
+                  suffixIcon: IconButton(
+                      onPressed: _textController.clear,
+                      icon: const Icon(Icons.clear)),
+                ),
+                autocorrect: false,
+              )
+            : const Text(
+                "Outlines",
+              ),
         actions: !(searchFocused)
             ? [
                 IconButton(

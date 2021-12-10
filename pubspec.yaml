@@ -112,6 +112,7 @@ flutter:
        fonts:
          - asset: fonts/WorkSans-Medium.ttf
          - asset: fonts/WorkSans-Regular.ttf
+         - asset: fonts/WorkSans-SemiBold.ttf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

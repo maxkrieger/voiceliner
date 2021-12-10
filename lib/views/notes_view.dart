@@ -252,10 +252,7 @@ class _NotesViewState extends State<_NotesView> {
             child: InkWell(
                 onTap: () => _handleMenu("rename"),
                 borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                child: Text(
-                  "$currentOutlineEmoji $currentOutlineName",
-                  textAlign: TextAlign.center,
-                )),
+                child: Text("$currentOutlineEmoji $currentOutlineName")),
           )
         ]),
         leading: IconButton(

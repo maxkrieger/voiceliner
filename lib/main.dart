@@ -19,13 +19,19 @@ final routes = {
   "/onboarding": const OnboardingView()
 };
 
+const generalAppBar =
+    AppBarTheme(elevation: 0.4, centerTitle: false, titleSpacing: 20);
+
 final theme = ThemeData(
   fontFamily: "Work Sans",
-  appBarTheme: const AppBarTheme(
-      elevation: 0.4,
-      centerTitle: false,
+  appBarTheme: generalAppBar.copyWith(
       backgroundColor: Colors.white,
-      foregroundColor: Colors.black87),
+      foregroundColor: Colors.black87,
+      titleTextStyle: const TextStyle(
+          fontFamily: "Work Sans",
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: Colors.black)),
   focusColor: classicPurple,
   primarySwatch: Colors.deepPurple,
   primaryColor: classicPurple,
@@ -134,10 +140,12 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
       theme: theme,
       darkTheme: ThemeData(
           fontFamily: "Work Sans",
-          appBarTheme: const AppBarTheme(
-            elevation: 0.4,
-            centerTitle: false,
-          ),
+          appBarTheme: generalAppBar.copyWith(
+              titleTextStyle: const TextStyle(
+                  fontFamily: "Work Sans",
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
           brightness: Brightness.dark,
           primaryColor: classicPurple,
           primarySwatch: Colors.deepPurple),
