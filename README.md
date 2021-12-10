@@ -1,6 +1,15 @@
 # Voiceliner
 
+<img src="assets/icon/icon.png" width="200" />
+
 A nested, rapid voice memos for Android and iOS. Written in Flutter.
+
+## Screenshots
+
+
+<img src="assets/screenshots/1.png" width="300" />
+<img src="assets/screenshots/2.png" width="300" />
+<img src="assets/screenshots/3.png" width="300" />
 
 ## Contributing & License
 
@@ -14,6 +23,14 @@ This project is AGPLv3 but with an exception for the App Store. [Learn More](CON
 If running Android and need transcription:
 
 * `flutter run --dart-define="AZURE_SPEECH_KEY=MyAzureAPIKey"`
+
+## Rebuilding Icons
+
+Place a 1024x1024 `icon.png` in `assets/icon/icon.png` and run
+
+```
+flutter pub run flutter_launcher_icons:main
+```
 
 ## Deploying
 
