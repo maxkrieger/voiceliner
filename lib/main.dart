@@ -105,6 +105,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
     }
     return MaterialApp(
       title: 'Voiceliner',
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: (RouteSettings route) {
         saveRoute(route);
         final rte = routes[route.name];

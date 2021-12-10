@@ -172,8 +172,8 @@ class _OutlinesViewState extends State<OutlinesView> {
                       borderRadius: BorderRadius.circular(100),
                       boxShadow: const [
                         BoxShadow(
-                            offset: Offset(0, 20),
-                            blurRadius: 20,
+                            offset: Offset(0, 15),
+                            blurRadius: 15,
                             spreadRadius: 10,
                             color: Color.fromRGBO(156, 104, 241, 0.5))
                       ]),
