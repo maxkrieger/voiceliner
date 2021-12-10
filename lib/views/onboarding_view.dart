@@ -47,6 +47,10 @@ class _OnboardingViewState extends State<OnboardingView> {
     }
   }
 
+  void onDone() {
+    Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool playerReady = context.select<PlayerModel, bool>(
@@ -66,9 +70,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         "Done",
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
-      onDone: () {
-        Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
-      },
+      onDone: onDone,
       pages: [
         PageViewModel(
             title: "Welcome to Voiceliner",
@@ -126,7 +128,15 @@ class _OnboardingViewState extends State<OnboardingView> {
             ))),
         PageViewModel(
             title: "Organize your notes into outlines",
-            body: "emojis included!",
+            bodyWidget: Column(children: [
+              const Text(
+                "Set an emoji for each one.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(onPressed: onDone, child: const Text("Let's go!"))
+            ]),
             image: Center(
                 child: Image.asset(
               "assets/onboarding/5.png",
