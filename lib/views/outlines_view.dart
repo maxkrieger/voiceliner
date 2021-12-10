@@ -164,8 +164,20 @@ class _OutlinesViewState extends State<OutlinesView> {
           ? FloatingActionButton(
               tooltip: "Add Outline",
               onPressed: _addOutline,
+              elevation: 0,
               backgroundColor: classicPurple,
-              child: const Icon(Icons.post_add_rounded),
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(100),
+                      boxShadow: const [
+                        BoxShadow(
+                            offset: Offset(0, 20),
+                            blurRadius: 20,
+                            spreadRadius: 10,
+                            color: Color.fromRGBO(156, 104, 241, 0.5))
+                      ]),
+                  child: const Icon(Icons.post_add_rounded)),
             )
           : null,
       body: AnimatedCrossFade(

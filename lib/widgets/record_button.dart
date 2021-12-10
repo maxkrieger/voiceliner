@@ -92,10 +92,10 @@ class _RecordButtonState extends State<RecordButton> {
               decoration: BoxDecoration(
                 boxShadow: [
                   const BoxShadow(
-                      color: Color.fromRGBO(169, 129, 234, 0.8),
-                      blurRadius: 3.0,
-                      spreadRadius: 3.0,
-                      offset: Offset(0, 3)),
+                      color: Color.fromRGBO(156, 103, 241, .36),
+                      blurRadius: 18.0,
+                      spreadRadius: 0.0,
+                      offset: Offset(0, 7)),
                   if (isRecording)
                     BoxShadow(
                         color: computeShadowColor(offset.dy),
