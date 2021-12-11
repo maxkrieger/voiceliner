@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "build": "parcel build src/index.html --public-url=/voiceliner",
     "predeploy": "yarn run build",
     "deploy": "gh-pages -d dist"
   }
