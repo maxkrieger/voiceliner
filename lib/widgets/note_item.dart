@@ -207,13 +207,11 @@ class _NoteItemState extends State<NoteItem> {
 
     if (note == null) {
       return Card(
-          child: const Center(
-              child: Text(
-            "drag to reorder",
-            style: TextStyle(
-                fontStyle: FontStyle.italic,
-                color: Color.fromRGBO(0, 0, 0, 0.5)),
-          )),
+          child: Center(
+              child: Text("drag to reorder",
+                  style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Theme.of(context).hintColor))),
           clipBehavior: Clip.hardEdge,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
@@ -338,11 +336,11 @@ class _NoteItemState extends State<NoteItem> {
                 ])
               ],
               title: isTranscribing
-                  ? const Text(
+                  ? Text(
                       "waiting to transcribe...",
                       style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                      ),
+                          fontStyle: FontStyle.italic,
+                          color: Theme.of(context).hintColor),
                     )
                   : Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),

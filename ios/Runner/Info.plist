@@ -47,9 +47,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app can add your location to your recordings to help you remember them.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app records your voice</string>
+	<string>This app records your voice so that it can create voice notes.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app transcribes your voice</string>
+	<string>This app transcribes recordings so that you can more easily find them.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
