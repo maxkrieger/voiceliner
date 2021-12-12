@@ -1,11 +1,10 @@
-# <img src="assets/icon/icon.png" width="100" />  Voiceliner
+# <img src="assets/icon/icon.png" width="100" /> Voiceliner
 
+A voice memos-like for Android and iOS. Written in Flutter.
 
-
-A nested, rapid voice memos for Android and iOS. Written in Flutter.
+The codebase is still quite messy, but contributions welcome!
 
 ## Screenshots
-
 
 <img src="assets/screenshots/1.png" width="300" />
 <img src="assets/screenshots/2.png" width="300" />
@@ -17,12 +16,12 @@ This project is AGPLv3 but with an exception for the App Store. [Learn More](CON
 
 ## Building
 
-* Install flutter
-* `flutter run lib/main.dart` 
+- Install flutter
+- `flutter run lib/main.dart`
 
 If running Android and need transcription:
 
-* `flutter run --dart-define="AZURE_SPEECH_KEY=MyAzureAPIKey"`
+- `flutter run --dart-define="AZURE_SPEECH_KEY=MyAzureAPIKey"`
 
 ## Rebuilding Icons
 
@@ -34,7 +33,8 @@ flutter pub run flutter_launcher_icons:main
 
 ## Deploying
 
-* `android/key.properties`:
+- `android/key.properties`:
+
 ```
   storePassword=keystore password
   keyPassword=key password
@@ -42,9 +42,8 @@ flutter pub run flutter_launcher_icons:main
   storeFile=/keystore/location
 ```
 
-
 | Env Var                                      | Value                                                                                                                                                         |
-|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | AZURE_SPEECH_KEY                             | api key for Azure speech to text services (https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/overview#try-the-speech-service-for-free) |
 | APPLE_ID                                     | apple account email"                                                                                                                                          |
 | APP_IDENTIFIER                               | ios com.blabla.blabla                                                                                                                                         |
@@ -62,4 +61,3 @@ flutter pub run flutter_launcher_icons:main
 | KEY_PROPERTIES                               | key.properties seen above                                                                                                                                     |
 | SSH_PRIVATE_KEY                              | for github access                                                                                                                                             |
 | SENTRY_DSN                                   | for sentry logging                                                                                                                                            |
-
