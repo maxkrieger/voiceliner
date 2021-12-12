@@ -78,7 +78,9 @@ h2 {
 
 .store {
   display: flex;
+  padding: 10px;
   justify-content: center;
+  flex-wrap: wrap;
   align-items: center;
 }
 .store > a > img {
@@ -103,4 +105,7 @@ h2 {
 
 a:link {
   color: #824bdd;
+}
+.githubs span {
+  float: right;
 }

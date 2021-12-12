@@ -9,7 +9,7 @@
     "parcel-resolver-ignore": "^2.0.0"
   },
   "scripts": {
-    "start": "parcel src/index.html",
+    "start": "parcel src/index.html --public-url=/",
     "build": "parcel build src/index.html --public-url=/voiceliner",
     "predeploy": "yarn run build",
     "deploy": "gh-pages -d dist"
