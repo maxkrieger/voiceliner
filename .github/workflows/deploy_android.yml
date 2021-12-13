@@ -47,7 +47,7 @@ jobs:
       - name: Flutter build release
         run: |
           unset ANDROID_NDK_HOME
-          flutter build appbundle --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }},AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
+          flutter build appbundle --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} --dart-define=AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
 
       - name: Deploy beta to Play Store
         run: |

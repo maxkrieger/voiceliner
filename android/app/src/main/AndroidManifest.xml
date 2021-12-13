@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="chat.saga.voice_outliner">
    <application
-        android:label="voice_outliner"
+        android:label="Voiceliner"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"

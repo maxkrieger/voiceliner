@@ -10,6 +10,11 @@ import 'package:voice_outliner/data/note.dart';
 
 const _apiKey = String.fromEnvironment("AZURE_SPEECH_KEY");
 Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
+  if (_apiKey.isEmpty) {
+    await sentry.Sentry.captureMessage("API key empty!",
+        level: sentry.SentryLevel.error);
+    return const Tuple2(false, null);
+  }
   if (note.duration != null &&
       note.duration!.compareTo(const Duration(minutes: 10)) > 0) {
     return const Tuple2(true, null);
@@ -46,6 +51,9 @@ Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
         return const Tuple2(true, null);
       }
     }
+    await sentry.Sentry.captureMessage(
+        "Couldn't contact Azure: status code ${res.statusCode}",
+        level: sentry.SentryLevel.error);
     return const Tuple2(false, null);
   } catch (err, st) {
     await sentry.Sentry.captureException(err, stackTrace: st);

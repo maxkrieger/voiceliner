@@ -47,7 +47,7 @@ jobs:
 
       - name: Flutter build release
         run: |
-          flutter build ios --release --no-codesign --dart-define SENTRY_DSN=${{ secrets.SENTRY_DSN }},AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
+          flutter build ios --release --no-codesign --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Deploy to TestFlight
         run: |
