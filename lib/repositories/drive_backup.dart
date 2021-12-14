@@ -19,12 +19,22 @@ GoogleSignIn googleSignIn = GoogleSignIn(
         : "658946540988-5ga0e513k05pbteb77kqfg6ak7rdd5ns.apps.googleusercontent.com",
     scopes: [DriveApi.driveAppdataScope]);
 
-Future<DriveApi> getDrive() async {
-  if (googleSignIn.currentUser == null) {
-    await googleSignIn.signInSilently(reAuthenticate: true);
+Future<DriveApi?> getDrive() async {
+  try {
+    if (googleSignIn.currentUser == null) {
+      await googleSignIn.signInSilently(reAuthenticate: true);
+    }
+
+    final httpClient = (await googleSignIn.authenticatedClient());
+    if (httpClient == null) {
+      return null;
+    }
+    return DriveApi(httpClient);
+  } catch (e, tr) {
+    print(tr);
+    Sentry.captureException(e, stackTrace: tr);
+    return null;
   }
-  final httpClient = (await googleSignIn.authenticatedClient())!;
-  return DriveApi(httpClient);
 }
 
 bool backingUp = false;
@@ -53,6 +63,9 @@ Future<void> ifShouldBackup() async {
 
 Future<String> getUsage() async {
   final driveApi = await getDrive();
+  if (driveApi == null) {
+    return "could not authenticate";
+  }
   final about = await driveApi.about.get($fields: "storageQuota");
   final storageQuota = about.storageQuota;
   if (storageQuota == null ||
@@ -67,6 +80,9 @@ Future<String> getUsage() async {
 
 Future<List<Tuple2<DateTime, String>>> getBackups() async {
   final driveApi = await getDrive();
+  if (driveApi == null) {
+    return [];
+  }
   final existing = await driveApi.files.list(
       spaces: "appDataFolder",
       pageSize: 1000,
@@ -82,6 +98,9 @@ Future<List<Tuple2<DateTime, String>>> getBackups() async {
 
 Future<void> makeBackup() async {
   final driveApi = await getDrive();
+  if (driveApi == null) {
+    return;
+  }
   final docsDir = await getApplicationDocumentsDirectory();
   final tmpDir = await getTemporaryDirectory();
   final tmpZip = IO.File(
@@ -104,14 +123,17 @@ Future<void> makeBackup() async {
     sp.setInt(lastBackupKey, DateTime.now().millisecondsSinceEpoch);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Done backing up", timestamp: DateTime.now()));
-  } catch (e) {
+  } catch (e, tr) {
     print(e);
-    Sentry.captureException(e);
+    Sentry.captureException(e, stackTrace: tr);
   }
 }
 
 Future<void> restoreById(String id, Function onDone) async {
   final driveApi = await getDrive();
+  if (driveApi == null) {
+    return;
+  }
   final docsDir = await getApplicationDocumentsDirectory();
   await docsDir.list().forEach((element) async {
     await element.delete(recursive: true);
@@ -133,14 +155,17 @@ Future<void> restoreById(String id, Function onDone) async {
           Breadcrumb(message: "Restored backup", timestamp: DateTime.now()));
       onDone();
     });
-  } catch (e) {
+  } catch (e, tr) {
     print(e);
-    Sentry.captureException(e);
+    Sentry.captureException(e, stackTrace: tr);
   }
 }
 
 Future<void> deleteById(String id) async {
   final driveApi = await getDrive();
+  if (driveApi == null) {
+    return;
+  }
   Sentry.addBreadcrumb(
       Breadcrumb(message: "Deleting backup", timestamp: DateTime.now()));
   await driveApi.files.delete(id);

@@ -222,14 +222,17 @@ class NotesModel extends ChangeNotifier {
     if (currentlyPlayingOrRecording != null) {
       _playerModel.stopPlaying();
       currentlyPlayingOrRecording = null;
+      notifyListeners();
       return;
     }
     if (currentlyExpanded != null && currentlyExpanded!.id != note.id) {
       currentlyExpanded = null;
     }
     currentlyPlayingOrRecording = note;
+    notifyListeners();
     await _playerModel.playNote(note, () {
       currentlyPlayingOrRecording = null;
+      notifyListeners();
     });
   }
 

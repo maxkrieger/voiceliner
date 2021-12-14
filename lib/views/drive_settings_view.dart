@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:tuple/tuple.dart';
@@ -74,13 +75,21 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
   }
 
   Future<void> handleDriveToggle(bool enable) async {
-    sharedPreferences?.setBool(driveEnabledKey, enable);
     if (enable) {
-      await googleSignIn.signIn();
+      try {
+        await googleSignIn.signIn();
+      } catch (e, tr) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Couldn't sign in")));
+        print(tr);
+        Sentry.captureException(e, stackTrace: tr);
+        return;
+      }
     } else {
       await googleSignIn.signOut();
       account = null;
     }
+    sharedPreferences?.setBool(driveEnabledKey, enable);
     await checkStatus();
     setState(() {});
   }
