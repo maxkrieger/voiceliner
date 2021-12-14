@@ -141,7 +141,8 @@ class NotesModel extends ChangeNotifier {
     final noteId = uuid.v4();
     String? parent;
     if (notes.isNotEmpty &&
-        DateTime.now().difference(notes.last.dateCreated).inMinutes < 2) {
+        DateTime.now().difference(notes.last.dateCreated).inMinutes < 2 &&
+        !notes.last.isComplete) {
       parent = notes.last.parentNoteId;
     }
     final note = Note(
@@ -385,15 +386,24 @@ class NotesModel extends ChangeNotifier {
     await rebuildNote(note);
   }
 
+  // Buggy function: shouldn't need to set original note separately to get re-render
   Future<void> setNoteComplete(Note note, bool complete) async {
     note.isComplete = complete;
     for (Note entry in notes) {
       if (isDescendantOf(entry, note)) {
         entry.isComplete = complete;
         await rebuildNote(entry);
+        if (entry.id == currentlyExpanded?.id) {
+          currentlyExpanded = null;
+          notifyListeners();
+        }
       }
     }
     await rebuildNote(note);
+    if (note.id == currentlyExpanded?.id) {
+      currentlyExpanded = null;
+      notifyListeners();
+    }
   }
 
   Future<void> swapNotes(int a, int b) async {
