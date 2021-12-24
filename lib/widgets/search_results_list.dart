@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/state/player_state.dart';
@@ -25,31 +26,38 @@ class _ResultNoteState extends State<ResultNote> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        leading: IconButton(
-            tooltip: "play note",
-            padding: EdgeInsets.zero,
-            onPressed: () {
-              final playerModel = context.read<PlayerModel>();
-              if (playing) {
-                setState(() {
-                  playing = false;
-                });
-                playerModel.stopPlaying();
-              } else {
-                setState(() {
-                  playing = true;
-                });
-                playerModel.playNote(widget.note, () {
-                  setState(() {
-                    playing = false;
-                  });
-                });
-              }
-            },
-            constraints: const BoxConstraints(),
-            icon: playing
-                ? const Icon(Icons.stop_circle_outlined)
-                : const Icon(Icons.play_circle)),
+        leading: widget.note.filePath != null
+            ? IconButton(
+                tooltip: "play note",
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () {
+                  final playerModel = context.read<PlayerModel>();
+                  if (playing) {
+                    setState(() {
+                      playing = false;
+                    });
+                    playerModel.stopPlaying();
+                  } else {
+                    setState(() {
+                      playing = true;
+                    });
+                    playerModel.playNote(widget.note, () {
+                      setState(() {
+                        playing = false;
+                      });
+                    });
+                  }
+                },
+                color: classicPurple,
+                icon: playing
+                    ? const Icon(Icons.stop_circle_outlined)
+                    : const Icon(Icons.play_circle))
+            : const Icon(
+                Icons.text_fields,
+                semanticLabel: "text note",
+                color: classicPurple,
+              ),
         onTap: () => Navigator.pushNamed(context, "/notes",
             arguments: NotesViewArgs(widget.note.outlineId,
                 scrollToNoteId: widget.note.id)),

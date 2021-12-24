@@ -46,14 +46,16 @@ class PlayerModel extends ChangeNotifier {
   }
 
   Future<void> playNote(Note note, onDone) async {
-    playerState = PlayerState.playing;
-    await _player.startPlayer(
-        codec: Codec.aacADTS,
-        fromURI: getPathFromFilename(note.filePath),
-        whenFinished: () {
-          playerState = PlayerState.ready;
-          onDone();
-        });
+    if (note.filePath != null) {
+      playerState = PlayerState.playing;
+      await _player.startPlayer(
+          codec: Codec.aacADTS,
+          fromURI: getPathFromFilename(note.filePath!),
+          whenFinished: () {
+            playerState = PlayerState.ready;
+            onDone();
+          });
+    }
   }
 
   Future<void> stopPlaying() async {
@@ -67,13 +69,15 @@ class PlayerModel extends ChangeNotifier {
   }
 
   Future<void> startRecording(Note note) async {
-    await _recorder.startRecorder(
-        codec: Codec.aacADTS,
-        toFile: getPathFromFilename(note.filePath),
-        sampleRate: 44100,
-        bitRate: 128000);
-    playerState = PlayerState.recording;
-    notifyListeners();
+    if (note.filePath != null) {
+      await _recorder.startRecorder(
+          codec: Codec.aacADTS,
+          toFile: getPathFromFilename(note.filePath!),
+          sampleRate: 44100,
+          bitRate: 128000);
+      playerState = PlayerState.recording;
+      notifyListeners();
+    }
   }
 
   Future<Duration?> stopRecording({Note? note}) async {
@@ -83,9 +87,12 @@ class PlayerModel extends ChangeNotifier {
     if (note == null) {
       return null;
     }
-    final duration =
-        await flutterSoundHelper.duration(getPathFromFilename(note.filePath));
-    return duration;
+    if (note.filePath != null) {
+      final duration = await flutterSoundHelper
+          .duration(getPathFromFilename(note.filePath!));
+      return duration;
+    }
+    return null;
   }
 
   Future<void> tryPermission() async {

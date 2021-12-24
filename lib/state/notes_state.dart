@@ -107,8 +107,8 @@ class NotesModel extends ChangeNotifier {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
     notes.forEach((entry) async {
-      if (shouldTranscribe && !entry.transcribed) {
-        final path = _playerModel.getPathFromFilename(entry.filePath);
+      if (shouldTranscribe && !entry.transcribed && entry.filePath != null) {
+        final path = _playerModel.getPathFromFilename(entry.filePath!);
         if (Platform.isAndroid) {
           final res = await azureRecognize(entry, path);
           if (res.item1 && isReady) {
@@ -127,6 +127,24 @@ class NotesModel extends ChangeNotifier {
         }
       }
     });
+  }
+
+  Future<void> createTextNote(String text) async {
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Create text note", timestamp: DateTime.now()));
+    final noteId = uuid.v4();
+    final note = Note(
+        id: noteId,
+        dateCreated: DateTime.now().toUtc(),
+        outlineId: _outlineId,
+        parentNoteId: null,
+        filePath: null,
+        transcribed: true,
+        transcript: text,
+        isCollapsed: false);
+    notes.add(note);
+    await _dbRepository.addNote(note);
+    notifyListeners();
   }
 
   Future<void> startRecording() async {
@@ -180,7 +198,7 @@ class NotesModel extends ChangeNotifier {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));
 
-    if (currentlyExpanded != null) {
+    if (currentlyExpanded != null && !currentlyExpanded!.isComplete) {
       note.parentNoteId = currentlyExpanded!.id;
       currentlyExpanded!.insertAfter(note);
       await _dbRepository.updateNote(note);
@@ -356,10 +374,12 @@ class NotesModel extends ChangeNotifier {
         currentlyPlayingOrRecording!.id == note.id) {
       currentlyPlayingOrRecording = null;
     }
-    final path = _playerModel.getPathFromFilename(note.filePath);
-    bool exists = await File(path).exists();
-    if (exists) {
-      await File(path).delete();
+    if (note.filePath != null) {
+      final path = _playerModel.getPathFromFilename(note.filePath!);
+      bool exists = await File(path).exists();
+      if (exists) {
+        await File(path).delete();
+      }
     }
     note.unlink();
     notes.forEach((entry) {
@@ -403,10 +423,6 @@ class NotesModel extends ChangeNotifier {
       }
     }
     await rebuildNote(note);
-    if (note.id == currentlyExpanded?.id) {
-      currentlyExpanded = null;
-      notifyListeners();
-    }
   }
 
   Future<void> swapNotes(int a, int b) async {

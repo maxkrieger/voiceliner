@@ -47,6 +47,9 @@ class _OutlineWizardState extends State<OutlineWizard> {
     if (_renameController.value.text.isNotEmpty) {
       widget.onSubmit(_renameController.value.text, emoji);
       Navigator.of(ctx, rootNavigator: true).pop();
+    } else {
+      ScaffoldMessenger.of(ctx)
+          .showSnackBar(const SnackBar(content: Text("Note is empty")));
     }
   }
 

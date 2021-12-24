@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 class Note extends LinkedListEntry<Note> {
   final String id;
-  final String filePath;
+  String? filePath;
   DateTime dateCreated;
   bool isComplete;
   bool isCollapsed;
@@ -19,11 +19,12 @@ class Note extends LinkedListEntry<Note> {
   String outlineId;
   Note(
       {required this.id,
-      required this.filePath,
       required this.dateCreated,
       required this.outlineId,
+      this.filePath,
       this.parentNoteId,
       this.isComplete = false,
+      this.transcribed = false,
       this.color,
       this.transcript,
       this.duration,

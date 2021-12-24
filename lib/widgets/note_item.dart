@@ -48,6 +48,9 @@ class _NoteItemState extends State<NoteItem> {
             .read<NotesModel>()
             .setNoteTranscript(note, _renameController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
+      } else {
+        ScaffoldMessenger.of(ctx)
+            .showSnackBar(const SnackBar(content: Text("Note is empty")));
       }
     }
 
@@ -78,7 +81,7 @@ class _NoteItemState extends State<NoteItem> {
                       }),
                   TextButton(
                       child: Text(
-                        "set",
+                        "save",
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface),
                       ),
@@ -156,11 +159,15 @@ class _NoteItemState extends State<NoteItem> {
 
   void _shareNote() {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
-    String path =
-        context.read<PlayerModel>().getPathFromFilename(note.filePath);
     String desc = note.transcript ?? note.infoString;
-    Share.shareFiles([path],
-        mimeTypes: ["audio/aac"], text: desc, subject: desc);
+    if (note.filePath != null) {
+      String path =
+          context.read<PlayerModel>().getPathFromFilename(note.filePath!);
+      Share.shareFiles([path],
+          mimeTypes: ["audio/aac"], text: desc, subject: desc);
+    } else {
+      Share.share(desc);
+    }
   }
 
   Future<void> _moveNote() async {
@@ -354,15 +361,24 @@ class _NoteItemState extends State<NoteItem> {
                                 ? TextDecoration.lineThrough
                                 : null),
                       )),
-              leading: IconButton(
-                  tooltip: "play note",
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  color: classicPurple,
-                  onPressed: () => context.read<NotesModel>().playNote(note),
-                  icon: isCurrent
-                      ? const Icon(Icons.stop_circle_outlined)
-                      : const Icon(Icons.play_circle)),
+              leading: note.filePath != null
+                  ? IconButton(
+                      tooltip: "play note",
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      color: classicPurple,
+                      onPressed: () =>
+                          context.read<NotesModel>().playNote(note),
+                      icon: isCurrent
+                          ? const Icon(Icons.stop_circle_outlined)
+                          : const Icon(Icons.play_circle))
+                  : IconButton(
+                      onPressed: _changeNoteTranscript,
+                      tooltip: "edit note",
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      color: classicPurple,
+                      icon: const Icon(Icons.text_fields)),
             )));
   }
 }

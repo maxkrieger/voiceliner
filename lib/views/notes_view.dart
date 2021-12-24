@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -44,9 +45,80 @@ class _NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<_NotesView> {
+  Offset? tapXY;
+  final _textController = TextEditingController();
+
   @override
   void dispose() {
     super.dispose();
+    _textController.dispose();
+  }
+
+  // https://stackoverflow.com/a/66022112/10833799
+  void setPosition(TapDownDetails detail) {
+    tapXY = detail.globalPosition;
+  }
+
+  void showContextMenu() {
+    Vibrate.feedback(FeedbackType.medium);
+    final overlay = Overlay.of(context)!.context.findRenderObject();
+    final relativeSize = RelativeRect.fromSize(
+        tapXY! & const Size(40, 40), overlay!.semanticBounds.size);
+    showMenu(context: context, position: relativeSize, items: [
+      PopupMenuItem(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+              onTap: createTextNote,
+              leading: const Icon(Icons.text_fields),
+              title: const Text("add text note")))
+    ]);
+  }
+
+  Future<void> createTextNote() async {
+    Navigator.pop(context);
+    Future<void> _onSubmitted(BuildContext ctx) async {
+      if (_textController.value.text.isNotEmpty) {
+        await context
+            .read<NotesModel>()
+            .createTextNote(_textController.value.text);
+        Navigator.of(ctx, rootNavigator: true).pop();
+      } else {
+        ScaffoldMessenger.of(ctx)
+            .showSnackBar(const SnackBar(content: Text("Note is empty")));
+      }
+    }
+
+    await showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text("Create text note"),
+        content: TextField(
+          autofocus: true,
+          controller: _textController,
+          decoration: const InputDecoration(hintText: "note"),
+          maxLines: null,
+          onSubmitted: (_) => _onSubmitted(dialogCtx),
+        ),
+        actions: [
+          TextButton(
+              child: Text(
+                "cancel",
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              onPressed: () {
+                Navigator.of(dialogCtx, rootNavigator: true).pop();
+              }),
+          TextButton(
+              child: Text(
+                "create",
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              onPressed: () => _onSubmitted(dialogCtx))
+        ],
+      ),
+    );
   }
 
   @override
@@ -301,38 +373,42 @@ class _NotesViewState extends State<_NotesView> {
                                   fontSize: 40.0,
                                   color: Theme.of(context).hintColor)),
                         )
-                      : Scrollbar(
-                          controller: scrollController,
-                          interactive: true,
-                          child: ReorderableListView.builder(
-                            reverse: true,
-                            onReorder: (a, b) {
-                              // Normalize due to reversing
-                              final A = noteCount - 1 - a;
-                              final B = noteCount - b;
-                              context.read<NotesModel>().swapNotes(A, B);
-                              HapticFeedback.mediumImpact();
-                            },
-                            scrollController: scrollController,
-                            padding: const EdgeInsets.only(bottom: 150),
-                            shrinkWrap: true,
-                            itemBuilder: (_, int idx) {
-                              // So that it starts at the bottom with reverse true
-                              final index = noteCount - 1 - idx;
-                              return AutoScrollTag(
-                                  key: ValueKey(index),
-                                  controller: scrollController,
-                                  highlightColor:
-                                      classicPurple.withOpacity(0.5),
-                                  index: index,
-                                  child: NoteItem(
-                                    key: Key("note-$index"),
-                                    num: index,
-                                    showCompleted: showCompleted,
-                                  ));
-                            },
-                            itemCount: noteCount,
-                          ))),
+                      : GestureDetector(
+                          behavior: HitTestBehavior.deferToChild,
+                          onLongPress: showContextMenu,
+                          onTapDown: setPosition,
+                          child: Scrollbar(
+                              controller: scrollController,
+                              interactive: true,
+                              child: ReorderableListView.builder(
+                                reverse: true,
+                                onReorder: (a, b) {
+                                  // Normalize due to reversing
+                                  final A = noteCount - 1 - a;
+                                  final B = noteCount - b;
+                                  context.read<NotesModel>().swapNotes(A, B);
+                                  HapticFeedback.mediumImpact();
+                                },
+                                scrollController: scrollController,
+                                padding: const EdgeInsets.only(bottom: 150),
+                                shrinkWrap: true,
+                                itemBuilder: (_, int idx) {
+                                  // So that it starts at the bottom with reverse true
+                                  final index = noteCount - 1 - idx;
+                                  return AutoScrollTag(
+                                      key: ValueKey(index),
+                                      controller: scrollController,
+                                      highlightColor:
+                                          classicPurple.withOpacity(0.5),
+                                      index: index,
+                                      child: NoteItem(
+                                        key: Key("note-$index"),
+                                        num: index,
+                                        showCompleted: showCompleted,
+                                      ));
+                                },
+                                itemCount: noteCount,
+                              )))),
       floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
