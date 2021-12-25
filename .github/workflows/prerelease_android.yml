@@ -1,4 +1,4 @@
-name: prerelease_ios
+name: prerelease_android
 
 on:
   release:
