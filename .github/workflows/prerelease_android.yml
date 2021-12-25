@@ -1,9 +1,8 @@
-name: deploy_android
+name: prerelease_ios
 
 on:
   release:
     types:
-      - released
       - prereleased
 
 jobs:

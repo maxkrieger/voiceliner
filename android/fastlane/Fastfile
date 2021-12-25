@@ -25,4 +25,9 @@ platform :android do
   lane :beta do
     upload_to_play_store(track: "beta", aab: "../build/app/outputs/bundle/release/app-release.aab")
   end
+
+  desc "Deploy a production version to Google Play"
+  lane :release do
+    upload_to_play_store(track: "production", aab: "../build/app/outputs/bundle/release/app-release.aab")
+  end
 end

@@ -68,14 +68,16 @@ class _NotesViewState extends State<_NotesView> {
       PopupMenuItem(
           padding: EdgeInsets.zero,
           child: ListTile(
-              onTap: createTextNote,
+              onTap: () {
+                Navigator.pop(context);
+                createTextNote();
+              },
               leading: const Icon(Icons.text_fields),
               title: const Text("add text note")))
     ]);
   }
 
   Future<void> createTextNote() async {
-    Navigator.pop(context);
     _textController.clear();
     Future<void> _onSubmitted(BuildContext ctx) async {
       if (_textController.value.text.isNotEmpty) {
@@ -155,6 +157,10 @@ class _NotesViewState extends State<_NotesView> {
         const PopupMenuItem(
             value: "map",
             child: ListTile(leading: Icon(Icons.map), title: Text("map"))),
+      const PopupMenuItem(
+          value: "create_text",
+          child: ListTile(
+              leading: Icon(Icons.text_fields), title: Text("add text note"))),
       PopupMenuItem(
           value: "show_completed",
           child: context.read<NotesModel>().showCompleted
@@ -263,6 +269,8 @@ class _NotesViewState extends State<_NotesView> {
       context.read<NotesModel>().toggleShowCompleted();
     } else if (item == "archive" || item == "unarchive") {
       _toggleArchive();
+    } else if (item == "create_text") {
+      createTextNote();
     } else {
       print("unhandled");
       Sentry.captureMessage("Unhandled item", level: SentryLevel.error);
@@ -319,15 +327,16 @@ class _NotesViewState extends State<_NotesView> {
               : null,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Row(children: [
-          Tooltip(
-            message: "rename outline",
-            child: InkWell(
-                onTap: () => _handleMenu("rename"),
-                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                child: Text("$currentOutlineEmoji $currentOutlineName")),
-          )
-        ]),
+        title: Tooltip(
+          message: "rename outline",
+          child: InkWell(
+              onTap: () => _handleMenu("rename"),
+              borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+              child: Text(
+                "$currentOutlineEmoji $currentOutlineName",
+                overflow: TextOverflow.fade,
+              )),
+        ),
         leading: IconButton(
             tooltip: "all outlines",
             onPressed: () {
@@ -372,7 +381,8 @@ class _NotesViewState extends State<_NotesView> {
                           behavior: HitTestBehavior.opaque,
                           onLongPress: showContextMenu,
                           onTapDown: setPosition,
-                          child: Positioned.fill(child: Container())),
+                          child:
+                              Column(children: [Expanded(child: Container())])),
                       (noteCount == 0)
                           ? Center(
                               child: Text("no notes yet!",
