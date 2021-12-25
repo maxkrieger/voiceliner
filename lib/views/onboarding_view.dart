@@ -76,11 +76,17 @@ class _OnboardingViewState extends State<OnboardingView> {
             title: "Welcome to Voiceliner",
             bodyWidget: Column(children: [
               const Text(
-                "Save outlines of auto-transcribed voice.",
+                "Record your voice as structured notes.",
                 style: TextStyle(fontSize: 18),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
+              const Text(
+                "Auto-transcribe them into an outline.",
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 15),
               ElevatedButton(
                   onPressed: playerReady
                       ? null
@@ -95,13 +101,25 @@ class _OnboardingViewState extends State<OnboardingView> {
               "assets/onboarding/1.png",
             ))),
         PageViewModel(
-            title: "Tap and hold the microphone to record notes",
-            body:
-                "While holding, drag up to change the temperature (color) of the note.",
-            image: Center(
-                child: Image.asset(
-              "assets/onboarding/2.png",
-            ))),
+          image: Center(
+              child: Image.asset(
+            "assets/onboarding/2.png",
+          )),
+          title: "Tap and hold the microphone to record notes",
+          bodyWidget: Column(children: const [
+            Text(
+              "While holding, drag up to change the temperature (color) of the note.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 15),
+            Text(
+              "Tap and hold anywhere else to create a text-only note.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+          ]),
+        ),
         PageViewModel(
             title: "Swipe left or right to indent notes",
             body: "Drag them to reorder.",
@@ -117,7 +135,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               ElevatedButton(
                   onPressed: locationOn ? null : enableLocation,
                   child: Text(locationOn ? "all set!" : "enable location"))
