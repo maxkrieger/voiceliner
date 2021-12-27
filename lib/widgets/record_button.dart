@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -24,8 +26,9 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
-    int magnitude =
-        ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt();
+    int magnitude = max(
+        ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
+        0);
     await context.read<NotesModel>().stopRecording(magnitude);
   }
 

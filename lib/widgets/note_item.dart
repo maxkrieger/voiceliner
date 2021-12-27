@@ -10,6 +10,7 @@ import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
+import 'package:voice_outliner/widgets/note_wizard.dart';
 
 import '../consts.dart';
 import 'outlines_list.dart';
@@ -40,53 +41,24 @@ class _NoteItemState extends State<NoteItem> {
     _renameController.dispose();
   }
 
-  void _changeNoteTranscript() {
+  void _editNoteDetails() {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
-    Future<void> _onSubmitted(BuildContext ctx) async {
-      if (_renameController.value.text.isNotEmpty) {
-        await context
-            .read<NotesModel>()
-            .setNoteTranscript(note, _renameController.value.text);
-        Navigator.of(ctx, rootNavigator: true).pop();
-      } else {
-        ScaffoldMessenger.of(ctx)
-            .showSnackBar(const SnackBar(content: Text("Note is empty")));
-      }
-    }
 
-    _renameController.text = note.transcript ?? "";
-    _renameController.selection = TextSelection(
-        baseOffset: 0, extentOffset: _renameController.value.text.length);
     showDialog(
         context: context,
-        builder: (dialogCtx) => AlertDialog(
-                title: const Text("Change text"),
-                content: TextField(
-                    maxLines: null,
-                    decoration: const InputDecoration(hintText: "Transcript"),
-                    controller: _renameController,
-                    autofocus: true,
-                    autocorrect: false,
-                    onSubmitted: (_) => _onSubmitted(dialogCtx),
-                    textCapitalization: TextCapitalization.sentences),
-                actions: [
-                  TextButton(
-                      child: Text(
-                        "cancel",
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface),
-                      ),
-                      onPressed: () {
-                        Navigator.of(dialogCtx, rootNavigator: true).pop();
-                      }),
-                  TextButton(
-                      child: Text(
-                        "save",
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface),
-                      ),
-                      onPressed: () => _onSubmitted(dialogCtx))
-                ]));
+        builder: (dialogCtx) => NoteWizard(
+              note: note,
+              onSubmit: (transcript, color) async {
+                if (note.transcript != transcript) {
+                  await context
+                      .read<NotesModel>()
+                      .setNoteTranscript(note, transcript);
+                }
+                if (note.color != color) {
+                  await context.read<NotesModel>().setNoteColor(note, color);
+                }
+              },
+            ));
   }
 
   Future<void> _deleteNote() async {
@@ -133,7 +105,7 @@ class _NoteItemState extends State<NoteItem> {
           child: ListTile(leading: Icon(Icons.share), title: Text("share"))),
       const PopupMenuItem(
           value: "edit",
-          child: ListTile(leading: Icon(Icons.edit), title: Text("edit text"))),
+          child: ListTile(leading: Icon(Icons.edit), title: Text("edit"))),
       const PopupMenuItem(
           value: "move",
           child: ListTile(
@@ -192,7 +164,7 @@ class _NoteItemState extends State<NoteItem> {
     if (item == "delete") {
       _deleteNote();
     } else if (item == "edit") {
-      _changeNoteTranscript();
+      _editNoteDetails();
     } else if (item == "share") {
       _shareNote();
     } else if (item == "move") {
@@ -373,7 +345,7 @@ class _NoteItemState extends State<NoteItem> {
                           ? const Icon(Icons.stop_circle_outlined)
                           : const Icon(Icons.play_circle))
                   : IconButton(
-                      onPressed: _changeNoteTranscript,
+                      onPressed: _editNoteDetails,
                       tooltip: "edit note",
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),

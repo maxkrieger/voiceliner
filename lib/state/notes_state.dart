@@ -409,6 +409,11 @@ class NotesModel extends ChangeNotifier {
     await rebuildNote(note);
   }
 
+  Future<void> setNoteColor(Note note, int color) async {
+    note.color = color;
+    await rebuildNote(note);
+  }
+
   // Buggy function: shouldn't need to set original note separately to get re-render
   Future<void> setNoteComplete(Note note, bool complete) async {
     note.isComplete = complete;
