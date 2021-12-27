@@ -78,6 +78,7 @@ class _NotesViewState extends State<_NotesView> {
   }
 
   Future<void> createTextNote() async {
+    // TODO: use noteWizard
     _textController.clear();
     Future<void> _onSubmitted(BuildContext ctx) async {
       if (_textController.value.text.isNotEmpty) {
@@ -100,6 +101,7 @@ class _NotesViewState extends State<_NotesView> {
           controller: _textController,
           decoration: const InputDecoration(hintText: "note"),
           maxLines: null,
+          textCapitalization: TextCapitalization.sentences,
           onSubmitted: (_) => _onSubmitted(dialogCtx),
         ),
         actions: [
