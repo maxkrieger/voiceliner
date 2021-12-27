@@ -1,0 +1,47 @@
+name: build_android
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: true
+
+      - name: Bundle install
+        run: cd ./android && bundle install
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "11.x"
+
+      - name: Dump Secrets
+        run: |
+          cd android/
+          echo "${{secrets.KEYSTORE}}" > keystore.b64
+          base64 -d -i keystore.b64 > keystore.jks
+          echo "${{secrets.KEY_PROPERTIES}}" > key.properties
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+
+      - name: Install tools
+        run: |
+          flutter pub get
+
+      - name: Flutter build release
+        run: |
+          unset ANDROID_NDK_HOME
+          flutter build appbundle --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} --dart-define=AZURE_SPEECH_KEY=${{ secrets.AZURE_SPEECH_KEY }}
