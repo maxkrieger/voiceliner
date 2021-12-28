@@ -11,5 +11,7 @@ const lastRouteKey = "last_route";
 const lastOutlineKey = "last_outline";
 
 const classicPurple = Color.fromRGBO(169, 129, 234, 1.0);
+const basePurple = Color.fromRGBO(163, 95, 255, 1);
+const warmRed = Color.fromRGBO(241, 52, 125, 1.0);
 final locationInstance = Location();
 const defaultEmoji = "🔮";

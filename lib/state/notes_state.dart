@@ -181,8 +181,7 @@ class NotesModel extends ChangeNotifier {
   Future<void> stopRecording(int color) async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
-    // This delay prevents cutoff
-    await Future.delayed(const Duration(milliseconds: 300));
+
     final note = currentlyPlayingOrRecording;
     currentlyPlayingOrRecording = null;
     notifyListeners();

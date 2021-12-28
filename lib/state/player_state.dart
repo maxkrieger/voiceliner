@@ -18,7 +18,7 @@ enum PlayerState {
   ready,
   playing,
   recording,
-  // processing
+  recordingContinuously
 }
 
 Future<Directory> getRecordingsDir() async {
@@ -75,15 +75,25 @@ class PlayerModel extends ChangeNotifier {
           toFile: getPathFromFilename(note.filePath!),
           sampleRate: 44100,
           bitRate: 128000);
-      playerState = PlayerState.recording;
+      // If not already flagged as continuous
+      if (playerState != PlayerState.recordingContinuously) {
+        playerState = PlayerState.recording;
+      }
       notifyListeners();
     }
   }
 
+  void setContinuousRecording() async {
+    playerState = PlayerState.recordingContinuously;
+    notifyListeners();
+  }
+
   Future<Duration?> stopRecording({Note? note}) async {
-    await _recorder.stopRecorder();
     playerState = PlayerState.ready;
     notifyListeners();
+    // This delay prevents cutoff
+    await Future.delayed(const Duration(milliseconds: 300));
+    await _recorder.stopRecorder();
     if (note == null) {
       return null;
     }

@@ -17,6 +17,7 @@ class RecordButton extends StatefulWidget {
 
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
+  final Stopwatch _stopwatch = Stopwatch();
 
   Color computeShadowColor(double dy) {
     Color a = const Color.fromRGBO(169, 129, 234, 0.6);
@@ -26,10 +27,17 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
-    int magnitude = max(
-        ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
-        0);
-    await context.read<NotesModel>().stopRecording(magnitude);
+    if (_stopwatch.elapsedMilliseconds > 200) {
+      _stopwatch.stop();
+      _stopwatch.reset();
+      int magnitude = max(
+          ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
+          0);
+      await context.read<NotesModel>().stopRecording(magnitude);
+    } else {
+      // If finger lifted in time, this was a tap not a hold. Keep recording
+      context.read<PlayerModel>().setContinuousRecording();
+    }
   }
 
   _stopRecord0() {
@@ -37,6 +45,7 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _startRecord(_) async {
+    _stopwatch.start();
     await context.read<NotesModel>().startRecording();
   }
 
@@ -51,7 +60,6 @@ class _RecordButtonState extends State<RecordButton> {
   Widget build(BuildContext context) {
     final playerState =
         context.select<PlayerModel, PlayerState>((p) => p.playerState);
-    final isRecording = playerState == PlayerState.recording;
     return GestureDetector(
         onTapDown: _startRecord,
         onTapUp: _stopRecord,
@@ -70,7 +78,11 @@ class _RecordButtonState extends State<RecordButton> {
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
-          opacity: playerState == PlayerState.ready || isRecording ? 1.0 : 0.0,
+          opacity: playerState == PlayerState.ready ||
+                  playerState == PlayerState.recording ||
+                  playerState == PlayerState.recordingContinuously
+              ? 1.0
+              : 0.0,
           child: AnimatedContainer(
               width: 200,
               height: 75,
@@ -80,26 +92,36 @@ class _RecordButtonState extends State<RecordButton> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                    if (!isRecording) ...[
-                      const Icon(Icons.mic, color: Colors.white),
+                    if (playerState != PlayerState.recording) ...[
+                      Icon(
+                          playerState == PlayerState.recordingContinuously
+                              ? Icons.stop
+                              : Icons.mic,
+                          color: Colors.white),
                       const SizedBox(
                         width: 10.0,
                       )
                     ],
                     Text(
-                      isRecording ? "recording" : "hold to record",
+                      playerState == PlayerState.recordingContinuously
+                          ? "tap to stop"
+                          : playerState == PlayerState.recording
+                              ? "recording"
+                              : "hold to record",
                       style:
                           const TextStyle(color: Colors.white, fontSize: 15.0),
                     )
                   ])),
               decoration: BoxDecoration(
                 boxShadow: [
-                  const BoxShadow(
-                      color: Color.fromRGBO(156, 103, 241, .36),
+                  BoxShadow(
+                      color: playerState == PlayerState.recordingContinuously
+                          ? warmRed.withOpacity(0.5)
+                          : const Color.fromRGBO(156, 103, 241, .36),
                       blurRadius: 18.0,
                       spreadRadius: 0.0,
-                      offset: Offset(0, 7)),
-                  if (isRecording)
+                      offset: const Offset(0, 7)),
+                  if (playerState == PlayerState.recording)
                     BoxShadow(
                         color: computeShadowColor(offset.dy),
                         blurRadius: 120.0,
@@ -107,7 +129,9 @@ class _RecordButtonState extends State<RecordButton> {
                         offset: offset + const Offset(-100, -95))
                 ],
                 borderRadius: BorderRadius.circular(100.0),
-                color: classicPurple.withOpacity(0.9),
+                color: playerState == PlayerState.recordingContinuously
+                    ? warmRed
+                    : classicPurple,
               )),
         ));
   }

@@ -26,8 +26,8 @@ class NoteItem extends StatefulWidget {
 }
 
 Color computeColor(int? magnitude) {
-  Color a = const Color.fromRGBO(163, 95, 255, 1);
-  Color b = const Color.fromRGBO(241, 52, 125, 1.0);
+  Color a = basePurple;
+  Color b = warmRed;
   double t = magnitude != null && magnitude <= 100 ? magnitude / 100 : 0;
   return Color.lerp(a, b, t)!;
 }
