@@ -27,8 +27,9 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
-    // final playerState = context.read<PlayerModel>().playerState;
-    if (_stopwatch.elapsedMilliseconds > 200) {
+    final playerState = context.read<PlayerModel>().playerState;
+    if (_stopwatch.elapsedMilliseconds > 200 ||
+        playerState == PlayerState.recordingContinuously) {
       _stopwatch.stop();
       _stopwatch.reset();
       int magnitude = max(

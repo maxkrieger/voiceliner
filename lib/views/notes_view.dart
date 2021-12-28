@@ -285,6 +285,17 @@ class _NotesViewState extends State<_NotesView> {
     context.read<OutlinesModel>().toggleArchive(outline);
   }
 
+  Future<void> _goToOutlines() async {
+    final playerModel = context.read<PlayerModel>();
+    if (playerModel.playerState == PlayerState.recordingContinuously) {
+      await context.read<NotesModel>().stopRecording(0);
+    }
+    if (playerModel.playerState == PlayerState.playing) {
+      await playerModel.stopPlaying();
+    }
+    Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final ready = context.select<NotesModel, bool>((value) => value.isReady);
@@ -341,9 +352,7 @@ class _NotesViewState extends State<_NotesView> {
         ),
         leading: IconButton(
             tooltip: "all outlines",
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
-            },
+            onPressed: _goToOutlines,
             icon: const Icon(Icons.chevron_left)),
         actions: [
           if (currentOutlineArchived)
