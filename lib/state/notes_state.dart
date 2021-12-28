@@ -154,6 +154,7 @@ class NotesModel extends ChangeNotifier {
       Sentry.captureMessage(
           "Attempted to start recording when already in progress",
           level: SentryLevel.error);
+      print("Attempted to start recording when already in progress");
       return;
     }
     final noteId = uuid.v4();
@@ -188,6 +189,7 @@ class NotesModel extends ChangeNotifier {
     if (note == null) {
       Sentry.captureMessage("Attempted to stop recording on an empty note",
           level: SentryLevel.error);
+      print("Attempted to stop recording on an empty note");
       _playerModel.stopRecording();
       return;
     }

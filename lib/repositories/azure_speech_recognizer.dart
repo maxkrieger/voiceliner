@@ -13,6 +13,7 @@ Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
   if (_apiKey.isEmpty) {
     await sentry.Sentry.captureMessage("API key empty!",
         level: sentry.SentryLevel.error);
+    print("API key empty");
     return const Tuple2(false, null);
   }
   if (note.duration != null &&

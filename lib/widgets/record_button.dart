@@ -27,6 +27,7 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
+    // final playerState = context.read<PlayerModel>().playerState;
     if (_stopwatch.elapsedMilliseconds > 200) {
       _stopwatch.stop();
       _stopwatch.reset();
@@ -45,8 +46,11 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _startRecord(_) async {
-    _stopwatch.start();
-    await context.read<NotesModel>().startRecording();
+    final playerState = context.read<PlayerModel>().playerState;
+    if (playerState == PlayerState.ready) {
+      _stopwatch.start();
+      await context.read<NotesModel>().startRecording();
+    }
   }
 
   _playEffect(LongPressDownDetails d) {
