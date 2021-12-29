@@ -1,6 +1,6 @@
 # <img src="assets/icon/icon.png" width="100" /> Voiceliner
 
-A voice memos-like for Android and iOS. Written in Flutter.
+A voice memos-like for Android and iOS. Written in Flutter. Transcription on iOS uses the native transcription APIs (mostly on-device) and on Android, uses Azure cognitive services due to [on-device API limitations](https://stackoverflow.com/questions/2319735/voice-recognition-on-android-with-recorded-sound-clip).
 
 The codebase is still quite messy, but contributions welcome!
 
