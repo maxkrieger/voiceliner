@@ -6,9 +6,13 @@ The codebase is still quite messy, but contributions welcome!
 
 ## Screenshots
 
-<img src="assets/screenshots/1.png" width="300" />
-<img src="assets/screenshots/2.png" width="300" />
-<img src="assets/screenshots/3.png" width="300" />
+<table>
+  <tr>
+    <td><img src="assets/screenshots/1.png" width="300" /></td>
+    <td><img src="assets/screenshots/2.png" width="300" /></td>
+    <td><img src="assets/screenshots/3.png" width="300" /></td>
+  </tr>
+</table>
 
 ## Contributing & License
 
