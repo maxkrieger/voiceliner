@@ -34,8 +34,9 @@ body {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: right;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 header {
@@ -111,6 +112,7 @@ a:link {
 .githubs span {
   float: right;
   padding-right: 10px;
+  margin-top: 10px;
 }
 
 footer {
