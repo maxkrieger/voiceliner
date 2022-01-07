@@ -62,11 +62,13 @@ class _NoteItemState extends State<NoteItem> {
   }
 
   Future<void> _deleteNote() async {
+    final note = context.read<NotesModel>().notes.elementAt(widget.num);
+    
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               title: const Text("Delete note?"),
-              content: const Text("It cannot be restored"),
+              content: Text("\"${note.transcript ?? note.infoString}\" \n It cannot be restored"),
               actions: [
                 TextButton(
                     onPressed: () {
