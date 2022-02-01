@@ -48,7 +48,6 @@ flutter pub run flutter_launcher_icons:main
 
 | Env Var                                      | Value                                                                                                                                                         |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AZURE_SPEECH_KEY                             | api key for Azure speech to text services (https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/overview#try-the-speech-service-for-free) |
 | APPLE_ID                                     | apple account email"                                                                                                                                          |
 | APP_IDENTIFIER                               | ios com.blabla.blabla                                                                                                                                         |
 | PLAY_APP_IDENTIFIER                          | android com.blablabla.bla                                                                                                                                     |

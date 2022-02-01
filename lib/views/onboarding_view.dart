@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +50,8 @@ class _OnboardingViewState extends State<OnboardingView> {
   }
 
   void onDone() {
-    Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
+    Navigator.pushNamedAndRemoveUntil(
+        context, Platform.isIOS ? "/" : "/transcription_setup", (_) => false);
   }
 
   @override

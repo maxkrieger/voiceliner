@@ -5,11 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/consts.dart';
-import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/outline_state.dart';
-import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/drive_settings_view.dart';
+import 'package:voice_outliner/views/transcription_setup_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -29,6 +28,7 @@ class _SettingsViewState extends State<SettingsView> {
 
   Future<void> init() async {
     sharedPreferences = await SharedPreferences.getInstance();
+
     setState(() {
       isInited = true;
     });
@@ -53,11 +53,11 @@ class _SettingsViewState extends State<SettingsView> {
                     )),
                 TextButton(
                     onPressed: () async {
-                      await ctx.read<DBRepository>().resetDB();
+                      /*await ctx.read<DBRepository>().resetDB();
                       await ctx
                           .read<PlayerModel>()
                           .recordingsDirectory
-                          .delete(recursive: true);
+                          .delete(recursive: true);*/
                       Navigator.of(ctx).pop();
                     },
                     child: Text(
@@ -114,29 +114,37 @@ class _SettingsViewState extends State<SettingsView> {
             ? Column(
                 children: [
                   const SizedBox(height: 10.0),
-                  SwitchListTile(
-                      secondary: const Icon(Icons.voicemail),
-                      title: const Text("Transcribe Recordings"),
-                      subtitle: Text(Platform.isIOS
-                          ? "uses iOS's transcription"
-                          : "uses Azure's transcription service"),
-                      value: sharedPreferences.getBool(shouldTranscribeKey) ??
-                          false,
-                      onChanged: (v) async {
-                        if (Platform.isIOS && v) {
-                          final res = await tryTxPermissionIOS();
-                          if (!res) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        "Couldn't get permission to transcribe")));
-                            return;
+                  if (Platform.isIOS)
+                    SwitchListTile(
+                        secondary: const Icon(Icons.voicemail),
+                        title: const Text("Transcribe Recordings"),
+                        subtitle: const Text("uses local transcription"),
+                        value: sharedPreferences.getBool(shouldTranscribeKey) ??
+                            true,
+                        onChanged: (v) async {
+                          if (Platform.isIOS && v) {
+                            final res = await tryTxPermissionIOS();
+                            if (!res) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Couldn't get permission to transcribe")));
+                              return;
+                            }
                           }
-                        }
-                        setState(() {
-                          sharedPreferences.setBool(shouldTranscribeKey, v);
-                        });
-                      }),
+                          setState(() {
+                            sharedPreferences.setBool(shouldTranscribeKey, v);
+                          });
+                        }),
+                  if (Platform.isAndroid)
+                    ListTile(
+                      leading: const Icon(Icons.voicemail),
+                      title: const Text("Transcription Setup"),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const TranscriptionSetupView())),
+                    ),
                   SwitchListTile(
                     secondary: const Icon(Icons.location_pin),
                     title: const Text("Attach Location"),

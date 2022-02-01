@@ -147,12 +147,12 @@ CREATE TABLE outline (
     await _database.close();
   }
 
-  Future<void> resetDB() async {
+  /*Future<void> resetDB() async {
     await _database.close();
     await deleteDatabase(_database.path);
     ready = false;
     await load();
-  }
+  }*/
 
   void writeOutlineUpdated(Batch batch, String outlineId) {
     batch.rawUpdate("UPDATE outline SET date_updated = ? WHERE id = ?",

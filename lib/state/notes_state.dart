@@ -12,9 +12,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
-import 'package:voice_outliner/repositories/azure_speech_recognizer.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
+import 'package:voice_outliner/repositories/vosk_speech_recognizer.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 import '../consts.dart';
@@ -109,21 +109,14 @@ class NotesModel extends ChangeNotifier {
     notes.forEach((entry) async {
       if (shouldTranscribe && !entry.transcribed && entry.filePath != null) {
         final path = _playerModel.getPathFromFilename(entry.filePath!);
-        if (Platform.isAndroid) {
-          final res = await azureRecognize(entry, path);
-          if (res.item1 && isReady) {
-            entry.transcribed = true;
-            entry.transcript = res.item2;
-            await rebuildNote(entry);
-          }
-        } else if (Platform.isIOS) {
-          final res = await recognizeNoteIOS(path);
-          // Guard against writing after user went back
-          if (isReady) {
-            entry.transcribed = true;
-            entry.transcript = res;
-            await rebuildNote(entry);
-          }
+        final res = Platform.isIOS
+            ? await recognizeNoteIOS(path)
+            : await voskSpeechRecognize(path);
+        // Guard against writing after user went back
+        if (isReady) {
+          entry.transcribed = true;
+          entry.transcript = res;
+          await rebuildNote(entry);
         }
       }
     });

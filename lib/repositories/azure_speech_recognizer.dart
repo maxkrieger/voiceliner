@@ -20,6 +20,8 @@ Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
       note.duration!.compareTo(const Duration(minutes: 10)) > 0) {
     return const Tuple2(true, null);
   }
+  // Prevents Azure from thinking we're ddosing_I think
+  await Future.delayed(const Duration(milliseconds: 200));
   try {
     final tempDir = await getTemporaryDirectory();
     final outPath = "${tempDir.path}/${note.id}.wav";
@@ -31,6 +33,7 @@ Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
       await sentry.Sentry.captureMessage(
           "Could not convert for speech recognition",
           level: sentry.SentryLevel.error);
+      print("Could not convert");
       return const Tuple2(false, null);
     }
     final outFileBytes = await outFile.readAsBytes();
@@ -49,14 +52,17 @@ Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
         final displayText = decoded["DisplayText"];
         return Tuple2(true, displayText);
       } else {
+        print("Didn't succeed in transcribing");
         return const Tuple2(true, null);
       }
     }
     await sentry.Sentry.captureMessage(
         "Couldn't contact Azure: status code ${res.statusCode}",
         level: sentry.SentryLevel.error);
+    print("Couldn't contact Azure: status code ${res.statusCode}");
     return const Tuple2(false, null);
   } catch (err, st) {
+    print("$err $st");
     await sentry.Sentry.captureException(err, stackTrace: st);
     return const Tuple2(false, null);
   }

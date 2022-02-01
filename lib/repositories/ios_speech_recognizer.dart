@@ -14,6 +14,7 @@ Future<String?> recognizeNoteIOS(String path) async {
       return null;
     }
   } catch (err) {
+    print(err);
     return null;
   }
 }

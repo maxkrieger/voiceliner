@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,18 +7,21 @@ import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/repositories/drive_backup.dart';
+import 'package:voice_outliner/repositories/vosk_speech_recognizer.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/onboarding_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
+import 'package:voice_outliner/views/transcription_setup_view.dart';
 
 import 'consts.dart';
 
 final routes = {
   "/": const OutlinesView(),
   "/notes": const NotesView(),
-  "/onboarding": const OnboardingView()
+  "/onboarding": const OnboardingView(),
+  "/transcription_setup": const TranscriptionSetupView()
 };
 
 const generalAppBar =
@@ -40,12 +45,17 @@ final theme = ThemeData(
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
-  // TODO: replace with opening intro screen
   if (sharedPrefs.getBool(shouldTranscribeKey) == null) {
     sharedPrefs.setBool(shouldTranscribeKey, true);
   }
   if (sharedPrefs.getBool(driveEnabledKey) ?? false) {
     await googleSignIn.signInSilently();
+  }
+  if (Platform.isAndroid) {
+    final modelDir = sharedPrefs.getString(modelDirKey);
+    if (modelDir != null) {
+      await voskInitModel(modelDir);
+    }
   }
   void appRunner() => runApp(MultiProvider(
           providers: [
@@ -83,14 +93,12 @@ class VoiceOutlinerApp extends StatefulWidget {
 }
 
 class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
-  String? lastRoute;
   String? lastOutline;
 
   @override
   void initState() {
     super.initState();
     setState(() {
-      lastRoute = widget.sharedPreferences.getString(lastRouteKey);
       lastOutline = widget.sharedPreferences.getString(lastOutlineKey);
     });
   }
@@ -101,6 +109,21 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
       await widget.sharedPreferences.setString(
           "last_outline", (route.arguments as NotesViewArgs).outlineId);
     }
+  }
+
+  String _initialRoute() {
+    final lastRoute = widget.sharedPreferences.getString(lastRouteKey);
+    // If you've onboarded but don't have language set up on android
+    if (Platform.isAndroid &&
+        widget.sharedPreferences.getString(modelDirKey) == null &&
+        (widget.sharedPreferences.getBool(shouldTranscribeKey) ?? true) &&
+        lastRoute != null) {
+      return "/transcription_setup";
+    }
+    if (lastRoute != null) {
+      return lastRoute;
+    }
+    return "/onboarding";
   }
 
   @override
@@ -135,7 +158,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
                         ? NotesViewArgs(lastOutline!)
                         : null)));
       },
-      initialRoute: lastRoute ?? "/onboarding",
+      initialRoute: _initialRoute(),
       themeMode: ThemeMode.system,
       theme: theme,
       darkTheme: ThemeData(
