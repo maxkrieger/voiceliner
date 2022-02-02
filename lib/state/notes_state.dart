@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
@@ -74,31 +73,25 @@ class NotesModel extends ChangeNotifier {
     return (shouldTranscribe && !note.transcribed);
   }
 
-  Future<void> runJobs() async {
-    // Need internet for android tx
-    if (Platform.isAndroid) {
-      ConnectivityResult connectivityResult =
-          await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.none) {
-        return;
+  Future<void> transcribe(Note note) async {
+    if (shouldTranscribe && !note.transcribed && note.filePath != null) {
+      final path = _playerModel.getPathFromFilename(note.filePath!);
+      final res = Platform.isIOS
+          ? await recognizeNoteIOS(path)
+          : await voskSpeechRecognize(path);
+      // Guard against writing after user went back
+      if (isReady) {
+        note.transcribed = true;
+        note.transcript = res;
+        await rebuildNote(note);
       }
     }
+  }
+
+  Future<void> runJobs() async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
-    notes.forEach((entry) async {
-      if (shouldTranscribe && !entry.transcribed && entry.filePath != null) {
-        final path = _playerModel.getPathFromFilename(entry.filePath!);
-        final res = Platform.isIOS
-            ? await recognizeNoteIOS(path)
-            : await voskSpeechRecognize(path);
-        // Guard against writing after user went back
-        if (isReady) {
-          entry.transcribed = true;
-          entry.transcript = res;
-          await rebuildNote(entry);
-        }
-      }
-    });
+    notes.forEach(transcribe);
   }
 
   Future<void> createTextNote(String text) async {
@@ -206,7 +199,7 @@ class NotesModel extends ChangeNotifier {
             message: "Couldn't locate note", timestamp: DateTime.now()));
       }
     }
-    runJobs();
+    await transcribe(note);
   }
 
   Future<void> playNote(Note note) async {
