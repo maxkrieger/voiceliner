@@ -62,11 +62,6 @@ class NotesModel extends ChangeNotifier {
     scrollController.dispose();
   }
 
-  Future<void> exportToMarkdown(Outline outline) async {
-    Sentry.addBreadcrumb(
-        Breadcrumb(message: "Exported note", timestamp: DateTime.now()));
-  }
-
   Future<void> setCurrentlyExpanded(Note? note) async {
     Sentry.addBreadcrumb(Breadcrumb(
         message: "Setting currently expanded", timestamp: DateTime.now()));
