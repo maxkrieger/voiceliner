@@ -10,6 +10,7 @@ import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
+import 'package:voice_outliner/widgets/markdown_exporter.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
 import 'package:voice_outliner/widgets/outline_wizard.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
@@ -217,6 +218,7 @@ class _NotesViewState extends State<_NotesView> {
   void _handleMenu(String item) {
     final outlineId = widget.args.outlineId;
     final outline = context.read<OutlinesModel>().getOutlineFromId(outlineId);
+    final notesModel = context.read<NotesModel>();
     if (item == "delete") {
       showDialog(
           context: context,
@@ -256,7 +258,7 @@ class _NotesViewState extends State<_NotesView> {
               .read<OutlinesModel>()
               .renameOutline(outline, name, emoji));
     } else if (item == "export_md") {
-      context.read<NotesModel>().exportToMarkdown(outline);
+      exportMarkdown(context, outline, notesModel);
     } else if (item == "map") {
       Navigator.push(
           context,

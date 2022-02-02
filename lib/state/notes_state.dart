@@ -5,10 +5,8 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
@@ -65,20 +63,6 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> exportToMarkdown(Outline outline) async {
-    final tempDir = await getTemporaryDirectory();
-    final file = File(
-        "${tempDir.path}/${Uri.encodeFull(outline.name.replaceAll("/", "-"))}.md");
-    var contents = "# ${outline.name} \n";
-    for (var n in notes) {
-      var line = n.isComplete ? "- [x] " : "- [ ] ";
-      line += n.transcript ?? n.infoString;
-      line += "\n";
-      line = line.padLeft(line.length + 4 * getDepth(n), " ");
-      contents += line;
-    }
-    await file.writeAsString(contents);
-    await Share.shareFiles([file.path],
-        mimeTypes: ["text/markdown"], text: outline.name);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Exported note", timestamp: DateTime.now()));
   }
