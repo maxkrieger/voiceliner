@@ -67,6 +67,7 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -77,7 +78,9 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'net.java.dev.jna:jna:5.10.0@aar'
+    def appcompat_version = "1.4.1"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    api 'net.java.dev.jna:jna:5.10.0@aar'
     implementation (group: 'com.alphacephei', name: 'vosk-android', version: '0.3.34') {
         exclude group: 'net.java.dev.jna', module: 'jna'
     }

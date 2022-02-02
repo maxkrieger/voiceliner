@@ -1,7 +1,6 @@
 # <img src="assets/icon/icon.png" width="100" /> Voiceliner
 
-A voice memos-like for Android and iOS. Written in Flutter. Transcription on iOS uses the native transcription APIs (mostly on-device) and on Android, uses Azure cognitive services due to [on-device API limitations](https://stackoverflow.com/questions/2319735/voice-recognition-on-android-with-recorded-sound-clip).
-
+A voice memos-like for Android and iOS. Written in Flutter. Transcription on iOS uses the native transcription APIs (mostly on-device) and on Android, uses [Vosk](https://github.com/alphacep/vosk-api).
 The codebase is still quite messy, but contributions welcome!
 
 ## Screenshots
@@ -22,10 +21,6 @@ This project is AGPLv3 but with an exception for the App Store. [Learn More](CON
 
 - Install flutter
 - `flutter run lib/main.dart`
-
-If running Android and need transcription:
-
-- `flutter run --dart-define="AZURE_SPEECH_KEY=MyAzureAPIKey"`
 
 ## Rebuilding Icons
 
