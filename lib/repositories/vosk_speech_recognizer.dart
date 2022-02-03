@@ -33,7 +33,7 @@ const voskModels = {
 
 Future<String?> voskSpeechRecognize(String path) async {
   if (!Platform.isAndroid) {
-    print("wrong platform");
+    print("Not Android");
     return null;
   }
   try {
@@ -87,13 +87,10 @@ Future<String?> voskDownloadAndInitModel(String url) async {
     final cacheDir = cacheDirs.first;
     final modelsDir = await Directory("${cacheDir.path}/vosk_models").create();
     final tmpDir = await getTemporaryDirectory();
-    print("Downloading from $url");
     final req = await HttpClient().getUrl(uri);
     final res = await req.close();
-    print("Download complete");
     final zipFile = File("${tmpDir.path}/downloaded.zip");
     await res.pipe(zipFile.openWrite());
-    print("Write complete, unzipping");
     await ZipFile.extractToDirectory(
         zipFile: zipFile, destinationDir: modelsDir);
     final folderName = uri.pathSegments.last.replaceAll(".zip", "");

@@ -4,9 +4,9 @@ import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/outline_state.dart';
-import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/settings_view.dart';
+import 'package:voice_outliner/views/timeline_view.dart';
 import 'package:voice_outliner/widgets/outline_wizard.dart';
 import 'package:voice_outliner/widgets/outlines_list.dart';
 import 'package:voice_outliner/widgets/search_results_list.dart';
@@ -147,10 +147,10 @@ class _OutlinesViewState extends State<OutlinesView> {
                   }),
                 ),
                 IconButton(
-                  tooltip: "map",
-                  icon: const Icon(Icons.map),
+                  tooltip: "timeline",
+                  icon: const Icon(Icons.timeline),
                   onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const MapView())),
+                      MaterialPageRoute(builder: (_) => const TimelineView())),
                 ),
                 IconButton(
                   tooltip: "settings",

@@ -1,68 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/data/outline.dart';
-import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/notes_view.dart';
-import 'package:voice_outliner/widgets/note_item.dart';
+import 'package:voice_outliner/widgets/result_note.dart';
 
 class GroupedResult {
   final List<Note> notes;
   final Outline outline;
   GroupedResult(this.outline, this.notes);
-}
-
-class ResultNote extends StatefulWidget {
-  final Note note;
-  const ResultNote({Key? key, required this.note}) : super(key: key);
-
-  @override
-  _ResultNoteState createState() => _ResultNoteState();
-}
-
-class _ResultNoteState extends State<ResultNote> {
-  bool playing = false;
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        leading: widget.note.filePath != null
-            ? IconButton(
-                tooltip: "play note",
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  final playerModel = context.read<PlayerModel>();
-                  if (playing) {
-                    setState(() {
-                      playing = false;
-                    });
-                    playerModel.stopPlaying();
-                  } else {
-                    setState(() {
-                      playing = true;
-                    });
-                    playerModel.playNote(widget.note, () {
-                      setState(() {
-                        playing = false;
-                      });
-                    });
-                  }
-                },
-                color: classicPurple,
-                icon: playing
-                    ? const Icon(Icons.stop_circle_outlined)
-                    : const Icon(Icons.play_circle))
-            : const Icon(
-                Icons.text_fields,
-                semanticLabel: "text note",
-                color: classicPurple,
-              ),
-        onTap: () => Navigator.pushNamed(context, "/notes",
-            arguments: NotesViewArgs(widget.note.outlineId,
-                scrollToNoteId: widget.note.id)),
-        title: Text(widget.note.transcript ?? "Untitled"));
-  }
 }
 
 class ResultGroup extends StatelessWidget {
@@ -79,16 +24,7 @@ class ResultGroup extends StatelessWidget {
           title: Text(groupedResult.outline.name),
           subtitle: Column(
               children: groupedResult.notes
-                  .map((e) => Card(
-                      elevation: 0,
-                      clipBehavior: Clip.hardEdge,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0)),
-                      color: computeColor(e.color).withOpacity(0.2),
-                      margin: const EdgeInsets.all(5.0),
-                      child: ResultNote(
-                        note: e,
-                      )))
+                  .map((e) => ResultNote(note: e))
                   .toList(growable: false))),
     );
   }
@@ -118,19 +54,16 @@ class SearchResultsList extends StatelessWidget {
       ));
     }
     // HACK to hide keyboard https://stackoverflow.com/questions/51652897/how-to-hide-soft-input-keyboard-on-flutter-after-clicking-outside-textfield-anyw
+    // TODO: make scrollbar work with this
     return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanStart: (_) => _removeFocus(context),
         onTapDown: (_) => _removeFocus(context),
-        child: Column(children: [
-          Expanded(
-              child: Scrollbar(
-                  child: ListView(
-            shrinkWrap: true,
-            children: searchResults
-                .map((e) => ResultGroup(groupedResult: e))
-                .toList(growable: false),
-          )))
-        ]));
+        child: ListView(
+          shrinkWrap: true,
+          children: searchResults
+              .map((e) => ResultGroup(groupedResult: e))
+              .toList(growable: false),
+        ));
   }
 }

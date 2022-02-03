@@ -78,9 +78,7 @@ class _MapViewState extends State<MapView> {
         bounds = LatLngBounds.fromPoints(filtered.map((e) => e.point).toList());
       });
     }
-    setState(() {
-      loading = false;
-    });
+
     if (sharedPreferences?.getBool(shouldLocateKey) ?? false) {
       final loc = await locationInstance.getLocation();
       final ll = LatLng(loc.latitude!, loc.longitude!);
@@ -90,6 +88,9 @@ class _MapViewState extends State<MapView> {
         });
       }
     }
+    setState(() {
+      loading = false;
+    });
   }
 
   void toggleFit() {

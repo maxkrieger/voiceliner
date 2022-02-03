@@ -164,6 +164,29 @@ CREATE TABLE outline (
     return result;
   }
 
+  Future<int> getNotesCount() async {
+    final res = await _database.rawQuery("SELECT COUNT(*) FROM note");
+    if (res.isEmpty) {
+      return 0;
+    }
+    final first = res.first["COUNT(*)"];
+    if (first is int) {
+      return first;
+    }
+    return 0;
+  }
+
+  Future<Note?> getNoteAt(int index) async {
+    final res = await _database.rawQuery(
+        "SELECT * FROM note ORDER BY date_created DESC LIMIT 1 OFFSET ?",
+        [index]);
+    if (res.isEmpty) {
+      return null;
+    }
+    // TODO: also get prev if not last to get date header
+    return Note.fromMap(res.first);
+  }
+
   Future<List<Map<String, dynamic>>> getAllNotes(
       {bool requireUncomplete = false}) async {
     if (requireUncomplete) {

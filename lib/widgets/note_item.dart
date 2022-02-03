@@ -63,12 +63,13 @@ class _NoteItemState extends State<NoteItem> {
 
   Future<void> _deleteNote() async {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
-    
+
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               title: const Text("Delete note?"),
-              content: Text("\"${note.transcript ?? note.infoString}\" \n It cannot be restored"),
+              content: Text(
+                  "\"${note.transcript ?? note.infoString}\" \n It cannot be restored"),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -326,9 +327,7 @@ class _NoteItemState extends State<NoteItem> {
                   : Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        note.transcript == null
-                            ? note.infoString
-                            : note.transcript!,
+                        note.transcript ?? note.infoString,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             decoration: note.isComplete
