@@ -45,23 +45,27 @@ class _TimelineViewState extends State<TimelineView> {
         if (snapshot.hasData && snapshot.data is Note) {
           final data = snapshot.data as Note;
           if (!data.isComplete || showCompleted) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                    padding:
-                        const EdgeInsets.only(top: 15, bottom: 5, left: 10),
-                    child: Text(
-                      DateFormat.yMd()
-                          .add_jm()
-                          .format(data.dateCreated.toLocal()),
-                      style: TextStyle(
-                          fontSize: 14, color: Theme.of(ctx).hintColor),
-                    )),
-                ResultNote(note: data)
-              ],
-            );
+            return Container(
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                        padding: const EdgeInsets.only(bottom: 5, left: 10),
+                        child: Text(
+                          DateFormat.yMd()
+                              .add_jm()
+                              .format(data.dateCreated.toLocal()),
+                          style: TextStyle(
+                              fontSize: 14, color: Theme.of(ctx).hintColor),
+                        )),
+                    ResultNote(note: data)
+                  ],
+                ));
           }
+          return const SizedBox(
+            height: 0,
+          );
         }
         return const SizedBox(height: 66);
       },
