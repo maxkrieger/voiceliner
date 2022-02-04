@@ -21,6 +21,7 @@ final defaultNote = Note(
     filePath: "",
     dateCreated: DateTime.now(),
     outlineId: "",
+    transcript: "Loading...",
     isCollapsed: false);
 
 class NotesModel extends ChangeNotifier {

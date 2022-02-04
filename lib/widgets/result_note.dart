@@ -9,7 +9,9 @@ import 'note_item.dart';
 
 class ResultNote extends StatefulWidget {
   final Note note;
-  const ResultNote({Key? key, required this.note}) : super(key: key);
+  final bool truncate;
+  const ResultNote({Key? key, required this.note, this.truncate = false})
+      : super(key: key);
 
   @override
   _ResultNoteState createState() => _ResultNoteState();
@@ -65,7 +67,8 @@ class _ResultNoteState extends State<ResultNote> {
                 arguments: NotesViewArgs(widget.note.outlineId,
                     scrollToNoteId: widget.note.id)),
             title: Text(
-              widget.note.transcript ?? "Untitled",
+              widget.note.transcript ?? widget.note.infoString,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   decoration: widget.note.isComplete

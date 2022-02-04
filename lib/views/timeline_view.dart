@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/src/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:voice_outliner/consts.dart';
+import 'package:provider/provider.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
+import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/widgets/result_note.dart';
 
@@ -17,8 +16,6 @@ class TimelineView extends StatefulWidget {
 
 class _TimelineViewState extends State<TimelineView> {
   int? numNotes;
-  SharedPreferences? sharedPreferences;
-  bool showCompleted = true;
   @override
   void initState() {
     super.initState();
@@ -26,16 +23,35 @@ class _TimelineViewState extends State<TimelineView> {
   }
 
   Future<void> _init() async {
-    sharedPreferences = await SharedPreferences.getInstance();
     final count = await context.read<DBRepository>().getNotesCount();
     setState(() {
       numNotes = count;
-      showCompleted = sharedPreferences?.getBool(showCompletedKey) ?? true;
     });
   }
 
   Future<Note?> _retrieveNote(int index) async {
     return await context.read<DBRepository>().getNoteAt(index);
+  }
+
+  Widget _renderItem(BuildContext ctx, Note note) {
+    return Container(
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+                padding: const EdgeInsets.only(bottom: 5, left: 10),
+                child: Text(
+                  DateFormat.yMd().add_jm().format(note.dateCreated.toLocal()),
+                  style:
+                      TextStyle(fontSize: 14, color: Theme.of(ctx).hintColor),
+                )),
+            ResultNote(
+              note: note,
+              truncate: true,
+            )
+          ],
+        ));
   }
 
   Widget _buildItem(BuildContext context, int index) {
@@ -44,30 +60,10 @@ class _TimelineViewState extends State<TimelineView> {
       builder: (ctx, snapshot) {
         if (snapshot.hasData && snapshot.data is Note) {
           final data = snapshot.data as Note;
-          if (!data.isComplete || showCompleted) {
-            return Container(
-                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                        padding: const EdgeInsets.only(bottom: 5, left: 10),
-                        child: Text(
-                          DateFormat.yMd()
-                              .add_jm()
-                              .format(data.dateCreated.toLocal()),
-                          style: TextStyle(
-                              fontSize: 14, color: Theme.of(ctx).hintColor),
-                        )),
-                    ResultNote(note: data)
-                  ],
-                ));
-          }
-          return const SizedBox(
-            height: 0,
-          );
+          return _renderItem(ctx, data);
+        } else {
+          return _renderItem(ctx, defaultNote);
         }
-        return const SizedBox(height: 66);
       },
       future: _retrieveNote(index),
     );
@@ -106,6 +102,7 @@ class _TimelineViewState extends State<TimelineView> {
                         padding: const EdgeInsets.only(bottom: 50, top: 20),
                         reverse: true,
                         shrinkWrap: true,
+                        prototypeItem: _renderItem(context, defaultNote),
                         itemCount: numNotes,
                         itemBuilder: _buildItem)));
   }
