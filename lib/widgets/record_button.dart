@@ -8,6 +8,9 @@ import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
+/// How long does the user have to hold down for it to be considered a "hold"?
+const holdThreshold = 750;
+
 class RecordButton extends StatefulWidget {
   const RecordButton({Key? key}) : super(key: key);
 
@@ -28,7 +31,7 @@ class _RecordButtonState extends State<RecordButton> {
 
   _stopRecord(_) async {
     final playerState = context.read<PlayerModel>().playerState;
-    if (_stopwatch.elapsedMilliseconds > 200 ||
+    if (_stopwatch.elapsedMilliseconds > holdThreshold ||
         playerState == PlayerState.recordingContinuously) {
       _stopwatch.stop();
       _stopwatch.reset();
