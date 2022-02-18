@@ -16,7 +16,7 @@ import '../consts.dart';
 GoogleSignIn googleSignIn = GoogleSignIn(
     clientId: IO.Platform.isIOS
         ? "658946540988-ak572264ge5odag4o8euqe5ev6bf354l.apps.googleusercontent.com"
-        : "658946540988-5ga0e513k05pbteb77kqfg6ak7rdd5ns.apps.googleusercontent.com",
+        : "658946540988-64ph2vbpu8egqjr7b49aflb66skhaj04.apps.googleusercontent.com",
     scopes: [DriveApi.driveAppdataScope]);
 
 Future<DriveApi?> getDrive() async {
@@ -31,6 +31,7 @@ Future<DriveApi?> getDrive() async {
     }
     return DriveApi(httpClient);
   } catch (e, tr) {
+    print(e);
     print(tr);
     Sentry.captureException(e, stackTrace: tr);
     return null;
@@ -157,6 +158,7 @@ Future<void> restoreById(String id, Function onDone) async {
     });
   } catch (e, tr) {
     print(e);
+    print(tr);
     Sentry.captureException(e, stackTrace: tr);
   }
 }

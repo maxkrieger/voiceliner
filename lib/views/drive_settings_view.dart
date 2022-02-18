@@ -81,6 +81,7 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
       } catch (e, tr) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("Couldn't sign in")));
+        print(e);
         print(tr);
         Sentry.captureException(e, stackTrace: tr);
         return;

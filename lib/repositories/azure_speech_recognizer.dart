@@ -9,6 +9,7 @@ import 'package:tuple/tuple.dart';
 import 'package:voice_outliner/data/note.dart';
 
 const _apiKey = String.fromEnvironment("AZURE_SPEECH_KEY");
+@Deprecated("Use Vosk")
 Future<Tuple2<bool, String?>> azureRecognize(Note note, String path) async {
   if (_apiKey.isEmpty) {
     await sentry.Sentry.captureMessage("API key empty!",
