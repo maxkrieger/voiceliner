@@ -13,11 +13,7 @@ import 'package:tuple/tuple.dart';
 
 import '../consts.dart';
 
-GoogleSignIn googleSignIn = GoogleSignIn(
-    clientId: IO.Platform.isIOS
-        ? "658946540988-ak572264ge5odag4o8euqe5ev6bf354l.apps.googleusercontent.com"
-        : "658946540988-64ph2vbpu8egqjr7b49aflb66skhaj04.apps.googleusercontent.com",
-    scopes: [DriveApi.driveAppdataScope]);
+GoogleSignIn googleSignIn = GoogleSignIn(scopes: [DriveApi.driveAppdataScope]);
 
 Future<DriveApi?> getDrive() async {
   try {
