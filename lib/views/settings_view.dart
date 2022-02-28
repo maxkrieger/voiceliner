@@ -169,6 +169,12 @@ class _SettingsViewState extends State<SettingsView> {
                             builder: (_) => const DriveSettingsView())),
                   ),
                   ListTile(
+                    leading: const Icon(Icons.favorite),
+                    title: const Text("Send Tip"),
+                    onTap: () =>
+                        launch("https://github.com/sponsors/maxkrieger"),
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.bug_report),
                     title: const Text("Report Issue"),
                     onTap: () => launch(
