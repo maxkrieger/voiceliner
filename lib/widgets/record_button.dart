@@ -20,6 +20,8 @@ class RecordButton extends StatefulWidget {
 
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
+  Offset globalOffset = const Offset(0, 0);
+  bool deleteIfReleased = false;
   final Stopwatch _stopwatch = Stopwatch();
 
   Color computeShadowColor(double dy) {
@@ -38,7 +40,10 @@ class _RecordButtonState extends State<RecordButton> {
       int magnitude = max(
           ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
           0);
-      await context.read<NotesModel>().stopRecording(magnitude);
+      await context
+          .read<NotesModel>()
+          .stopRecording(magnitude, deleteIfReleased);
+      deleteIfReleased = false;
     } else {
       // If finger lifted in time, this was a tap not a hold. Keep recording
       context.read<PlayerModel>().setContinuousRecording();
@@ -57,15 +62,28 @@ class _RecordButtonState extends State<RecordButton> {
     }
   }
 
+  _updateOffset(final d) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final deletionMargin = screenWidth * 0.05;
+
+    setState(() {
+      offset = d.localPosition;
+      globalOffset = d.globalPosition;
+      deleteIfReleased = globalOffset.dx < deletionMargin ||
+          globalOffset.dx > screenWidth - deletionMargin;
+    });
+  }
+
   _playEffect(LongPressDownDetails d) {
     Vibrate.feedback(FeedbackType.impact);
     setState(() {
-      offset = d.localPosition;
+      _updateOffset(d);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final playerState =
         context.select<PlayerModel, PlayerState>((p) => p.playerState);
     return GestureDetector(
@@ -76,14 +94,10 @@ class _RecordButtonState extends State<RecordButton> {
         onPanEnd: _stopRecord,
         onPanDown: _startRecord,
         onLongPressMoveUpdate: (LongPressMoveUpdateDetails d) {
-          setState(() {
-            offset = d.localPosition;
-          });
+          _updateOffset(d);
         },
         onPanUpdate: (DragUpdateDetails d) {
-          setState(() {
-            offset = d.localPosition;
-          });
+          _updateOffset(d);
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
@@ -115,7 +129,9 @@ class _RecordButtonState extends State<RecordButton> {
                       playerState == PlayerState.recordingContinuously
                           ? "tap to stop"
                           : playerState == PlayerState.recording
-                              ? "recording"
+                              ? deleteIfReleased
+                                  ? "release to delete"
+                                  : "recording"
                               : "hold to record",
                       style:
                           const TextStyle(color: Colors.white, fontSize: 15.0),
@@ -132,15 +148,21 @@ class _RecordButtonState extends State<RecordButton> {
                       offset: const Offset(0, 7)),
                   if (playerState == PlayerState.recording)
                     BoxShadow(
-                        color: computeShadowColor(offset.dy),
+                        color: deleteIfReleased
+                            ? warningRed.withAlpha(150)
+                            : computeShadowColor(offset.dy),
                         blurRadius: 120.0,
                         spreadRadius: 120.0,
-                        offset: offset + const Offset(-100, -95))
+                        offset: deleteIfReleased
+                            ? new Offset(offset.dx - 100, offset.dy - 95)
+                            : new Offset(screenWidth / 2 - 200, offset.dy - 95))
                 ],
                 borderRadius: BorderRadius.circular(100.0),
                 color: playerState == PlayerState.recordingContinuously
                     ? warmRed
-                    : classicPurple,
+                    : deleteIfReleased
+                        ? warningRed
+                        : classicPurple,
               )),
         ));
   }

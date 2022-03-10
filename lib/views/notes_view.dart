@@ -290,7 +290,7 @@ class _NotesViewState extends State<_NotesView> {
   Future<void> _goToOutlines() async {
     final playerModel = context.read<PlayerModel>();
     if (playerModel.playerState == PlayerState.recordingContinuously) {
-      await context.read<NotesModel>().stopRecording(0);
+      await context.read<NotesModel>().stopRecording(0, false);
     }
     if (playerModel.playerState == PlayerState.playing) {
       await playerModel.stopPlaying();

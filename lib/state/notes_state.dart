@@ -145,7 +145,7 @@ class NotesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> stopRecording(int color) async {
+  Future<void> stopRecording(int color, bool delete) async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
 
@@ -157,6 +157,12 @@ class NotesModel extends ChangeNotifier {
           level: SentryLevel.error);
       print("Attempted to stop recording on an empty note");
       _playerModel.stopRecording();
+      return;
+    }
+    if (delete) {
+      _playerModel.stopRecording();
+      Sentry.addBreadcrumb(
+          Breadcrumb(message: "Not saving note", timestamp: DateTime.now()));
       return;
     }
     note.color = color;
