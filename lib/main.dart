@@ -59,7 +59,6 @@ Future<void> main() async {
   }
   void appRunner() => runApp(MultiProvider(
           providers: [
-            Provider<PlayerModel>(create: (_) => PlayerModel()..load()),
             ChangeNotifierProvider<PlayerModel>(
                 create: (_) => PlayerModel()..load()),
             ChangeNotifierProvider<DBRepository>(
