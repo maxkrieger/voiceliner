@@ -59,3 +59,10 @@ flutter pub run flutter_launcher_icons:main
 | KEY_PROPERTIES                               | key.properties seen above                                                                                                                                     |
 | SSH_PRIVATE_KEY                              | for github access                                                                                                                                             |
 | SENTRY_DSN                                   | for sentry logging                                                                                                                                            |
+
+## Upgrading fastlane
+
+```
+ios/$ bundle update fastlane
+android/$ bundle update fastlane
+```
