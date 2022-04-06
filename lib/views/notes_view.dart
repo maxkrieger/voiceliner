@@ -183,7 +183,7 @@ class _NotesViewState extends State<_NotesView> {
           value: "export_md",
           child: ListTile(
               leading: Icon(Icons.receipt_long),
-              title: Text("export markdown"))),
+              title: Text("export outline"))),
       if (outline.archived) ...[
         const PopupMenuItem(
             value: "unarchive",
