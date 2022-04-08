@@ -29,6 +29,7 @@ class NotesModel extends ChangeNotifier {
   bool shouldLocate = false;
   bool showCompleted = true;
   bool isReady = false;
+  String locale = "en-US";
   Completer<bool> _readyCompleter = Completer();
   bool isIniting = false;
   final LinkedList<Note> notes = LinkedList<Note>();
@@ -78,7 +79,7 @@ class NotesModel extends ChangeNotifier {
     if (shouldTranscribe && !note.transcribed && note.filePath != null) {
       final path = _playerModel.getPathFromFilename(note.filePath!);
       final res = Platform.isIOS
-          ? await recognizeNoteIOS(path)
+          ? await recognizeNoteIOS(path, locale)
           : await voskSpeechRecognize(path);
       // Guard against writing after user went back
       if (isReady) {
@@ -469,6 +470,9 @@ class NotesModel extends ChangeNotifier {
       shouldTranscribe = prefs.getBool(shouldTranscribeKey) ?? false;
       shouldLocate = prefs.getBool(shouldLocateKey) ?? false;
       showCompleted = prefs.getBool(showCompletedKey) ?? true;
+      if (Platform.isIOS) {
+        locale = prefs.getString(localeKey) ?? locale;
+      }
       isReady = true;
       _readyCompleter.complete(true);
       _readyCompleter = Completer();

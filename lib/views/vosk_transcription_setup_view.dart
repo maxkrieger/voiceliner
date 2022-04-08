@@ -6,14 +6,16 @@ import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/repositories/vosk_speech_recognizer.dart';
 
-class TranscriptionSetupView extends StatefulWidget {
-  const TranscriptionSetupView({Key? key}) : super(key: key);
+class VoskTranscriptionSetupView extends StatefulWidget {
+  const VoskTranscriptionSetupView({Key? key}) : super(key: key);
 
   @override
-  _TranscriptionSetupViewState createState() => _TranscriptionSetupViewState();
+  _VoskTranscriptionSetupViewState createState() =>
+      _VoskTranscriptionSetupViewState();
 }
 
-class _TranscriptionSetupViewState extends State<TranscriptionSetupView> {
+class _VoskTranscriptionSetupViewState
+    extends State<VoskTranscriptionSetupView> {
   SharedPreferences? sharedPreferences;
   bool isInited = false;
   bool loading = false;

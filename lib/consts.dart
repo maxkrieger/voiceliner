@@ -11,6 +11,7 @@ const lastRouteKey = "last_route";
 const lastOutlineKey = "last_outline";
 const modelDirKey = "model_dir";
 const modelLanguageKey = "model_language";
+const localeKey = "ios_locale";
 
 const classicPurple = Color.fromRGBO(169, 129, 234, 1.0);
 const basePurple = Color.fromRGBO(163, 95, 255, 1);

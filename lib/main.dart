@@ -10,10 +10,11 @@ import 'package:voice_outliner/repositories/drive_backup.dart';
 import 'package:voice_outliner/repositories/vosk_speech_recognizer.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
+import 'package:voice_outliner/views/ios_transcription_setup_view.dart';
 import 'package:voice_outliner/views/notes_view.dart';
 import 'package:voice_outliner/views/onboarding_view.dart';
 import 'package:voice_outliner/views/outlines_view.dart';
-import 'package:voice_outliner/views/transcription_setup_view.dart';
+import 'package:voice_outliner/views/vosk_transcription_setup_view.dart';
 
 import 'consts.dart';
 
@@ -21,7 +22,8 @@ final routes = {
   "/": const OutlinesView(),
   "/notes": const NotesView(),
   "/onboarding": const OnboardingView(),
-  "/transcription_setup": const TranscriptionSetupView()
+  "/transcription_setup_vosk": const VoskTranscriptionSetupView(),
+  "/transcription_setup_ios": const IOSTranscriptionSetupView()
 };
 
 const generalAppBar =
@@ -118,7 +120,14 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
         widget.sharedPreferences.getString(modelDirKey) == null &&
         (widget.sharedPreferences.getBool(shouldTranscribeKey) ?? true) &&
         lastRoute != null) {
-      return "/transcription_setup";
+      return "/transcription_setup_vosk";
+    }
+    // If you've onboarded but don't have language set up on iOS
+    if (Platform.isIOS &&
+        widget.sharedPreferences.getString(localeKey) == null &&
+        (widget.sharedPreferences.getBool(shouldTranscribeKey) ?? true) &&
+        lastRoute != null) {
+      return "/transcription_setup_ios";
     }
     if (lastRoute != null) {
       return lastRoute;

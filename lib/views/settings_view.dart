@@ -8,7 +8,8 @@ import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/views/drive_settings_view.dart';
-import 'package:voice_outliner/views/transcription_setup_view.dart';
+import 'package:voice_outliner/views/ios_transcription_setup_view.dart';
+import 'package:voice_outliner/views/vosk_transcription_setup_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -28,7 +29,6 @@ class _SettingsViewState extends State<SettingsView> {
 
   Future<void> init() async {
     sharedPreferences = await SharedPreferences.getInstance();
-
     setState(() {
       isInited = true;
     });
@@ -114,7 +114,7 @@ class _SettingsViewState extends State<SettingsView> {
             ? Column(
                 children: [
                   const SizedBox(height: 10.0),
-                  if (Platform.isIOS)
+                  if (Platform.isIOS) ...[
                     SwitchListTile(
                         secondary: const Icon(Icons.voicemail),
                         title: const Text("Transcribe Recordings"),
@@ -136,14 +136,28 @@ class _SettingsViewState extends State<SettingsView> {
                             sharedPreferences.setBool(shouldTranscribeKey, v);
                           });
                         }),
+                    if (sharedPreferences.getBool(shouldTranscribeKey) ?? true)
+                      ListTile(
+                        leading: const Icon(Icons.language),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        title: const Text("Transcription Language"),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const IOSTranscriptionSetupView())),
+                      ),
+                  ],
                   if (Platform.isAndroid)
                     ListTile(
                       leading: const Icon(Icons.voicemail),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       title: const Text("Transcription Setup"),
                       onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const TranscriptionSetupView())),
+                              builder: (_) =>
+                                  const VoskTranscriptionSetupView())),
                     ),
                   SwitchListTile(
                     secondary: const Icon(Icons.location_pin),

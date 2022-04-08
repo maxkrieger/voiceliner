@@ -51,7 +51,11 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   void onDone() {
     Navigator.pushNamedAndRemoveUntil(
-        context, Platform.isIOS ? "/" : "/transcription_setup", (_) => false);
+        context,
+        Platform.isIOS
+            ? "/transcription_setup_ios"
+            : "/transcription_setup_vosk",
+        (_) => false);
   }
 
   @override

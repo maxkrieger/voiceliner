@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 
 const iosPlatform = MethodChannel("voiceoutliner.saga.chat/iostx");
 
-Future<String?> recognizeNoteIOS(String path) async {
+Future<String?> recognizeNoteIOS(String path, String locale) async {
   try {
-    final platformRes =
-        await iosPlatform.invokeMethod("transcribe", {"path": path});
+    final platformRes = await iosPlatform
+        .invokeMethod("transcribe", {"path": path, "locale": locale});
     if (platformRes is String) {
       return platformRes;
     } else {
@@ -30,5 +30,20 @@ Future<bool> tryTxPermissionIOS() async {
   } catch (err) {
     print(err);
     return false;
+  }
+}
+
+/// Returns a map {"en-US": "English (US)"}
+Future<Map<String, String>> getLocaleOptions() async {
+  if (!Platform.isIOS) {
+    print("Not IOS");
+    return {};
+  }
+  try {
+    final res = await iosPlatform.invokeMethod("getLocaleOptions");
+    return Map<String, String>.from(res);
+  } catch (err) {
+    print(err);
+    return {};
   }
 }
