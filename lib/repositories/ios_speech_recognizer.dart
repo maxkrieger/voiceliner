@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 const iosPlatform = MethodChannel("voiceoutliner.saga.chat/iostx");
 
@@ -13,8 +14,9 @@ Future<String?> recognizeNoteIOS(String path, String locale) async {
     } else {
       return null;
     }
-  } catch (err) {
+  } catch (err, tr) {
     print(err);
+    Sentry.captureException(err, stackTrace: tr);
     return null;
   }
 }
@@ -42,8 +44,8 @@ Future<Map<String, String>> getLocaleOptions() async {
   try {
     final res = await iosPlatform.invokeMethod("getLocaleOptions");
     return Map<String, String>.from(res);
-  } catch (err) {
-    print(err);
+  } catch (err, tr) {
+    Sentry.captureException(err, stackTrace: tr);
     return {};
   }
 }

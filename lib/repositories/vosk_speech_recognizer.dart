@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/consts.dart';
 
@@ -50,7 +51,8 @@ Future<String?> voskSpeechRecognize(String path) async {
     final result =
         await androidPlatform.invokeMethod("transcribe", {"path": outPath});
     return result;
-  } catch (err) {
+  } catch (err, tr) {
+    Sentry.captureException(err, stackTrace: tr);
     print(err);
     return null;
   }
@@ -68,8 +70,9 @@ Future<String?> voskInitModel(String path) async {
       return res.toString();
     }
     return null;
-  } catch (e) {
-    return e.toString();
+  } catch (err, tr) {
+    Sentry.captureException(err, stackTrace: tr);
+    return err.toString();
   }
 }
 
@@ -103,7 +106,8 @@ Future<String?> voskDownloadAndInitModel(String url) async {
     final sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.setString(modelDirKey, modelDir.path);
     return null;
-  } catch (err) {
+  } catch (err, tr) {
+    Sentry.captureException(err, stackTrace: tr);
     return err.toString();
   }
 }
