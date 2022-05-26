@@ -17,6 +17,7 @@ class VoskTranscriptionSetupView extends StatefulWidget {
 class _VoskTranscriptionSetupViewState
     extends State<VoskTranscriptionSetupView> {
   SharedPreferences? sharedPreferences;
+  List<VoskModel> voskModels = [];
   bool isInited = false;
   bool loading = false;
 
@@ -28,20 +29,29 @@ class _VoskTranscriptionSetupViewState
 
   Future<void> init() async {
     sharedPreferences = await SharedPreferences.getInstance();
+    final models = await retrieveVoskModels();
+    if (models.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Could not retrieve list of languages"),
+      ));
+    }
 
     setState(() {
       isInited = true;
+      voskModels = models;
     });
   }
 
   Future<void> _onLanguageSelected(String? language) async {
     if (language != null) {
+      final model =
+          voskModels.firstWhere((element) => element.languageCode == language);
       await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-                title: Text("Download $language?"),
-                content: const Text(
-                    "The download will be around 50mb, please wait for it to complete."),
+                title: Text("Download ${model.languageText}?"),
+                content: Text(
+                    "The download will be ${model.sizeText}, please wait for it to complete."),
                 actions: [
                   TextButton(
                       onPressed: () async {
@@ -58,8 +68,8 @@ class _VoskTranscriptionSetupViewState
                         setState(() {
                           loading = true;
                         });
-                        final downloadResult = await voskDownloadAndInitModel(
-                            voskModels[language]!);
+                        final downloadResult =
+                            await voskDownloadAndInitModel(model.url);
                         if (downloadResult != null) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content:
@@ -84,8 +94,10 @@ class _VoskTranscriptionSetupViewState
 
   @override
   Widget build(BuildContext context) {
-    final items = voskModels.keys
-        .map((String lang) => DropdownMenuItem(child: Text(lang), value: lang))
+    final items = voskModels
+        .map((VoskModel model) => DropdownMenuItem(
+            child: Text("${model.languageText} (${model.sizeText})"),
+            value: model.languageCode))
         .toList(growable: false);
     final modelLanguage = sharedPreferences?.getString(modelLanguageKey);
     final transcriptionEnabled =
@@ -155,7 +167,7 @@ class _VoskTranscriptionSetupViewState
                                 : "select a language to continue"))
                       ],
               )))
-          : const CircularProgressIndicator(),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

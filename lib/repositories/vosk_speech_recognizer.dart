@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,27 +12,40 @@ import 'package:voice_outliner/consts.dart';
 
 const androidPlatform = MethodChannel("voiceoutliner.saga.chat/androidtx");
 
-// from https://alphacephei.com/vosk/models
-const voskModels = {
-  "en-us":
-      "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip",
-  "en-in": "https://alphacephei.com/vosk/models/vosk-model-small-en-in-0.4.zip",
-  "cn": "https://alphacephei.com/vosk/models/vosk-model-small-cn-0.3.zip",
-  "ru": "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip",
-  "fr": "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip",
-  "de": "https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip",
-  "es": "https://alphacephei.com/vosk/models/vosk-model-small-es-0.3.zip",
-  "pt": "https://alphacephei.com/vosk/models/vosk-model-small-pt-0.3.zip",
-  "tr": "https://alphacephei.com/vosk/models/vosk-model-small-tr-0.3.zip",
-  "vn": "https://alphacephei.com/vosk/models/vosk-model-small-vn-0.3.zip",
-  "it": "https://alphacephei.com/vosk/models/vosk-model-small-it-0.4.zip",
-  "ca": "https://alphacephei.com/vosk/models/vosk-model-small-ca-0.4.zip",
-  "fa": "https://alphacephei.com/vosk/models/vosk-model-small-fa-0.4.zip",
-  "uk": "https://alphacephei.com/vosk/models/vosk-model-small-uk-v3-nano.zip",
-  "kz": "https://alphacephei.com/vosk/models/vosk-model-small-kz-0.15.zip",
-  "ja": "https://alphacephei.com/vosk/models/vosk-model-small-ja-0.22.zip",
-  "eo": "https://alphacephei.com/vosk/models/vosk-model-small-eo-0.22.zip"
-};
+const voskModelsURL = "https://alphacephei.com/vosk/models/model-list.json";
+
+class VoskModel {
+  String url;
+  String sizeText;
+  String languageText;
+  String languageCode;
+  VoskModel(this.url, this.sizeText, this.languageText, this.languageCode);
+}
+
+Future<List<VoskModel>> retrieveVoskModels() async {
+  try {
+    final res = await http.get(Uri.parse(voskModelsURL));
+    if (res.statusCode == 200) {
+      final decoded = jsonDecode(res.body);
+      if (decoded is List) {
+        final parsed = decoded
+            .where((element) =>
+                element["type"] == "small" && element["obsolete"] == "false")
+            .map((element) => VoskModel(element["url"], element["size_text"],
+                element["lang_text"], element["lang"]))
+            .toList(growable: false);
+        parsed.sort((a, b) => a.languageCode.compareTo(b.languageCode));
+        return parsed;
+      }
+    }
+    print("Status code is ${res.statusCode}");
+    return [];
+  } catch (err, tr) {
+    print(err);
+    Sentry.captureException(err, stackTrace: tr);
+    return [];
+  }
+}
 
 Future<String?> voskSpeechRecognize(String path) async {
   if (!Platform.isAndroid) {
