@@ -109,8 +109,34 @@ class NotesModel extends ChangeNotifier {
         transcribed: true,
         transcript: text,
         isCollapsed: false);
-    notes.add(note);
-    await _dbRepository.addNote(note);
+
+    if (currentlyExpanded != null && !currentlyExpanded!.isComplete) {
+      note.parentNoteId = currentlyExpanded!.id;
+      currentlyExpanded!.insertAfter(note);
+      await _dbRepository.addNote(note);
+      // Due to notes below/nonstandard insertion point
+      await _dbRepository.realignNotes(notes);
+      Sentry.addBreadcrumb(Breadcrumb(
+          message: "Insert after expanded", timestamp: DateTime.now()));
+    } else {
+      notes.add(note);
+      await _dbRepository.addNote(note);
+    }
+    notifyListeners();
+    if (shouldLocate) {
+      final loc = await locationInstance.getLocation();
+      if (loc.latitude != null &&
+          loc.longitude != null &&
+          loc.accuracy != null &&
+          loc.accuracy! < 1000.0) {
+        note.longitude = loc.longitude;
+        note.latitude = loc.latitude;
+        await _dbRepository.updateNote(note);
+      } else {
+        Sentry.addBreadcrumb(Breadcrumb(
+            message: "Couldn't locate note", timestamp: DateTime.now()));
+      }
+    }
     notifyListeners();
   }
 
@@ -424,6 +450,7 @@ class NotesModel extends ChangeNotifier {
       }
     });
     await _dbRepository.realignNotes(notes);
+    currentlyExpanded = null;
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Reordered note", timestamp: DateTime.now()));
     assert(notes.length == initialSize);

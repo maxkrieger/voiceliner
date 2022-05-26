@@ -83,9 +83,7 @@ class _NotesViewState extends State<_NotesView> {
     _textController.clear();
     Future<void> _onSubmitted(BuildContext ctx) async {
       if (_textController.value.text.isNotEmpty) {
-        await context
-            .read<NotesModel>()
-            .createTextNote(_textController.value.text);
+        context.read<NotesModel>().createTextNote(_textController.value.text);
         Navigator.of(ctx, rootNavigator: true).pop();
       } else {
         ScaffoldMessenger.of(ctx)
