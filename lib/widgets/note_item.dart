@@ -107,9 +107,6 @@ class _NoteItemState extends State<NoteItem> {
           value: "share",
           child: ListTile(leading: Icon(Icons.share), title: Text("share"))),
       const PopupMenuItem(
-          value: "edit",
-          child: ListTile(leading: Icon(Icons.edit), title: Text("edit"))),
-      const PopupMenuItem(
           value: "move",
           child: ListTile(
               leading: Icon(Icons.playlist_play), title: Text("move"))),
@@ -118,9 +115,6 @@ class _NoteItemState extends State<NoteItem> {
             value: "locate",
             child: ListTile(
                 leading: Icon(Icons.location_pin), title: Text("location"))),
-      const PopupMenuItem(
-          value: "delete",
-          child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
       if (isTranscribing)
         const PopupMenuItem(
             child: ListTile(
@@ -150,7 +144,7 @@ class _NoteItemState extends State<NoteItem> {
     Navigator.push(context, MaterialPageRoute(builder: (ct) {
       return Scaffold(
           appBar: AppBar(
-            title: const Text("Select Outline"),
+            title: const Text("Select Outline To Move To"),
           ),
           body: OutlinesList(
               excludeItem: note.outlineId,
@@ -310,6 +304,14 @@ class _NoteItemState extends State<NoteItem> {
                                 TextStyle(color: Theme.of(context).hintColor),
                           ),
                       date: dateCreated!),
+                  IconButton(
+                      tooltip: "edit",
+                      onPressed: _editNoteDetails,
+                      icon: const Icon(Icons.edit)),
+                  IconButton(
+                      tooltip: "delete",
+                      onPressed: _deleteNote,
+                      icon: const Icon(Icons.delete)),
                   PopupMenuButton(
                       tooltip: "note options",
                       itemBuilder: _menuBuilder,
