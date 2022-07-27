@@ -74,7 +74,6 @@ class _RecordButtonState extends State<RecordButton> {
         onLongPressDown: _playEffect,
         onLongPressUp: _stopRecord0,
         onPanEnd: _stopRecord,
-        onPanDown: _startRecord,
         onLongPressMoveUpdate: (LongPressMoveUpdateDetails d) {
           setState(() {
             offset = d.localPosition;

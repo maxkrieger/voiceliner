@@ -51,8 +51,10 @@ class PlayerModel extends ChangeNotifier {
     if (note.filePath != null) {
       playerState = PlayerState.playing;
       await _player.startPlayer(
-          codec: note.filePath!.endsWith("aac") ? Codec.aacADTS : Codec.pcm16,
+          codec:
+              note.filePath!.endsWith("aac") ? Codec.aacADTS : Codec.pcm16WAV,
           fromURI: getPathFromFilename(note.filePath!),
+          sampleRate: 44100,
           whenFinished: () {
             playerState = PlayerState.ready;
             onDone();
@@ -71,9 +73,9 @@ class PlayerModel extends ChangeNotifier {
   }
 
   Future<void> startRecording(Note note) async {
-    if (note.filePath != null) {
+    if (note.filePath != null && playerState != PlayerState.recording) {
       await _recorder.startRecorder(
-          codec: Platform.isIOS ? Codec.aacADTS : Codec.pcm16,
+          codec: Platform.isIOS ? Codec.aacADTS : Codec.pcm16WAV,
           toFile: getPathFromFilename(note.filePath!),
           sampleRate: 44100,
           bitRate: 128000);

@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -81,7 +81,7 @@ dependencies {
     def appcompat_version = "1.4.1"
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     api 'net.java.dev.jna:jna:5.10.0@aar'
-    implementation (group: 'com.alphacephei', name: 'vosk-android', version: '0.3.42') {
+    implementation (group: 'com.alphacephei', name: 'vosk-android', version: '0.3.38') {
         exclude group: 'net.java.dev.jna', module: 'jna'
     }
 }
