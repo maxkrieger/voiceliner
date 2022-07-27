@@ -33,6 +33,7 @@ class PlayerModel extends ChangeNotifier {
   late Directory recordingsDirectory;
   PlayerState _playerState = PlayerState.notLoaded;
   Duration currentDuration = const Duration(milliseconds: 0);
+  AudioSession? _session;
 
   PlayerState get playerState => _playerState;
   set playerState(PlayerState state) {
@@ -74,6 +75,7 @@ class PlayerModel extends ChangeNotifier {
 
   Future<void> startRecording(Note note) async {
     if (note.filePath != null && playerState != PlayerState.recording) {
+      await _session!.setActive(true);
       await _recorder.startRecorder(
           codec: Platform.isIOS ? Codec.aacADTS : Codec.pcm16WAV,
           toFile: getPathFromFilename(note.filePath!),
@@ -96,6 +98,7 @@ class PlayerModel extends ChangeNotifier {
     playerState = PlayerState.ready;
     notifyListeners();
     await _recorder.stopRecorder();
+    await _session!.setActive(false);
   }
 
   Future<void> tryPermission() async {
@@ -112,8 +115,9 @@ class PlayerModel extends ChangeNotifier {
     await load();
   }
 
-  // Attempt to warm up cache
+  // Attempt to warm up cache. Takes a while to start recorder otherwise.
   Future<void> makeDummyRecording() async {
+    await _session!.setActive(true);
     final tempDir = await getTemporaryDirectory();
     await _recorder.startRecorder(
         codec: Codec.aacADTS,
@@ -122,6 +126,7 @@ class PlayerModel extends ChangeNotifier {
         bitRate: 128000);
     await Future.delayed(const Duration(milliseconds: 200));
     await _recorder.stopRecorder();
+    await _session!.setActive(false);
   }
 
   Future<void> load() async {
@@ -145,11 +150,27 @@ class PlayerModel extends ChangeNotifier {
         });
         await _player.openPlayer();
 
-        final session = await AudioSession.instance;
-        await session.configure(const AudioSessionConfiguration.speech());
+        _session = await AudioSession.instance;
+        // https://github.com/Canardoux/flutter_sound/issues/868#issuecomment-1081063748
+        await _session!.configure(AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.allowBluetooth |
+                  AVAudioSessionCategoryOptions.defaultToSpeaker,
+          avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+          avAudioSessionRouteSharingPolicy:
+              AVAudioSessionRouteSharingPolicy.defaultPolicy,
+          avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+          androidAudioAttributes: const AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.speech,
+            flags: AndroidAudioFlags.none,
+            usage: AndroidAudioUsage.voiceCommunication,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: true,
+        ));
         playerState = PlayerState.ready;
         notifyListeners();
-        // TODO: still need this?
         await makeDummyRecording();
       } catch (e, st) {
         playerState = PlayerState.error;

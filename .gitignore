@@ -56,3 +56,4 @@ ios/fastlane/local.p8
 ios/deploy.sh
 android/google_play.json
 deploy_android.sh
+deploy_ios.sh
