@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
-import 'package:provider/provider.dart';
 
 class _MarkdownExporter extends StatefulWidget {
   final Outline outline;
@@ -42,7 +42,8 @@ class _MarkdownExporterState extends State<_MarkdownExporter> {
       }
 
       if (linkAudio) {
-        line += "[${n.transcript ?? n.infoString}](./${n.id}.aac)";
+        line +=
+            "[${n.transcript ?? n.infoString}](./${n.id}.${Platform.isIOS ? 'aac' : 'wav'})";
       } else {
         line += n.transcript ?? n.infoString;
       }

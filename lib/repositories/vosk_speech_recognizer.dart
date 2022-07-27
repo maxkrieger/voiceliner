@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_archive/flutter_archive.dart';
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -53,18 +52,8 @@ Future<String?> voskSpeechRecognize(String path) async {
     return null;
   }
   try {
-    final tempDir = await getTemporaryDirectory();
-    final outPath = "${tempDir.path}/converted.wav";
-    await flutterSoundHelper.convertFile(
-        path, Codec.aacADTS, outPath, Codec.pcm16);
-    final outFile = File(outPath);
-    final exists = await outFile.exists();
-    if (!exists) {
-      print("Could not convert");
-      return null;
-    }
     final result =
-        await androidPlatform.invokeMethod("transcribe", {"path": outPath});
+        await androidPlatform.invokeMethod("transcribe", {"path": path});
     return result;
   } catch (err, tr) {
     Sentry.captureException(err, stackTrace: tr);

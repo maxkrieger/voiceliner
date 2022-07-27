@@ -64,7 +64,6 @@ class _OnboardingViewState extends State<OnboardingView> {
         (value) => value.playerState == PlayerState.ready);
     bool locationOn = sharedPreferences?.getBool(shouldLocateKey) ?? false;
     return IntroductionScreen(
-      color: classicPurple,
       dotsDecorator: const DotsDecorator(activeColor: classicPurple),
       showDoneButton: true,
       showNextButton: true,

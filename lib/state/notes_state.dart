@@ -159,7 +159,7 @@ class NotesModel extends ChangeNotifier {
     }
     final note = Note(
         id: noteId,
-        filePath: "$noteId.aac",
+        filePath: "$noteId.${Platform.isIOS ? 'aac' : 'wav'}",
         dateCreated: DateTime.now().toUtc(),
         outlineId: _outlineId,
         parentNoteId: parent,
@@ -176,6 +176,7 @@ class NotesModel extends ChangeNotifier {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Stop recording", timestamp: DateTime.now()));
 
+    await _playerModel.stopRecording();
     final note = currentlyPlayingOrRecording;
     currentlyPlayingOrRecording = null;
     notifyListeners();
@@ -183,11 +184,10 @@ class NotesModel extends ChangeNotifier {
       Sentry.captureMessage("Attempted to stop recording on an empty note",
           level: SentryLevel.error);
       print("Attempted to stop recording on an empty note");
-      _playerModel.stopRecording();
       return;
     }
     note.color = color;
-    note.duration = await _playerModel.stopRecording(note: note);
+    note.duration = _playerModel.currentDuration;
     Vibrate.feedback(FeedbackType.medium);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Saved file", timestamp: DateTime.now()));

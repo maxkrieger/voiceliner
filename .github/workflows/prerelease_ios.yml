@@ -50,7 +50,7 @@ jobs:
 
       - name: Deploy to TestFlight
         run: |
-          cd ./ios && bundle exec fastlane beta
+          cd ./ios && bundle exec fastlane beta_ci
         env:
           FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}

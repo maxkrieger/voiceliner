@@ -18,8 +18,8 @@ end
 default_platform(:ios)
 
 platform :ios do
-  desc "Push a new beta build to TestFlight"
-  lane :beta do
+  desc "Push a new beta build to TestFlight on CI"
+  lane :beta_ci do
     setup_ci
 
     sync_code_signing(
@@ -30,4 +30,22 @@ platform :ios do
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     upload_to_testflight(skip_waiting_for_build_processing: true)
   end
+
+  desc "Push a new beta build to TestFlight on CI"
+  lane :beta_local do
+    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
+    api_key = app_store_connect_api_key(
+        key_id: "2YVM98BL32",
+        issuer_id: "fb8accf3-4375-49f8-9bd0-449e0ef34160",
+        key_filepath: "./local.p8",
+#         duration: 1200, # optional (maximum 1200)
+#         in_house: false # optional but may be required if using match/sigh
+    )
+
+    pilot(api_key: api_key)
+    upload_to_testflight()
+
+  lane :release_local do
+    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
+    upload_to_app_store
 end

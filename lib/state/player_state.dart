@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:logger/logger.dart';
@@ -31,6 +32,7 @@ class PlayerModel extends ChangeNotifier {
   final _recorder = FlutterSoundRecorder(logLevel: Level.warning);
   late Directory recordingsDirectory;
   PlayerState _playerState = PlayerState.notLoaded;
+  Duration currentDuration = const Duration(milliseconds: 0);
 
   PlayerState get playerState => _playerState;
   set playerState(PlayerState state) {
@@ -40,8 +42,8 @@ class PlayerModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _recorder.closeAudioSession();
-    _player.closeAudioSession();
+    _recorder.closeRecorder();
+    _player.closePlayer();
     super.dispose();
   }
 
@@ -49,7 +51,7 @@ class PlayerModel extends ChangeNotifier {
     if (note.filePath != null) {
       playerState = PlayerState.playing;
       await _player.startPlayer(
-          codec: Codec.aacADTS,
+          codec: note.filePath!.endsWith("aac") ? Codec.aacADTS : Codec.pcm16,
           fromURI: getPathFromFilename(note.filePath!),
           whenFinished: () {
             playerState = PlayerState.ready;
@@ -71,7 +73,7 @@ class PlayerModel extends ChangeNotifier {
   Future<void> startRecording(Note note) async {
     if (note.filePath != null) {
       await _recorder.startRecorder(
-          codec: Codec.aacADTS,
+          codec: Platform.isIOS ? Codec.aacADTS : Codec.pcm16,
           toFile: getPathFromFilename(note.filePath!),
           sampleRate: 44100,
           bitRate: 128000);
@@ -88,21 +90,10 @@ class PlayerModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Duration?> stopRecording({Note? note}) async {
+  Future<void> stopRecording() async {
     playerState = PlayerState.ready;
     notifyListeners();
-    // This delay prevents cutoff
-    await Future.delayed(const Duration(milliseconds: 300));
     await _recorder.stopRecorder();
-    if (note == null) {
-      return null;
-    }
-    if (note.filePath != null) {
-      final duration = await flutterSoundHelper
-          .duration(getPathFromFilename(note.filePath!));
-      return duration;
-    }
-    return null;
   }
 
   Future<void> tryPermission() async {
@@ -145,14 +136,18 @@ class PlayerModel extends ChangeNotifier {
       playerState = PlayerState.notReady;
       try {
         // Initing recorder before player means bluetooth works properly
-        await _recorder.openAudioSession(
-            audioFlags: outputToSpeaker | allowBlueToothA2DP | allowAirPlay);
-        await _player.openAudioSession(
-            category: SessionCategory.playAndRecord,
-            mode: SessionMode.modeSpokenAudio,
-            focus: AudioFocus.requestFocusAndStopOthers);
+        await _recorder.openRecorder();
+        _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
+        _recorder.onProgress?.listen((event) {
+          currentDuration = event.duration;
+        });
+        await _player.openPlayer();
+
+        final session = await AudioSession.instance;
+        await session.configure(const AudioSessionConfiguration.speech());
         playerState = PlayerState.ready;
         notifyListeners();
+        // TODO: still need this?
         await makeDummyRecording();
       } catch (e, st) {
         playerState = PlayerState.error;

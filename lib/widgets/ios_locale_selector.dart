@@ -24,6 +24,10 @@ class _IOSLocaleSelectorState extends State<IOSLocaleSelector> {
     sharedPreferences = await SharedPreferences.getInstance();
     locales = await getLocaleOptions();
     setState(() {
+      // Initiate side effect so if the user doesn't touch the dropdown, it's saved as en-US
+      if (sharedPreferences.getString(localeKey) == null) {
+        sharedPreferences.setString(localeKey, "en-US");
+      }
       isInited = true;
     });
   }
@@ -35,7 +39,7 @@ class _IOSLocaleSelectorState extends State<IOSLocaleSelector> {
     }
     final items = locales.entries
         .map((entry) =>
-            DropdownMenuItem(child: Text(entry.value), value: entry.key))
+            DropdownMenuItem(value: entry.key, child: Text(entry.value)))
         .toList(growable: false);
     items.sort((a, b) => a.value!.compareTo(b.value!));
     return DropdownButton<String>(
