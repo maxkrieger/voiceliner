@@ -57,3 +57,5 @@ ios/deploy.sh
 android/google_play.json
 deploy_android.sh
 deploy_ios.sh
+ios/Runner.ipa
+ios/Runner.app.dSYM.zip

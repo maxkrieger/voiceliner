@@ -34,6 +34,7 @@ jobs:
         uses: subosito/flutter-action@v1
         with:
           channel: "stable"
+          architecture: x64
 
       - uses: webfactory/ssh-agent@v0.5.3
         with:
