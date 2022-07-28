@@ -48,7 +48,9 @@ Future<void> ifShouldBackup() async {
               0)) {
     ConnectivityResult connectivityResult =
         await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none && !backingUp) {
+    if (connectivityResult != ConnectivityResult.none &&
+        connectivityResult != ConnectivityResult.mobile &&
+        !backingUp) {
       Sentry.addBreadcrumb(Breadcrumb(
           message: "Initiating auto back up", timestamp: DateTime.now()));
       backingUp = true;
