@@ -49,6 +49,11 @@ jobs:
         run: |
           flutter build ios --release --no-codesign --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
+      - name: Dump Secrets
+        run: |
+          cd ios/
+          echo "${{secrets.CONNECT_KEY}}" > ci.p8
+
       - name: Deploy to TestFlight
         run: |
           cd ./ios && bundle exec fastlane beta_ci
