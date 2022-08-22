@@ -36,25 +36,37 @@ Future<DriveApi?> getDrive() async {
 
 bool backingUp = false;
 
+/// Back up if you can
 Future<void> ifShouldBackup() async {
   final sp = await SharedPreferences.getInstance();
-  final lastBackup = sp.getInt("last_backed_up");
+  final lastBackup = sp.getInt(lastBackupKey);
   final shouldBackup = sp.getBool(driveEnabledKey) ?? false;
-  if (shouldBackup &&
-      (lastBackup == null ||
+  if (shouldBackup) {
+    ConnectivityResult connectivityResult =
+        await (Connectivity().checkConnectivity());
+
+    /// If connected to wifi
+    if (connectivityResult != ConnectivityResult.none &&
+        connectivityResult != ConnectivityResult.mobile &&
+        !backingUp) {
+      // hacky lock on double backups
+      backingUp = true;
+
+      /// If last backup is old enough
+      if ((lastBackup == null ||
           DateTime.now()
                   .subtract(const Duration(days: 1))
                   .compareTo(DateTime.fromMillisecondsSinceEpoch(lastBackup)) >
               0)) {
-    ConnectivityResult connectivityResult =
-        await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none &&
-        connectivityResult != ConnectivityResult.mobile &&
-        !backingUp) {
-      Sentry.addBreadcrumb(Breadcrumb(
-          message: "Initiating auto back up", timestamp: DateTime.now()));
-      backingUp = true;
-      await makeBackup();
+        Sentry.addBreadcrumb(Breadcrumb(
+            message: "Initiating auto back up", timestamp: DateTime.now()));
+        await makeBackup();
+      }
+
+      /// If should auto remove old backups
+      if (sp.getBool(autoDeleteOldBackupsKey) ?? false) {
+        await removeOldBackups();
+      }
       backingUp = false;
     }
   }
@@ -75,6 +87,38 @@ Future<String> getUsage() async {
   final remaining = ((int.tryParse(storageQuota.limit!) ?? 0) -
       (int.tryParse(storageQuota.usage!) ?? 0));
   return "your account has ${filesize(remaining)} left";
+}
+
+///
+/// Requires check of sharedPreference autoDeleteOldBackupsKey
+///
+Future<void> removeOldBackups() async {
+  final driveApi = await getDrive();
+  if (driveApi == null) {
+    return;
+  }
+  final existing = await driveApi.files.list(
+      spaces: "appDataFolder",
+      pageSize: 1000,
+      q: "name = 'voice_outliner.zip'",
+      $fields: "files(modifiedTime, id)",
+      orderBy: "modifiedTime desc");
+  if (existing.files != null && existing.files!.isNotEmpty) {
+    for (var file in existing.files!) {
+      if (DateTime.now()
+              .difference(file.modifiedTime!)
+              .compareTo(const Duration(days: 31)) >
+          0) {
+        print("Deleting old file ${file.modifiedTime!}");
+        Sentry.addBreadcrumb(Breadcrumb(
+            message: "Deleting old file ${file.modifiedTime!}",
+            timestamp: DateTime.now()));
+        await driveApi.files.delete(file.id!);
+      }
+    }
+  } else {
+    return;
+  }
 }
 
 Future<List<Tuple2<DateTime, String>>> getBackups() async {

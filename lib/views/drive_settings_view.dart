@@ -240,9 +240,22 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                   title: Text("Signed in as ${account?.email}"),
                   subtitle: Text(usage),
                 ),
+                SwitchListTile(
+                    title: const Text("Auto-remove old backups"),
+                    subtitle:
+                        const Text("will delete backups over 31 days old"),
+                    value:
+                        sharedPreferences!.getBool(autoDeleteOldBackupsKey) ??
+                            false,
+                    onChanged: (val) {
+                      setState(() {
+                        sharedPreferences!
+                            .setBool(autoDeleteOldBackupsKey, val);
+                      });
+                    }),
                 ListTile(
                   leading: const Icon(Icons.backup),
-                  title: const Text("Full backup"),
+                  title: const Text("Back up now"),
                   subtitle: const Text("backups occur daily when app is open"),
                   onTap: createBackup,
                 ),
