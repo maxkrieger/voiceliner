@@ -29,11 +29,9 @@ platform :ios do
 
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     api_key = app_store_connect_api_key(
-            key_id: "DSZ32H33CL",
-            issuer_id: "fb8accf3-4375-49f8-9bd0-449e0ef34160",
+            key_id: ENV["CONNECT_KEY_ID"],
+            issuer_id: ENV["CONNECT_ISSUER_ID"],
             key_filepath: "./ci.p8",
-    #         duration: 1200, # optional (maximum 1200)
-    #         in_house: false # optional but may be required if using match/sigh
     )
 
     upload_to_testflight(skip_waiting_for_build_processing: true, api_key: api_key)
@@ -41,16 +39,11 @@ platform :ios do
 
   desc "Push a new beta build to TestFlight on CI"
   lane :beta_local do
-    sync_code_signing(
-        type: "appstore",
-    )
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     api_key = app_store_connect_api_key(
-        key_id: "2YVM98BL32",
-        issuer_id: "fb8accf3-4375-49f8-9bd0-449e0ef34160",
+        key_id: ENV["CONNECT_KEY_ID"],
+        issuer_id: ENV["CONNECT_ISSUER_ID"],
         key_filepath: "./local.p8",
-#         duration: 1200, # optional (maximum 1200)
-#         in_house: false # optional but may be required if using match/sigh
     )
 
     upload_to_testflight(api_key: api_key)
