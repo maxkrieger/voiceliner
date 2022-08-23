@@ -99,10 +99,10 @@ Future<void> removeOldBackups() async {
   }
   final existing = await driveApi.files.list(
       spaces: "appDataFolder",
-      pageSize: 1000,
+      pageSize: 50,
       q: "name = 'voice_outliner.zip'",
       $fields: "files(modifiedTime, id)",
-      orderBy: "modifiedTime desc");
+      orderBy: "modifiedTime");
   if (existing.files != null && existing.files!.isNotEmpty) {
     for (var file in existing.files!) {
       if (DateTime.now()

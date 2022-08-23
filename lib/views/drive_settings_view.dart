@@ -252,6 +252,12 @@ class _DriveSettingsViewState extends State<DriveSettingsView> {
                         sharedPreferences!
                             .setBool(autoDeleteOldBackupsKey, val);
                       });
+                      if (val) {
+                        removeOldBackups();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text(
+                                "Auto-removing now, reopen this page to refresh")));
+                      }
                     }),
                 ListTile(
                   leading: const Icon(Icons.backup),
