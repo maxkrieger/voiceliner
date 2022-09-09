@@ -27,6 +27,7 @@ jobs:
 
       - name: Dump Secrets
         run: |
+          echo "SENTRY_DSN='${{secrets.SENTRY_DSN}}'" > .env
           cd android/
           echo "${{secrets.KEYSTORE}}" > keystore.b64
           base64 -d -i keystore.b64 > keystore.jks
@@ -46,7 +47,7 @@ jobs:
       - name: Flutter build release
         run: |
           unset ANDROID_NDK_HOME
-          flutter build appbundle --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          flutter build appbundle
 
       - name: Deploy beta to Play Store
         run: |

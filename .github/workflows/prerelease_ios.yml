@@ -47,10 +47,11 @@ jobs:
 
       - name: Flutter build release
         run: |
-          flutter build ios --release --no-codesign --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          flutter build ios --release --no-codesign
 
       - name: Dump Secrets
         run: |
+          echo "SENTRY_DSN='${{secrets.SENTRY_DSN}}'" > .env
           cd ios/
           echo "${{secrets.CONNECT_KEY}}" > ci.p8
 

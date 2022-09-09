@@ -41,6 +41,8 @@ flutter pub run flutter_launcher_icons:main
   storeFile=/keystore/location
 ```
 
+For continuous integration:
+
 | Env Var                                      | Value                                             |
 |----------------------------------------------|---------------------------------------------------|
 | APPLE_ID                                     | apple account email"                              |
@@ -61,6 +63,32 @@ flutter pub run flutter_launcher_icons:main
 | KEY_PROPERTIES                               | key.properties seen above                         |
 | SSH_PRIVATE_KEY                              | for github access                                 |
 | SENTRY_DSN                                   | for sentry logging                                |
+
+For local deployment, populate the following `.env` files:
+
+`ios/fastlane/.env`:
+
+```
+MATCH_GIT=...
+APP_IDENTIFIER=...
+CONNECT_KEY_ID=...
+CONNECT_ISSUER_ID=...
+```
+
+`android/fastlane/.env`:
+
+```
+PLAY_APP_IDENTIFIER=...
+```
+
+`.env`:
+
+```
+SENTRY_DSN=...
+```
+
+You can then use `./deploy_ios.sh` and `./deploy_android.sh` to deploy to the app stores.
+
 
 ## Upgrading fastlane
 
