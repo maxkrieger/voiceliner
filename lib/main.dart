@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,7 +46,8 @@ final theme = ThemeData(
 );
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
   final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
   if (sharedPrefs.getBool(shouldTranscribeKey) == null) {
     sharedPrefs.setBool(shouldTranscribeKey, true);
@@ -62,8 +64,9 @@ Future<void> main() async {
   void appRunner() => runApp(MultiProvider(
           providers: [
             ChangeNotifierProvider<PlayerModel>(
-                create: (_) => PlayerModel()..load()),
+                lazy: false, create: (_) => PlayerModel()..load()),
             ChangeNotifierProvider<DBRepository>(
+              lazy: false,
               create: (_) => DBRepository()..load(),
             ),
             ChangeNotifierProxyProvider2<DBRepository, PlayerModel,
@@ -76,7 +79,7 @@ Future<void> main() async {
           )));
   if (kReleaseMode) {
     await sentry.SentryFlutter.init((config) {
-      config.dsn = const String.fromEnvironment("SENTRY_DSN");
+      config.dsn = dotenv.env["SENTRY_DSN"];
       config.diagnosticLevel = sentry.SentryLevel.error;
     }, appRunner: appRunner);
   } else {
