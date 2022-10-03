@@ -48,7 +48,6 @@ class _NotesView extends StatefulWidget {
 class _NotesViewState extends State<_NotesView> {
   Offset? tapXY;
   final _textController = TextEditingController();
-
   @override
   void dispose() {
     super.dispose();
@@ -162,15 +161,16 @@ class _NotesViewState extends State<_NotesView> {
           value: "create_text",
           child: ListTile(
               leading: Icon(Icons.text_fields), title: Text("add text note"))),
-      PopupMenuItem(
-          value: "show_completed",
-          child: context.read<NotesModel>().showCompleted
-              ? const ListTile(
-                  leading: Icon(Icons.unpublished),
-                  title: Text("hide completed"))
-              : const ListTile(
-                  leading: Icon(Icons.check_circle),
-                  title: Text("show completed"))),
+      // TODO: outline-specific completion toggle - keep here for this future
+      // PopupMenuItem(
+      //     value: "show_completed",
+      //     child: context.read<NotesModel>().showCompleted
+      //         ? const ListTile(
+      //             leading: Icon(Icons.unpublished),
+      //             title: Text("hide completed"))
+      //         : const ListTile(
+      //             leading: Icon(Icons.check_circle),
+      //             title: Text("show completed"))),
       const PopupMenuDivider(),
       const PopupMenuItem(
           value: "rename",
@@ -267,8 +267,8 @@ class _NotesViewState extends State<_NotesView> {
     } else if (item == "time") {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(outline.dateCreated.toLocal().toString())));
-    } else if (item == "show_completed") {
-      context.read<NotesModel>().toggleShowCompleted();
+      // } else if (item == "show_completed") {
+      // context.read<NotesModel>().toggleShowCompleted();
     } else if (item == "archive" || item == "unarchive") {
       _toggleArchive();
     } else if (item == "create_text") {
@@ -332,7 +332,7 @@ class _NotesViewState extends State<_NotesView> {
     final playerState =
         context.select<PlayerModel, PlayerState>((value) => value.playerState);
     final showCompleted =
-        context.select<NotesModel, bool>((value) => value.showCompleted);
+        context.select<OutlinesModel, bool>((value) => value.showCompleted);
     return Scaffold(
       backgroundColor:
           MediaQuery.of(context).platformBrightness == Brightness.light

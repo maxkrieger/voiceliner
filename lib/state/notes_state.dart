@@ -15,6 +15,7 @@ import 'package:voice_outliner/repositories/vosk_speech_recognizer.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 import '../consts.dart';
+import '../globals.dart';
 
 final defaultNote = Note(
     id: "",
@@ -27,7 +28,6 @@ final defaultNote = Note(
 class NotesModel extends ChangeNotifier {
   bool shouldTranscribe = false;
   bool shouldLocate = false;
-  bool showCompleted = true;
   bool isReady = false;
   String locale = "en-US";
   Completer<bool> _readyCompleter = Completer();
@@ -50,12 +50,6 @@ class NotesModel extends ChangeNotifier {
 
   NotesModel(this._outlineId);
 
-  Future<void> toggleShowCompleted() async {
-    showCompleted = !showCompleted;
-    await prefs.setBool(showCompletedKey, showCompleted);
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -75,27 +69,29 @@ class NotesModel extends ChangeNotifier {
     return (shouldTranscribe && !note.transcribed);
   }
 
-  Future<void> transcribe(Note note) async {
-    if (shouldTranscribe &&
-        (!note.transcribed || note.transcript == null) &&
-        note.filePath != null) {
-      final path = _playerModel.getPathFromFilename(note.filePath!);
-      final res = Platform.isIOS
-          ? await recognizeNoteIOS(path, locale)
-          : await voskSpeechRecognize(path);
-      // Guard against writing after user went back
-      if (isReady) {
-        note.transcribed = true;
-        note.transcript = res;
-        await rebuildNote(note);
-      }
+  Future<void> _transcribeNote(Note note) async {
+    final path = _playerModel.getPathFromFilename(note.filePath!);
+    final res = Platform.isIOS
+        ? await recognizeNoteIOS(path, locale)
+        : await voskSpeechRecognize(path);
+    // Guard against writing after user went back
+    if (isReady) {
+      note.transcribed = true;
+      note.transcript = res;
+      await rebuildNote(note);
+    }
+  }
+
+  Future<void> _transcribe(Note note) async {
+    if (shouldTranscribe && (!note.transcribed) && note.filePath != null) {
+      _transcribeNote(note);
     }
   }
 
   Future<void> runJobs() async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Running jobs", timestamp: DateTime.now()));
-    notes.forEach(transcribe);
+    notes.forEach(_transcribe);
   }
 
   Future<void> createTextNote(String text) async {
@@ -229,13 +225,15 @@ class NotesModel extends ChangeNotifier {
             message: "Couldn't locate note", timestamp: DateTime.now()));
       }
     }
-    await transcribe(note);
+    await _transcribe(note);
   }
 
   Future<void> retranscribeNote(Note note) async {
+    snackbarKey.currentState
+        ?.showSnackBar(SnackBar(content: Text("Re-transcribing...")));
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Retranscribe note", timestamp: DateTime.now()));
-    await transcribe(note);
+    await _transcribeNote(note);
     notifyListeners();
   }
 
@@ -505,7 +503,6 @@ class NotesModel extends ChangeNotifier {
       prefs = await SharedPreferences.getInstance();
       shouldTranscribe = prefs.getBool(shouldTranscribeKey) ?? false;
       shouldLocate = prefs.getBool(shouldLocateKey) ?? false;
-      showCompleted = prefs.getBool(showCompletedKey) ?? true;
       if (Platform.isIOS) {
         locale = prefs.getString(localeKey) ?? locale;
       }

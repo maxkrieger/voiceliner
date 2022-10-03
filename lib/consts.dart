@@ -7,6 +7,7 @@ const shouldTranscribeKey = "should_transcribe";
 const shouldLocateKey = "should_locate";
 const showCompletedKey = "show_completed";
 const showArchivedKey = "show_archived";
+const allowRetranscriptionKey = "allow_retranscription";
 const lastRouteKey = "last_route";
 const lastOutlineKey = "last_outline";
 const modelDirKey = "model_dir";

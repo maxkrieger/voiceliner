@@ -106,6 +106,13 @@ class _SettingsViewState extends State<SettingsView> {
   Widget build(BuildContext context) {
     final showArchived =
         context.select<OutlinesModel, bool>((value) => value.showArchived);
+    final showCompleted =
+        context.select<OutlinesModel, bool>((value) => value.showCompleted);
+    final allowRetranscription = context
+        .select<OutlinesModel, bool>((value) => value.allowRetranscription);
+    final shouldTranscribe = (isInited
+        ? (sharedPreferences.getBool(shouldTranscribeKey) ?? true)
+        : false);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
@@ -119,8 +126,7 @@ class _SettingsViewState extends State<SettingsView> {
                         secondary: const Icon(Icons.voicemail),
                         title: const Text("Transcribe Recordings"),
                         subtitle: const Text("uses local transcription"),
-                        value: sharedPreferences.getBool(shouldTranscribeKey) ??
-                            true,
+                        value: shouldTranscribe,
                         onChanged: (v) async {
                           if (Platform.isIOS && v) {
                             final res = await tryTxPermissionIOS();
@@ -136,7 +142,7 @@ class _SettingsViewState extends State<SettingsView> {
                             sharedPreferences.setBool(shouldTranscribeKey, v);
                           });
                         }),
-                    if (sharedPreferences.getBool(shouldTranscribeKey) ?? true)
+                    if (shouldTranscribe)
                       ListTile(
                         leading: const Icon(Icons.language),
                         trailing: const Icon(Icons.arrow_forward_ios),
@@ -159,20 +165,6 @@ class _SettingsViewState extends State<SettingsView> {
                               builder: (_) =>
                                   const VoskTranscriptionSetupView())),
                     ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.location_pin),
-                    title: const Text("Attach Location"),
-                    subtitle: const Text("remember where you took a note"),
-                    value: sharedPreferences.getBool(shouldLocateKey) ?? false,
-                    onChanged: toggleLocation,
-                  ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.archive),
-                    title: const Text("Show Archived Outlines"),
-                    value: showArchived,
-                    onChanged: (_) =>
-                        context.read<OutlinesModel>().toggleShowArchived(),
-                  ),
                   ListTile(
                     leading: const Icon(Icons.backup),
                     title: const Text("Backup"),
@@ -182,23 +174,57 @@ class _SettingsViewState extends State<SettingsView> {
                         MaterialPageRoute(
                             builder: (_) => const DriveSettingsView())),
                   ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.location_pin),
+                    title: const Text("Attach Location"),
+                    subtitle: const Text("remember where you took a note"),
+                    value: sharedPreferences.getBool(shouldLocateKey) ?? false,
+                    onChanged: toggleLocation,
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.check_circle),
+                    title: const Text("Show Completed Notes"),
+                    value: showCompleted,
+                    onChanged: (v) {
+                      context.read<OutlinesModel>().setShowCompleted(v);
+                    },
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.archive),
+                    title: const Text("Show Archived Outlines"),
+                    value: showArchived,
+                    onChanged: (_) =>
+                        context.read<OutlinesModel>().toggleShowArchived(),
+                  ),
+                  if (shouldTranscribe)
+                    SwitchListTile(
+                      secondary: const Icon(Icons.sms),
+                      title: const Text("Show Re-transcription Option"),
+                      subtitle: const Text("for language change, other issues"),
+                      value: allowRetranscription,
+                      onChanged: (v) {
+                        context
+                            .read<OutlinesModel>()
+                            .setAllowRetranscription(v);
+                      },
+                    ),
                   ListTile(
                     leading: const Icon(Icons.favorite),
                     title: const Text("Send Tip"),
-                    onTap: () =>
-                        launch("https://github.com/sponsors/maxkrieger"),
+                    onTap: () => launchUrl(
+                        Uri.parse("https://github.com/sponsors/maxkrieger")),
                   ),
                   ListTile(
                     leading: const Icon(Icons.bug_report),
                     title: const Text("Report Issue"),
-                    onTap: () => launch(
-                        "https://github.com/maxkrieger/voiceliner/issues"),
+                    onTap: () => launchUrl(Uri.parse(
+                        "https://github.com/maxkrieger/voiceliner/issues")),
                   ),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip),
                     title: const Text("Privacy"),
-                    onTap: () => launch(
-                        "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823"),
+                    onTap: () => launchUrl(Uri.parse(
+                        "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823")),
                   ),
                   AboutListTile(
                     icon: const Icon(Icons.info),
@@ -208,8 +234,8 @@ class _SettingsViewState extends State<SettingsView> {
                         textAlign: TextAlign.center,
                       ),
                       TextButton(
-                          onPressed: () => launch(
-                              "https://github.com/maxkrieger/voiceliner"),
+                          onPressed: () => launchUrl(Uri.parse(
+                              ("https://github.com/maxkrieger/voiceliner"))),
                           child: Text(
                             "fork on GitHub",
                             style: TextStyle(

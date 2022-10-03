@@ -27,6 +27,9 @@ class OutlinesModel extends ChangeNotifier {
   late SharedPreferences prefs;
   bool isReady = false;
   bool showArchived = false;
+  bool showCompleted = true;
+  // Not sure where else to put this state
+  bool allowRetranscription = false;
 
   Future<Outline> createOutline(String name, String emoji) async {
     final now = DateTime.now();
@@ -89,6 +92,18 @@ class OutlinesModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setShowCompleted(bool show) {
+    showCompleted = show;
+    prefs.setBool(showCompletedKey, showCompleted);
+    notifyListeners();
+  }
+
+  void setAllowRetranscription(bool allow) {
+    allowRetranscription = allow;
+    prefs.setBool(allowRetranscriptionKey, allowRetranscription);
+    notifyListeners();
+  }
+
   Future<void> load(PlayerModel playerModel, DBRepository db) async {
     if (db.ready && !isReady) {
       Sentry.addBreadcrumb(
@@ -97,6 +112,8 @@ class OutlinesModel extends ChangeNotifier {
       _playerModel = playerModel;
       prefs = await SharedPreferences.getInstance();
       showArchived = prefs.getBool(showArchivedKey) ?? false;
+      showCompleted = prefs.getBool(showCompletedKey) ?? true;
+      allowRetranscription = prefs.getBool(allowRetranscriptionKey) ?? false;
       await loadOutlines();
       await ifShouldBackup();
     }

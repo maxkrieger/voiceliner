@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/state/notes_state.dart';
+import 'package:voice_outliner/state/outline_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/widgets/note_wizard.dart';
 
@@ -100,6 +101,9 @@ class _NoteItemState extends State<NoteItem> {
 
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
+    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
+    final allowRetranscription =
+        context.read<OutlinesModel>().allowRetranscription;
     final isTranscribing =
         context.read<NotesModel?>()?.isNoteTranscribing(note) ?? false;
     return [
@@ -118,11 +122,11 @@ class _NoteItemState extends State<NoteItem> {
             value: "locate",
             child: ListTile(
                 leading: Icon(Icons.location_pin), title: Text("location"))),
-      if (note.transcript == null)
+      if (allowRetranscription)
         const PopupMenuItem(
             value: "transcribe",
-            child:
-                ListTile(leading: Icon(Icons.sms), title: Text("transcribe"))),
+            child: ListTile(
+                leading: Icon(Icons.sms), title: Text("re-transcribe"))),
       const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
