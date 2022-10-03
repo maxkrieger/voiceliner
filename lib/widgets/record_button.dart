@@ -9,7 +9,7 @@ import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
 /// How long does the user have to hold down for it to be considered a "hold"?
-const holdThreshold = 750;
+const holdThreshold = 500;
 
 class RecordButton extends StatefulWidget {
   const RecordButton({Key? key}) : super(key: key);
@@ -20,6 +20,7 @@ class RecordButton extends StatefulWidget {
 
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
+  bool inCancelZone = false;
   final Stopwatch _stopwatch = Stopwatch();
 
   Color computeShadowColor(double dy) {
@@ -35,10 +36,18 @@ class _RecordButtonState extends State<RecordButton> {
         playerState == PlayerState.recordingContinuously) {
       _stopwatch.stop();
       _stopwatch.reset();
-      int magnitude = max(
-          ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
-          0);
-      await context.read<NotesModel>().stopRecording(magnitude);
+      if (inCancelZone) {
+        context.read<NotesModel>().cancelRecording();
+        setState(() {
+          inCancelZone = false;
+        });
+      } else {
+        int magnitude = max(
+            ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100)
+                .toInt(),
+            0);
+        await context.read<NotesModel>().stopRecording(magnitude);
+      }
     } else {
       // If finger lifted in time, this was a tap not a hold. Keep recording
       context.read<PlayerModel>().setContinuousRecording();
@@ -64,6 +73,16 @@ class _RecordButtonState extends State<RecordButton> {
     });
   }
 
+  _updateOffset(Offset localPosition, Offset globalPosition) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final deletionMargin = screenWidth * 0.05;
+    setState(() {
+      offset = localPosition;
+      inCancelZone = globalPosition.dx < deletionMargin ||
+          globalPosition.dx > screenWidth - deletionMargin;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final playerState =
@@ -75,14 +94,10 @@ class _RecordButtonState extends State<RecordButton> {
         onLongPressUp: _stopRecord0,
         onPanEnd: _stopRecord,
         onLongPressMoveUpdate: (LongPressMoveUpdateDetails d) {
-          setState(() {
-            offset = d.localPosition;
-          });
+          _updateOffset(d.localPosition, d.globalPosition);
         },
         onPanUpdate: (DragUpdateDetails d) {
-          setState(() {
-            offset = d.localPosition;
-          });
+          _updateOffset(d.localPosition, d.globalPosition);
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
@@ -96,6 +111,33 @@ class _RecordButtonState extends State<RecordButton> {
               height: 75,
               curve: Curves.bounceInOut,
               duration: const Duration(milliseconds: 100),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      color: inCancelZone
+                          ? warningRed
+                          : playerState == PlayerState.recordingContinuously
+                              ? warmRed.withOpacity(0.5)
+                              : const Color.fromRGBO(156, 103, 241, .36),
+                      blurRadius: 18.0,
+                      spreadRadius: 0.0,
+                      offset: const Offset(0, 7)),
+                  if (playerState == PlayerState.recording)
+                    BoxShadow(
+                        color: inCancelZone
+                            ? warningRed
+                            : computeShadowColor(offset.dy),
+                        blurRadius: 120.0,
+                        spreadRadius: 120.0,
+                        offset: offset + const Offset(-100, -95))
+                ],
+                borderRadius: BorderRadius.circular(100.0),
+                color: inCancelZone
+                    ? warningRed
+                    : playerState == PlayerState.recordingContinuously
+                        ? warmRed
+                        : classicPurple,
+              ),
               child: Center(
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -114,33 +156,14 @@ class _RecordButtonState extends State<RecordButton> {
                       playerState == PlayerState.recordingContinuously
                           ? "tap to stop"
                           : playerState == PlayerState.recording
-                              ? "recording"
+                              ? (inCancelZone
+                                  ? "release to cancel"
+                                  : "recording")
                               : "hold to record",
                       style:
                           const TextStyle(color: Colors.white, fontSize: 15.0),
                     )
-                  ])),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      color: playerState == PlayerState.recordingContinuously
-                          ? warmRed.withOpacity(0.5)
-                          : const Color.fromRGBO(156, 103, 241, .36),
-                      blurRadius: 18.0,
-                      spreadRadius: 0.0,
-                      offset: const Offset(0, 7)),
-                  if (playerState == PlayerState.recording)
-                    BoxShadow(
-                        color: computeShadowColor(offset.dy),
-                        blurRadius: 120.0,
-                        spreadRadius: 120.0,
-                        offset: offset + const Offset(-100, -95))
-                ],
-                borderRadius: BorderRadius.circular(100.0),
-                color: playerState == PlayerState.recordingContinuously
-                    ? warmRed
-                    : classicPurple,
-              )),
+                  ]))),
         ));
   }
 }

@@ -21,8 +21,6 @@ Future<String?> recognizeNoteIOS(String path, String locale) async {
     }
   } catch (err, tr) {
     print(err);
-    snackbarKey.currentState?.showSnackBar(
-        SnackBar(content: Text("Could not transcribe: ${err.toString()}")));
     Sentry.captureException(err, stackTrace: tr);
     return null;
   }

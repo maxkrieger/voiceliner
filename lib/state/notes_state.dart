@@ -83,7 +83,7 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> _transcribe(Note note) async {
-    if (shouldTranscribe && (!note.transcribed) && note.filePath != null) {
+    if (shouldTranscribe && !note.transcribed && note.filePath != null) {
       _transcribeNote(note);
     }
   }
@@ -177,7 +177,12 @@ class NotesModel extends ChangeNotifier {
     await _playerModel.stopRecording();
     final note = currentlyPlayingOrRecording;
     if (note != null) {
-      await deleteNote(note);
+      await _dbRepository.deleteNote(note);
+      final path = _playerModel.getPathFromFilename(note.filePath!);
+      bool exists = await File(path).exists();
+      if (exists) {
+        await File(path).delete();
+      }
     }
     currentlyPlayingOrRecording = null;
     notifyListeners();
