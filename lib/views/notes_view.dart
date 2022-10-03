@@ -396,10 +396,22 @@ class _NotesViewState extends State<_NotesView> {
                               Column(children: [Expanded(child: Container())])),
                       (noteCount == 0)
                           ? Center(
-                              child: Text("no notes yet!",
-                                  style: TextStyle(
-                                      fontSize: 40.0,
-                                      color: Theme.of(context).hintColor)))
+                              child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                  Opacity(
+                                      opacity: 0.5,
+                                      child: Text(
+                                        currentOutlineEmoji,
+                                        style: const TextStyle(fontSize: 80.0),
+                                        textAlign: TextAlign.center,
+                                      )),
+                                  Text("no notes yet!",
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          color: Theme.of(context).hintColor))
+                                ]))
                           : GestureDetector(
                               behavior: HitTestBehavior.deferToChild,
                               onLongPress: showContextMenu,
