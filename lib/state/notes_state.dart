@@ -94,7 +94,7 @@ class NotesModel extends ChangeNotifier {
     notes.forEach(_transcribe);
   }
 
-  Future<void> createTextNote(String text) async {
+  Future<void> createTextNote(String text, int color) async {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Create text note", timestamp: DateTime.now()));
     final noteId = uuid.v4();
@@ -105,6 +105,7 @@ class NotesModel extends ChangeNotifier {
         parentNoteId: null,
         filePath: null,
         transcribed: true,
+        color: color,
         transcript: text,
         isCollapsed: false);
 
@@ -167,6 +168,18 @@ class NotesModel extends ChangeNotifier {
     Sentry.addBreadcrumb(
         Breadcrumb(message: "added note to db", timestamp: DateTime.now()));
     currentlyPlayingOrRecording = note;
+    notifyListeners();
+  }
+
+  Future<void> cancelRecording() async {
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Cancelled recording", timestamp: DateTime.now()));
+    await _playerModel.stopRecording();
+    final note = currentlyPlayingOrRecording;
+    if (note != null) {
+      await deleteNote(note);
+    }
+    currentlyPlayingOrRecording = null;
     notifyListeners();
   }
 

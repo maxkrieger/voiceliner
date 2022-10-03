@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:voice_outliner/data/note.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
 
 class NoteWizard extends StatefulWidget {
-  final Note note;
+  final String initialTranscript;
+  final int initialColor;
   final Function(String transcript, int color) onSubmit;
-  const NoteWizard({Key? key, required this.note, required this.onSubmit})
+  final String title;
+  const NoteWizard(
+      {Key? key,
+      required this.initialColor,
+      required this.initialTranscript,
+      required this.onSubmit,
+      this.title = "Edit Note"})
       : super(key: key);
 
   @override
@@ -28,8 +34,8 @@ class _NoteWizardState extends State<NoteWizard> {
   @override
   void initState() {
     super.initState();
-    color = widget.note.color?.toDouble().abs() ?? 0;
-    _textController.text = widget.note.transcript ?? "";
+    color = widget.initialColor.toDouble().abs();
+    _textController.text = widget.initialTranscript;
     _textController.selection = TextSelection(
         baseOffset: 0, extentOffset: _textController.value.text.length);
   }
@@ -43,7 +49,7 @@ class _NoteWizardState extends State<NoteWizard> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text("Edit note"),
+        title: Text(widget.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

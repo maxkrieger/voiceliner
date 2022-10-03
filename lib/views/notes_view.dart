@@ -12,6 +12,7 @@ import 'package:voice_outliner/state/player_state.dart';
 import 'package:voice_outliner/views/map_view.dart';
 import 'package:voice_outliner/widgets/markdown_exporter.dart';
 import 'package:voice_outliner/widgets/note_item.dart';
+import 'package:voice_outliner/widgets/note_wizard.dart';
 import 'package:voice_outliner/widgets/outline_wizard.dart';
 import 'package:voice_outliner/widgets/record_button.dart';
 
@@ -78,50 +79,14 @@ class _NotesViewState extends State<_NotesView> {
   }
 
   Future<void> createTextNote() async {
-    // TODO: use noteWizard
-    _textController.clear();
-    Future<void> _onSubmitted(BuildContext ctx) async {
-      if (_textController.value.text.isNotEmpty) {
-        context.read<NotesModel>().createTextNote(_textController.value.text);
-        Navigator.of(ctx, rootNavigator: true).pop();
-      } else {
-        ScaffoldMessenger.of(ctx)
-            .showSnackBar(const SnackBar(content: Text("Note is empty")));
-      }
-    }
-
     await showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text("Create text note"),
-        content: TextField(
-          autofocus: true,
-          controller: _textController,
-          decoration: const InputDecoration(hintText: "note"),
-          maxLines: null,
-          textCapitalization: TextCapitalization.sentences,
-          onSubmitted: (_) => _onSubmitted(dialogCtx),
-        ),
-        actions: [
-          TextButton(
-              child: Text(
-                "cancel",
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
-              ),
-              onPressed: () {
-                Navigator.of(dialogCtx, rootNavigator: true).pop();
-              }),
-          TextButton(
-              child: Text(
-                "create",
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
-              ),
-              onPressed: () => _onSubmitted(dialogCtx))
-        ],
-      ),
-    );
+        context: context,
+        builder: (dialogCtx) => NoteWizard(
+            initialTranscript: "",
+            initialColor: 0,
+            title: "Add Text Note",
+            onSubmit: (transcript, color) =>
+                context.read<NotesModel>().createTextNote(transcript, color)));
   }
 
   @override

@@ -48,7 +48,8 @@ class _NoteItemState extends State<NoteItem> {
     showDialog(
         context: context,
         builder: (dialogCtx) => NoteWizard(
-              note: note,
+              initialTranscript: note.transcript ?? "",
+              initialColor: note.color ?? 0,
               onSubmit: (transcript, color) async {
                 if (note.transcript != transcript) {
                   await context
