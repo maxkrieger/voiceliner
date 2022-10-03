@@ -96,3 +96,7 @@ You can then use `./deploy_ios.sh` and `./deploy_android.sh` to deploy to the ap
 ios/$ bundle update fastlane
 android/$ bundle update fastlane
 ```
+
+## Fastlane Match Notes
+
+When running `fastlane match development --generate_apple_certs`, make sure to specify `*` for the bundle id, so that it can make provisioning profiles both for the `.debug` bundle identifier and the main one.
