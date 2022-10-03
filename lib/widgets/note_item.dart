@@ -101,7 +101,6 @@ class _NoteItemState extends State<NoteItem> {
 
   List<PopupMenuEntry<String>> _menuBuilder(BuildContext context) {
     final note = context.read<NotesModel>().notes.elementAt(widget.num);
-    final shouldTranscribe = context.read<NotesModel>().shouldTranscribe;
     final allowRetranscription =
         context.read<OutlinesModel>().allowRetranscription;
     final isTranscribing =
@@ -122,7 +121,7 @@ class _NoteItemState extends State<NoteItem> {
             value: "locate",
             child: ListTile(
                 leading: Icon(Icons.location_pin), title: Text("location"))),
-      if (allowRetranscription)
+      if (allowRetranscription && note.filePath != null)
         const PopupMenuItem(
             value: "transcribe",
             child: ListTile(
