@@ -63,7 +63,7 @@ class _OutlineWizardState extends State<OutlineWizard> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text("Setup Outline"),
+        title: const Text("Create Outline"),
         content: showEmojiEditor
             ? SizedBox(
                 height: 250,

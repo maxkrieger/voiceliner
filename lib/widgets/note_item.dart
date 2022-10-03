@@ -118,6 +118,11 @@ class _NoteItemState extends State<NoteItem> {
             value: "locate",
             child: ListTile(
                 leading: Icon(Icons.location_pin), title: Text("location"))),
+      if (note.transcript == null)
+        const PopupMenuItem(
+            value: "transcribe",
+            child:
+                ListTile(leading: Icon(Icons.sms), title: Text("transcribe"))),
       const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
@@ -176,6 +181,9 @@ class _NoteItemState extends State<NoteItem> {
       final note = context.read<NotesModel>().notes.elementAt(widget.num);
       MapsLauncher.launchCoordinates(
           note.latitude!, note.longitude!, note.transcript ?? note.infoString);
+    } else if (item == "transcribe") {
+      final note = context.read<NotesModel>().notes.elementAt(widget.num);
+      context.read<NotesModel>().retranscribeNote(note);
     }
   }
 

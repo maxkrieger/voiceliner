@@ -76,7 +76,9 @@ class NotesModel extends ChangeNotifier {
   }
 
   Future<void> transcribe(Note note) async {
-    if (shouldTranscribe && !note.transcribed && note.filePath != null) {
+    if (shouldTranscribe &&
+        (!note.transcribed || note.transcript == null) &&
+        note.filePath != null) {
       final path = _playerModel.getPathFromFilename(note.filePath!);
       final res = Platform.isIOS
           ? await recognizeNoteIOS(path, locale)
@@ -228,6 +230,13 @@ class NotesModel extends ChangeNotifier {
       }
     }
     await transcribe(note);
+  }
+
+  Future<void> retranscribeNote(Note note) async {
+    Sentry.addBreadcrumb(
+        Breadcrumb(message: "Retranscribe note", timestamp: DateTime.now()));
+    await transcribe(note);
+    notifyListeners();
   }
 
   Future<void> playNote(Note note) async {

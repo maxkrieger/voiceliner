@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/consts.dart';
+
+import '../globals.dart';
 
 const androidPlatform = MethodChannel("voiceoutliner.saga.chat/androidtx");
 
@@ -42,6 +45,8 @@ Future<List<VoskModel>> retrieveVoskModels() async {
   } catch (err, tr) {
     print(err);
     Sentry.captureException(err, stackTrace: tr);
+    snackbarKey.currentState?.showSnackBar(SnackBar(
+        content: Text("Could not retrieve models: ${err.toString()}")));
     return [];
   }
 }
@@ -56,6 +61,8 @@ Future<String?> voskSpeechRecognize(String path) async {
         await androidPlatform.invokeMethod("transcribe", {"path": path});
     return result;
   } catch (err, tr) {
+    snackbarKey.currentState?.showSnackBar(
+        SnackBar(content: Text("Could not recognize: ${err.toString()}")));
     Sentry.captureException(err, stackTrace: tr);
     print(err);
     return null;
@@ -75,6 +82,8 @@ Future<String?> voskInitModel(String path) async {
     }
     return null;
   } catch (err, tr) {
+    snackbarKey.currentState?.showSnackBar(
+        SnackBar(content: Text("Could not init model: ${err.toString()}")));
     Sentry.captureException(err, stackTrace: tr);
     return err.toString();
   }

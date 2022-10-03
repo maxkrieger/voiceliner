@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_outliner/consts.dart';
 import 'package:voice_outliner/state/player_state.dart';
 
+import '../globals.dart';
+
 class OnboardingView extends StatefulWidget {
   const OnboardingView({Key? key}) : super(key: key);
 
@@ -43,6 +45,8 @@ class _OnboardingViewState extends State<OnboardingView> {
         sharedPreferences?.setBool(shouldLocateKey, true);
       });
     } catch (e) {
+      snackbarKey.currentState?.showSnackBar(
+          SnackBar(content: Text("Could not get location: ${e.toString()}")));
       print(e);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Couldn't get location")));

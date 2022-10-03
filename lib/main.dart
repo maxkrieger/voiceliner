@@ -18,6 +18,7 @@ import 'package:voice_outliner/views/outlines_view.dart';
 import 'package:voice_outliner/views/vosk_transcription_setup_view.dart';
 
 import 'consts.dart';
+import 'globals.dart';
 
 final routes = {
   "/": const OutlinesView(),
@@ -146,6 +147,7 @@ class _VoiceOutlinerAppState extends State<VoiceOutlinerApp> {
     }
     return MaterialApp(
       title: 'Voiceliner',
+      scaffoldMessengerKey: snackbarKey,
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (RouteSettings route) {
         saveRoute(route);
