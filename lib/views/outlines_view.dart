@@ -25,7 +25,8 @@ class _OutlinesViewState extends State<OutlinesView> {
   Future<void> _addOutline() async {
     final now = DateTime.now();
     final name = "${now.month}/${now.day}/${now.year - 2000}";
-    await launchOutlineWizard(name, defaultEmoji, context, "create",
+    await launchOutlineWizard(
+        name, defaultEmoji, context, "create", "Create Outline",
         (name, emoji) async {
       final outline =
           await context.read<OutlinesModel>().createOutline(name, emoji);

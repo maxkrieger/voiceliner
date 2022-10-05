@@ -217,6 +217,7 @@ class _NotesViewState extends State<_NotesView> {
           outline.emoji,
           context,
           "save",
+          "Edit Outline",
           (name, emoji) => context
               .read<OutlinesModel>()
               .renameOutline(outline, name, emoji));

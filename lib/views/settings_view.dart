@@ -199,8 +199,8 @@ class _SettingsViewState extends State<SettingsView> {
                   if (shouldTranscribe)
                     SwitchListTile(
                       secondary: const Icon(Icons.sms),
-                      title: const Text("Show Re-transcription Option"),
-                      subtitle: const Text("for language change, other issues"),
+                      title: const Text("Re-transcription Option"),
+                      subtitle: const Text("shows action in note menu"),
                       value: allowRetranscription,
                       onChanged: (v) {
                         context

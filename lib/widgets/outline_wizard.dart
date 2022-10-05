@@ -6,6 +6,7 @@ class OutlineWizard extends StatefulWidget {
   final String emoji;
   final String confirm;
   final bool autofocus;
+  final String title;
   final Function(String name, String emoji) onSubmit;
   const OutlineWizard(
       {Key? key,
@@ -13,7 +14,8 @@ class OutlineWizard extends StatefulWidget {
       required this.emoji,
       required this.confirm,
       required this.onSubmit,
-      this.autofocus = false})
+      this.autofocus = false,
+      this.title = "Create Outline"})
       : super(key: key);
 
   @override
@@ -63,7 +65,7 @@ class _OutlineWizardState extends State<OutlineWizard> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text("Create Outline"),
+        title: Text(widget.title),
         content: showEmojiEditor
             ? SizedBox(
                 height: 250,
@@ -113,6 +115,7 @@ Future<void> launchOutlineWizard(
     String emoji,
     BuildContext context,
     String confirm,
+    String title,
     Function(String name, String emoji) onSubmit,
     {bool autofocus = false}) async {
   await showDialog(
@@ -123,5 +126,6 @@ Future<void> launchOutlineWizard(
             confirm: confirm,
             onSubmit: onSubmit,
             autofocus: autofocus,
+            title: title,
           ));
 }
