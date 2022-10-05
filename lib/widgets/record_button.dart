@@ -21,7 +21,6 @@ class RecordButton extends StatefulWidget {
 class _RecordButtonState extends State<RecordButton> {
   Offset offset = const Offset(0, 0);
   bool inCancelZone = false;
-  final Stopwatch _stopwatch = Stopwatch();
 
   Color computeShadowColor(double dy) {
     Color a = const Color.fromRGBO(169, 129, 234, 0.6);
@@ -31,26 +30,16 @@ class _RecordButtonState extends State<RecordButton> {
   }
 
   _stopRecord(_) async {
-    final playerState = context.read<PlayerModel>().playerState;
-    if (_stopwatch.elapsedMilliseconds > holdThreshold ||
-        playerState == PlayerState.recordingContinuously) {
-      _stopwatch.stop();
-      _stopwatch.reset();
-      if (inCancelZone) {
-        context.read<NotesModel>().cancelRecording();
-        setState(() {
-          inCancelZone = false;
-        });
-      } else {
-        int magnitude = max(
-            ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100)
-                .toInt(),
-            0);
-        await context.read<NotesModel>().stopRecording(magnitude);
-      }
+    if (inCancelZone) {
+      context.read<NotesModel>().cancelRecording();
+      setState(() {
+        inCancelZone = false;
+      });
     } else {
-      // If finger lifted in time, this was a tap not a hold. Keep recording
-      context.read<PlayerModel>().setContinuousRecording();
+      int magnitude = max(
+          ((-1 * offset.dy / MediaQuery.of(context).size.height) * 100).toInt(),
+          0);
+      await context.read<NotesModel>().stopRecording(magnitude);
     }
   }
 
@@ -58,10 +47,19 @@ class _RecordButtonState extends State<RecordButton> {
     _stopRecord(null);
   }
 
+  // Treat record button as stop/start
+  _tappedUp(_) {
+    final playerState = context.read<PlayerModel>().playerState;
+    if (playerState == PlayerState.recordingContinuously) {
+      context.read<NotesModel>().stopRecording(0);
+    } else {
+      context.read<PlayerModel>().setContinuousRecording();
+    }
+  }
+
   _startRecord(_) async {
     final playerState = context.read<PlayerModel>().playerState;
     if (playerState == PlayerState.ready) {
-      _stopwatch.start();
       await context.read<NotesModel>().startRecording();
     }
   }
@@ -89,7 +87,7 @@ class _RecordButtonState extends State<RecordButton> {
         context.select<PlayerModel, PlayerState>((p) => p.playerState);
     return GestureDetector(
         onTapDown: _startRecord,
-        onTapUp: _stopRecord,
+        onTapUp: _tappedUp,
         onLongPressDown: _playEffect,
         onLongPressUp: _stopRecord0,
         onPanEnd: _stopRecord,
