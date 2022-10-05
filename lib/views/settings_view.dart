@@ -2,14 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voice_outliner/consts.dart';
-import 'package:voice_outliner/repositories/ios_speech_recognizer.dart';
 import 'package:voice_outliner/state/outline_state.dart';
-import 'package:voice_outliner/views/drive_settings_view.dart';
-import 'package:voice_outliner/views/ios_transcription_setup_view.dart';
 import 'package:voice_outliner/views/vosk_transcription_setup_view.dart';
+
+import '../repositories/ios_speech_recognizer.dart';
+import 'drive_settings_view.dart';
+import 'ios_transcription_setup_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -117,138 +119,132 @@ class _SettingsViewState extends State<SettingsView> {
         appBar: AppBar(
           title: const Text("Settings"),
         ),
-        body: isInited
-            ? Column(
-                children: [
-                  const SizedBox(height: 10.0),
-                  if (Platform.isIOS) ...[
-                    SwitchListTile(
-                        secondary: const Icon(Icons.voicemail),
-                        title: const Text("Transcribe Recordings"),
-                        subtitle: const Text("uses local transcription"),
-                        value: shouldTranscribe,
-                        onChanged: (v) async {
-                          if (Platform.isIOS && v) {
-                            final res = await tryTxPermissionIOS();
-                            if (!res) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          "Couldn't get permission to transcribe")));
-                              return;
-                            }
+        body: !isInited
+            ? const CircularProgressIndicator()
+            : SettingsList(
+                sections: [
+                  SettingsSection(title: const Text("Transcription"), tiles: [
+                    SettingsTile.switchTile(
+                      leading: const Icon(Icons.voicemail),
+                      initialValue: shouldTranscribe,
+                      onToggle: (v) async {
+                        if (Platform.isIOS && v) {
+                          final res = await tryTxPermissionIOS();
+                          if (!res) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        "Couldn't get permission to transcribe")));
+                            return;
                           }
-                          setState(() {
-                            sharedPreferences.setBool(shouldTranscribeKey, v);
-                          });
-                        }),
-                    if (shouldTranscribe)
-                      ListTile(
-                        leading: const Icon(Icons.language),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        title: const Text("Transcription Language"),
-                        onTap: () => Navigator.push(
-                            context,
+                        }
+                        setState(() {
+                          sharedPreferences.setBool(shouldTranscribeKey, v);
+                        });
+                      },
+                      title: const Text("Transcribe Recordings"),
+                    ),
+                    if (Platform.isIOS)
+                      SettingsTile.navigation(
+                        enabled: shouldTranscribe,
+                        onPressed: (c) => Navigator.push(
+                            c,
                             MaterialPageRoute(
                                 builder: (_) =>
                                     const IOSTranscriptionSetupView())),
+                        leading: const Icon(Icons.language),
+                        title: const Text("Transcription Language"),
+                        description: const Text("uses iOS transcription"),
                       ),
-                  ],
-                  if (Platform.isAndroid)
-                    ListTile(
-                      leading: const Icon(Icons.voicemail),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      title: const Text("Transcription Setup"),
-                      onTap: () => Navigator.push(
+                    if (Platform.isAndroid)
+                      SettingsTile.navigation(
+                        enabled: shouldTranscribe,
+                        leading: const Icon(Icons.language),
+                        title: const Text("Transcription Setup"),
+                        description: const Text("uses Vosk transcription"),
+                        onPressed: (c) => Navigator.push(
+                            c,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const VoskTranscriptionSetupView())),
+                      ),
+                  ]),
+                  SettingsSection(title: const Text("Backup"), tiles: [
+                    SettingsTile.navigation(
+                      title: const Text("Backup Settings"),
+                      leading: const Icon(Icons.backup),
+                      onPressed: (c) => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) =>
-                                  const VoskTranscriptionSetupView())),
+                              builder: (_) => const DriveSettingsView())),
+                    )
+                  ]),
+                  SettingsSection(title: const Text("Location"), tiles: [
+                    SettingsTile.switchTile(
+                      leading: const Icon(Icons.location_pin),
+                      title: const Text("Attach Location"),
+                      description: const Text("remember where you took a note"),
+                      initialValue:
+                          sharedPreferences.getBool(shouldLocateKey) ?? false,
+                      onToggle: toggleLocation,
                     ),
-                  ListTile(
-                    leading: const Icon(Icons.backup),
-                    title: const Text("Backup"),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const DriveSettingsView())),
-                  ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.location_pin),
-                    title: const Text("Attach Location"),
-                    subtitle: const Text("remember where you took a note"),
-                    value: sharedPreferences.getBool(shouldLocateKey) ?? false,
-                    onChanged: toggleLocation,
-                  ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.check_circle),
-                    title: const Text("Show Completed Notes"),
-                    value: showCompleted,
-                    onChanged: (v) {
-                      context.read<OutlinesModel>().setShowCompleted(v);
-                    },
-                  ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.archive),
-                    title: const Text("Show Archived Outlines"),
-                    value: showArchived,
-                    onChanged: (_) =>
-                        context.read<OutlinesModel>().toggleShowArchived(),
-                  ),
-                  if (shouldTranscribe)
-                    SwitchListTile(
-                      secondary: const Icon(Icons.sms),
-                      title: const Text("Re-transcription Option"),
-                      subtitle: const Text("shows action in note menu"),
-                      value: allowRetranscription,
-                      onChanged: (v) {
-                        context
-                            .read<OutlinesModel>()
-                            .setAllowRetranscription(v);
-                      },
+                  ]),
+                  SettingsSection(title: const Text("Display"), tiles: [
+                    SettingsTile.switchTile(
+                        initialValue: showCompleted,
+                        leading: const Icon(Icons.check_circle),
+                        onToggle: (v) =>
+                            context.read<OutlinesModel>().setShowCompleted(v),
+                        title: const Text("Show Completed Notes")),
+                    SettingsTile.switchTile(
+                        initialValue: showArchived,
+                        leading: const Icon(Icons.archive),
+                        onToggle: (v) =>
+                            context.read<OutlinesModel>().toggleShowArchived(),
+                        title: const Text("Show Archived Outlines")),
+                    SettingsTile.switchTile(
+                        initialValue:
+                            shouldTranscribe ? allowRetranscription : false,
+                        onToggle: (v) {
+                          context
+                              .read<OutlinesModel>()
+                              .setAllowRetranscription(v);
+                        },
+                        enabled: shouldTranscribe,
+                        leading: const Icon(Icons.replay),
+                        title: const Text("Re-transcription Option"))
+                  ]),
+                  SettingsSection(title: const Text("About"), tiles: [
+                    SettingsTile.navigation(
+                      leading: const Icon(Icons.favorite),
+                      title: const Text("Send Tip"),
+                      onPressed: (c) => launchUrl(
+                          Uri.parse("https://github.com/sponsors/maxkrieger")),
                     ),
-                  ListTile(
-                    leading: const Icon(Icons.favorite),
-                    title: const Text("Send Tip"),
-                    onTap: () => launchUrl(
-                        Uri.parse("https://github.com/sponsors/maxkrieger")),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.bug_report),
-                    title: const Text("Report Issue"),
-                    onTap: () => launchUrl(Uri.parse(
-                        "https://github.com/maxkrieger/voiceliner/issues")),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.privacy_tip),
-                    title: const Text("Privacy"),
-                    onTap: () => launchUrl(Uri.parse(
-                        "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823")),
-                  ),
-                  AboutListTile(
-                    icon: const Icon(Icons.info),
-                    aboutBoxChildren: [
-                      const Text(
-                        "made by Max Krieger",
-                        textAlign: TextAlign.center,
-                      ),
-                      TextButton(
-                          onPressed: () => launchUrl(Uri.parse(
-                              ("https://github.com/maxkrieger/voiceliner"))),
-                          child: Text(
-                            "fork on GitHub",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface),
-                          ))
-                    ],
-                  ),
-                  ListTile(
-                      leading: const Icon(Icons.help),
-                      title: const Text("Show Tutorial"),
-                      onTap: showOnboarding),
+                    SettingsTile.navigation(
+                      leading: const Icon(Icons.privacy_tip),
+                      title: const Text("Privacy"),
+                      onPressed: (_) => launchUrl(Uri.parse(
+                          "https://gist.github.com/maxkrieger/301352ae9b7a9e51f49d843fb851d823")),
+                    ),
+                    SettingsTile.navigation(
+                      leading: const Icon(Icons.bug_report),
+                      title: const Text("Report Issue"),
+                      onPressed: (_) => launchUrl(Uri.parse(
+                          "https://github.com/maxkrieger/voiceliner/issues")),
+                    ),
+                    SettingsTile.navigation(
+                      leading: const Icon(Icons.code),
+                      title: const Text("View Source Code"),
+                      onPressed: (_) => launchUrl(Uri.parse(
+                          "https://github.com/maxkrieger/voiceliner")),
+                    ),
+                    SettingsTile.navigation(
+                        leading: const Icon(Icons.help),
+                        title: const Text("Show Tutorial"),
+                        onPressed: (_) => showOnboarding())
+                  ])
                 ],
-              )
-            : const CircularProgressIndicator());
+              ));
   }
 }

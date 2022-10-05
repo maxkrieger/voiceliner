@@ -126,7 +126,7 @@ class _NoteItemState extends State<NoteItem> {
         const PopupMenuItem(
             value: "transcribe",
             child: ListTile(
-                leading: Icon(Icons.sms), title: Text("re-transcribe"))),
+                leading: Icon(Icons.replay), title: Text("re-transcribe"))),
       const PopupMenuItem(
           value: "delete",
           child: ListTile(leading: Icon(Icons.delete), title: Text("delete"))),
