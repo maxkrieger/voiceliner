@@ -1,0 +1,4 @@
+- Release your finger on the sides of the screen to cancel recording (thanks contributor Ben Jaffe!)
+- Re-transcribe button for language switching etc
+- Redesigned settings menu
+- Moved "hide/show completed" to settings menu

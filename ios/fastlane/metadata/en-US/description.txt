@@ -1,0 +1,7 @@
+The fastest way to capture and structure your thoughts: through voice.
+
+Hold record, say what you want, and release. Just like you'd expect from an outliner, create hierarchies and rearrange. Notes are auto-transcribed and searchable, but you can always play back the audio.
+
+Automatically attach location to notes. Remember walks you took, and which places sparked what ideas.
+
+This app is open source and available on GitHub. Everything is local to your device. You can back up to Google Drive and iCloud.

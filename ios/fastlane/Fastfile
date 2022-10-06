@@ -50,7 +50,26 @@ platform :ios do
   end
 
   lane :release_local do
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
-    upload_to_app_store
+    api_key = app_store_connect_api_key(
+        key_id: ENV["CONNECT_KEY_ID"],
+        issuer_id: ENV["CONNECT_ISSUER_ID"],
+        key_filepath: "./local.p8",
+    )
+    upload_to_app_store(
+        api_key: api_key,
+        submit_for_review: true,
+        automatic_release: true,
+        app_review_information: {
+            first_name: ENV["FIRST_NAME"],
+            last_name: ENV["LAST_NAME"],
+            phone_number: ENV["PHONE_NUMBER"],
+            email_address: ENV["EMAIL_ADDRESS"],
+        },
+        submission_information: {
+        },
+        username: ENV["APPLE_ID"],
+        skip_binary_upload: true,
+        precheck_include_in_app_purchases: false
+    )
   end
 end
