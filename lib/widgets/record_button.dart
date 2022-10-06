@@ -86,14 +86,21 @@ class _RecordButtonState extends State<RecordButton> {
     final playerState =
         context.select<PlayerModel, PlayerState>((p) => p.playerState);
     return GestureDetector(
+        // For both taps and holds
         onTapDown: _startRecord,
+        // For taps to do continuous recording
         onTapUp: _tappedUp,
+        // Lets you play the vibrate, for some reason can't do it on tap down
         onLongPressDown: _playEffect,
+        // For slow releases
         onLongPressUp: _stopRecord0,
+        // For release of fast swipes
         onPanEnd: _stopRecord,
+        // For slow swipes up
         onLongPressMoveUpdate: (LongPressMoveUpdateDetails d) {
           _updateOffset(d.localPosition, d.globalPosition);
         },
+        // For fast swipes up
         onPanUpdate: (DragUpdateDetails d) {
           _updateOffset(d.localPosition, d.globalPosition);
         },
