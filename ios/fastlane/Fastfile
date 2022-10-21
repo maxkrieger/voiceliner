@@ -66,6 +66,7 @@ platform :ios do
             email_address: ENV["EMAIL_ADDRESS"],
         },
         submission_information: {
+            add_id_info_uses_idfa: false,
         },
         username: ENV["APPLE_ID"],
         skip_binary_upload: true,

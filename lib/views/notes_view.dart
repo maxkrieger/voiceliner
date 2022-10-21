@@ -81,6 +81,7 @@ class _NotesViewState extends State<_NotesView> {
   Future<void> createTextNote() async {
     await showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (dialogCtx) => NoteWizard(
             initialTranscript: "",
             initialColor: 0,

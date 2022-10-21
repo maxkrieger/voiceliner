@@ -24,6 +24,7 @@ class OutlineWizard extends StatefulWidget {
 
 class _OutlineWizardState extends State<OutlineWizard> {
   final _renameController = TextEditingController();
+  final _emojiController = TextEditingController();
   String emoji = "";
   bool showEmojiEditor = false;
   @override
@@ -55,7 +56,7 @@ class _OutlineWizardState extends State<OutlineWizard> {
     }
   }
 
-  _selectEmoji(Category c, Emoji e) {
+  _selectEmoji(Category? c, Emoji e) {
     setState(() {
       emoji = e.emoji;
       showEmojiEditor = false;
@@ -67,13 +68,15 @@ class _OutlineWizardState extends State<OutlineWizard> {
     return AlertDialog(
         title: Text(widget.title),
         content: showEmojiEditor
-            ? SizedBox(
-                height: 250,
-                width: 300,
-                child: EmojiPicker(
-                  onEmojiSelected: _selectEmoji,
-                  config: Config(bgColor: Theme.of(context).cardColor),
-                ))
+            ? Column(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(
+                    height: 250,
+                    width: 300,
+                    child: EmojiPicker(
+                      onEmojiSelected: _selectEmoji,
+                      config: Config(bgColor: Theme.of(context).cardColor),
+                    ))
+              ])
             : Column(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
                     iconSize: 40,
@@ -89,7 +92,7 @@ class _OutlineWizardState extends State<OutlineWizard> {
                         const InputDecoration(hintText: "Outline Title"),
                     controller: _renameController,
                     autofocus: widget.autofocus,
-                    autocorrect: false,
+                    autocorrect: true,
                     onSubmitted: (_) => _onSubmitted(context),
                     textCapitalization: TextCapitalization.words)
               ]),
@@ -119,6 +122,7 @@ Future<void> launchOutlineWizard(
     Function(String name, String emoji) onSubmit,
     {bool autofocus = false}) async {
   await showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (dialogCtx) => OutlineWizard(
             name: name,

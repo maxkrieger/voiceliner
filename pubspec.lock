@@ -140,7 +140,7 @@ packages:
       name: emoji_picker_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.3.0"
+    version: "1.5.0"
   extension_google_sign_in_as_googleapis_auth:
     dependency: "direct main"
     description:

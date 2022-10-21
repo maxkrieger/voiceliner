@@ -173,6 +173,7 @@ class _MarkdownExporterState extends State<_MarkdownExporter> {
 Future<void> exportMarkdown(
     BuildContext context, Outline outline, NotesModel notesModel) async {
   await showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (_) =>
           _MarkdownExporter(outline: outline, notesModel: notesModel));

@@ -58,7 +58,7 @@ class _NoteWizardState extends State<NoteWizard> {
                 decoration: const InputDecoration(hintText: "Transcript"),
                 controller: _textController,
                 autofocus: true,
-                autocorrect: false,
+                autocorrect: true,
                 onSubmitted: (_) => _onSubmitted(),
                 textCapitalization: TextCapitalization.sentences),
             const SizedBox(height: 15),

@@ -47,6 +47,7 @@ class _NoteItemState extends State<NoteItem> {
 
     showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (dialogCtx) => NoteWizard(
               initialTranscript: note.transcript ?? "",
               initialColor: note.color ?? 0,
