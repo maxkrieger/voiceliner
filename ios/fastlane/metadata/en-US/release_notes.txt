@@ -1,2 +1,2 @@
-- Enable autocorrect for notes and outline titles
-- Tapping outside the composer box no longer discards changes
+- Don't delete all backups if there's only one left
+- Provide maximum line count for text input

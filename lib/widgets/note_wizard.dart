@@ -54,7 +54,8 @@ class _NoteWizardState extends State<NoteWizard> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-                maxLines: null,
+                maxLines: 10,
+                minLines: 1,
                 decoration: const InputDecoration(hintText: "Transcript"),
                 controller: _textController,
                 autofocus: true,

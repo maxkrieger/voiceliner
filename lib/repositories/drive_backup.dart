@@ -102,9 +102,10 @@ Future<void> removeOldBackups() async {
       pageSize: 50,
       q: "name = 'voice_outliner.zip'",
       $fields: "files(modifiedTime, id)",
-      orderBy: "modifiedTime");
+      orderBy: "modifiedTime desc");
   if (existing.files != null && existing.files!.isNotEmpty) {
-    for (var file in existing.files!) {
+    // we take the sublist because we want to keep the most recent one
+    for (var file in existing.files!.sublist(1)) {
       if (DateTime.now()
               .difference(file.modifiedTime!)
               .compareTo(const Duration(days: 31)) >
