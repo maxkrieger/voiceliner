@@ -1,2 +1,1 @@
-- Don't delete all backups if there's only one left
-- Provide maximum line count for text input
+- Show snackbar when uploading backup

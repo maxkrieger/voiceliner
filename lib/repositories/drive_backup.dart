@@ -3,6 +3,7 @@ import 'dart:io' as IO;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart';
@@ -12,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 
 import '../consts.dart';
+import '../globals.dart';
 
 GoogleSignIn googleSignIn = GoogleSignIn(scopes: [DriveApi.driveAppdataScope]);
 
@@ -37,8 +39,12 @@ Future<DriveApi?> getDrive() async {
 bool backingUp = false;
 
 /// Back up if you can
-Future<void> ifShouldBackup() async {
+Future<void> tryBackup() async {
   final sp = await SharedPreferences.getInstance();
+
+  // to debug:
+  // sp.setInt(lastBackupKey, 0);
+
   final lastBackup = sp.getInt(lastBackupKey);
   final shouldBackup = sp.getBool(driveEnabledKey) ?? false;
   if (shouldBackup) {
@@ -60,6 +66,7 @@ Future<void> ifShouldBackup() async {
               0)) {
         Sentry.addBreadcrumb(Breadcrumb(
             message: "Initiating auto back up", timestamp: DateTime.now()));
+        print("Backing up");
         await makeBackup();
       }
 
@@ -150,6 +157,8 @@ Future<void> makeBackup() async {
   final tmpZip = IO.File(
       "${tmpDir.path}/voice_outliner-${DateTime.now().millisecondsSinceEpoch}.zip");
   try {
+    snackbarKey.currentState?.showSnackBar(
+      const SnackBar(content: Text("Backing up to Google Drive...")));
     await ZipFile.createFromDirectory(
       sourceDir: docsDir,
       zipFile: tmpZip,
@@ -167,8 +176,12 @@ Future<void> makeBackup() async {
     sp.setInt(lastBackupKey, DateTime.now().millisecondsSinceEpoch);
     Sentry.addBreadcrumb(
         Breadcrumb(message: "Done backing up", timestamp: DateTime.now()));
+    snackbarKey.currentState?.showSnackBar(
+        const SnackBar(content: Text("✅ Backed up")));
   } catch (e, tr) {
     print(e);
+    snackbarKey.currentState?.showSnackBar(
+        SnackBar(content: Text("Error during backup: $e")));
     Sentry.captureException(e, stackTrace: tr);
   }
 }

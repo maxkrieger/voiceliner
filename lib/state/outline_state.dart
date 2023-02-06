@@ -115,7 +115,7 @@ class OutlinesModel extends ChangeNotifier {
       showCompleted = prefs.getBool(showCompletedKey) ?? true;
       allowRetranscription = prefs.getBool(allowRetranscriptionKey) ?? false;
       await loadOutlines();
-      await ifShouldBackup();
+      await tryBackup();
     }
   }
 }
