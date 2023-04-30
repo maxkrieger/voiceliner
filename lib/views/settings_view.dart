@@ -242,7 +242,7 @@ class _SettingsViewState extends State<SettingsView> {
                     SettingsTile.navigation(
                         leading: const Icon(Icons.help),
                         title: const Text("Show Tutorial"),
-                        onPressed: (_) => showOnboarding())
+                        onPressed: (_) => showOnboarding()),
                   ])
                 ],
               ));

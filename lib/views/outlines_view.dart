@@ -22,12 +22,12 @@ class _OutlinesViewState extends State<OutlinesView> {
   bool searchFocused = false;
   List<GroupedResult> searchResults = [];
   final _textController = TextEditingController();
-  Future<void> _addOutline() async {
+  Future<void> _addOutline(
+      {String? overrideName, String? overrideEmoji}) async {
     final now = DateTime.now();
-    final name = "${now.month}/${now.day}/${now.year - 2000}";
-    await launchOutlineWizard(
-        name, defaultEmoji, context, "create", "Create Outline",
-        (name, emoji) async {
+    final name = overrideName ?? "${now.month}/${now.day}/${now.year - 2000}";
+    await launchOutlineWizard(name, overrideEmoji ?? defaultEmoji, context,
+        "create", "Create Outline", (name, emoji) async {
       final outline =
           await context.read<OutlinesModel>().createOutline(name, emoji);
       _pushOutline(outline.id);
@@ -190,7 +190,8 @@ class _OutlinesViewState extends State<OutlinesView> {
           firstChild: numOutlines == 0
               ? Center(
                   child: ElevatedButton(
-                      onPressed: _addOutline,
+                      onPressed: () => _addOutline(
+                          overrideEmoji: "📥", overrideName: "Inbox"),
                       child: const Text(
                         "create your first outline",
                         style: TextStyle(fontSize: 20.0),
