@@ -71,6 +71,11 @@ class _MapViewState extends State<MapView> {
                     e["date_created"],
                     isUtc: true)),
             point: LatLng(e["latitude"], e["longitude"])))
+        .toList()
+        .reversed
+        .take(500)
+        .toList()
+        .reversed
         .toList();
     if (filtered.isNotEmpty) {
       setState(() {
@@ -154,7 +159,7 @@ class _MapViewState extends State<MapView> {
                                 width: 130,
                                 builder: (ctx) => ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                        primary: Colors.deepPurpleAccent
+                                        backgroundColor: Colors.deepPurpleAccent
                                             .withOpacity(0.5)),
                                     onPressed: () => pushOutline(
                                         ctx, note.outlineId, note.id),
