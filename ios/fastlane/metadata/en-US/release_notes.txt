@@ -1,1 +1,1 @@
-- Show snackbar when uploading backup
+- Slight tweaks and improvements
