@@ -133,7 +133,7 @@ class _MapViewState extends State<MapView> {
               onPressed: toggleFit,
               icon: fitAll
                   ? const Icon(Icons.gps_fixed)
-                  : const Icon(Icons.place))
+                  : const Icon(Icons.map_outlined))
         ],
       ),
       body: !loading
@@ -147,12 +147,12 @@ class _MapViewState extends State<MapView> {
                     interactiveFlags:
                         InteractiveFlag.all - InteractiveFlag.rotate,
                   ),
-                  layers: [
-                    TileLayerOptions(
+                  children: [
+                    TileLayer(
                         urlTemplate:
                             "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                         subdomains: ['a', 'b', 'c']),
-                    MarkerLayerOptions(
+                    MarkerLayer(
                         markers: notes
                             .map((Pin note) => Marker(
                                 point: note.point,

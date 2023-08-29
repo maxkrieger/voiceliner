@@ -51,7 +51,7 @@ android {
         applicationId "chat.saga.voice_outliner"
         multiDexEnabled true
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
