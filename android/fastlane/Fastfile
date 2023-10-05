@@ -28,9 +28,13 @@ platform :android do
     upload_to_play_store(track: "beta", aab: "../build/app/outputs/bundle/release/app-release.aab")
   end
 
-  # TODO https://docs.fastlane.tools/actions/upload_to_play_store/
-  desc "Deploy a production version to Google Play"
   lane :release do
     upload_to_play_store(track: "production", aab: "../build/app/outputs/bundle/release/app-release.aab")
+  end
+
+  # TODO https://docs.fastlane.tools/actions/upload_to_play_store/
+  desc "Deploy a production version to Google Play"
+  lane :release_submit do
+    upload_to_play_store(track_promote_to: "production", skip_upload_aab: true, skip_upload_apk: true, skip_upload_metadata: true)
   end
 end

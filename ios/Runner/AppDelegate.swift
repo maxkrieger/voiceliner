@@ -54,7 +54,7 @@ import UIKit
     let locales = SFSpeechRecognizer.supportedLocales()
     var localeOptions: [String: String] = [:]
     for locale in locales {
-      localeOptions[locale.identifier] = locale.localizedString(forIdentifier: locale.identifier)!
+      localeOptions[locale.identifier] = locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
     }
     result(localeOptions)
   }

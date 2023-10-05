@@ -1,1 +1,2 @@
-- Slight tweaks and improvements
+- Tap the date stamp in a memo to see the full date!
+- Fix locales on iOS

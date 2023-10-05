@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -296,40 +297,6 @@ class _NoteItemState extends State<NoteItem> {
               },
               tilePadding: const EdgeInsets.only(left: 10),
               trailing: const SizedBox(width: 0, height: 0),
-              children: [
-                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  Tooltip(
-                      message: "mark note complete",
-                      child: Checkbox(
-                          activeColor: Colors.deepPurple,
-                          value: note.isComplete,
-                          onChanged: (v) {
-                            context
-                                .read<NotesModel>()
-                                .setNoteComplete(note, v ?? false);
-                            HapticFeedback.mediumImpact();
-                          })),
-                  const SizedBox(width: 10),
-                  Text(
-                      note.duration != null
-                          ? "${note.duration!.inSeconds}s"
-                          : "",
-                      style: TextStyle(color: Theme.of(context).hintColor)),
-                  const Spacer(),
-                  Timeago(
-                      builder: (_, t) => Text(
-                            t,
-                            style:
-                                TextStyle(color: Theme.of(context).hintColor),
-                          ),
-                      date: dateCreated!),
-                  PopupMenuButton(
-                      tooltip: "note options",
-                      itemBuilder: _menuBuilder,
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: _handleMenu)
-                ])
-              ],
               title: isTranscribing
                   ? Text(
                       "waiting to transcribe...",
@@ -365,6 +332,50 @@ class _NoteItemState extends State<NoteItem> {
                       constraints: const BoxConstraints(),
                       color: classicPurple,
                       icon: const Icon(Icons.text_fields)),
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Tooltip(
+                      message: "mark note complete",
+                      child: Checkbox(
+                          activeColor: Colors.deepPurple,
+                          value: note.isComplete,
+                          onChanged: (v) {
+                            context
+                                .read<NotesModel>()
+                                .setNoteComplete(note, v ?? false);
+                            HapticFeedback.mediumImpact();
+                          })),
+                  const SizedBox(width: 10),
+                  Text(
+                      note.duration != null
+                          ? "${note.duration!.inSeconds}s"
+                          : "",
+                      style: TextStyle(color: Theme.of(context).hintColor)),
+                  const Spacer(),
+                  TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Created on: ${dateCreated != null ? DateFormat("${DateFormat.WEEKDAY}, ${DateFormat.MONTH} ${DateFormat.DAY} ${DateFormat.YEAR}").add_jms().format(dateCreated.toLocal()) : "no date"}",
+                            ),
+                          ),
+                        );
+                      },
+                      child: Timeago(
+                          builder: (_, t) => Text(
+                                t,
+                                style: TextStyle(
+                                    color: Theme.of(context).hintColor),
+                              ),
+                          date: dateCreated!)),
+                  PopupMenuButton(
+                      tooltip: "note options",
+                      itemBuilder: _menuBuilder,
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _handleMenu)
+                ])
+              ],
             )));
   }
 }
