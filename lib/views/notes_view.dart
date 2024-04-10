@@ -62,7 +62,7 @@ class _NotesViewState extends State<_NotesView> {
 
   void showContextMenu() {
     Vibrate.feedback(FeedbackType.medium);
-    final overlay = Overlay.of(context)!.context.findRenderObject();
+    final overlay = Overlay.of(context).context.findRenderObject();
     final relativeSize = RelativeRect.fromSize(
         tapXY! & const Size(40, 40), overlay!.semanticBounds.size);
     showMenu(context: context, position: relativeSize, items: [

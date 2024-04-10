@@ -71,7 +71,6 @@ class _OnboardingViewState extends State<OnboardingView> {
       dotsDecorator: const DotsDecorator(activeColor: classicPurple),
       showDoneButton: true,
       showNextButton: true,
-      isTopSafeArea: true,
       next: Text(
         "Next",
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),

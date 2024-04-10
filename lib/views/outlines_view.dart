@@ -178,7 +178,7 @@ class _OutlinesViewState extends State<OutlinesView> {
                             spreadRadius: 10,
                             color: Color.fromRGBO(156, 104, 241, 0.5))
                       ]),
-                  child: const Icon(Icons.post_add_rounded)),
+                  child: const Icon(Icons.post_add_rounded, color: Colors.white,)),
             )
           : null,
       body: AnimatedCrossFade(

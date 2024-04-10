@@ -37,6 +37,14 @@ Deploy a new beta version to the Google Play
 [bundle exec] fastlane android release
 ```
 
+
+
+### android release_submit
+
+```sh
+[bundle exec] fastlane android release_submit
+```
+
 Deploy a production version to Google Play
 
 ----

@@ -63,7 +63,6 @@ Future<String?> voskSpeechRecognize(String path) async {
   } catch (err, tr) {
     snackbarKey.currentState?.showSnackBar(
         SnackBar(content: Text("Could not recognize: ${err.toString()}")));
-    Sentry.captureException(err, stackTrace: tr);
     print(err);
     return null;
   }
@@ -84,7 +83,6 @@ Future<String?> voskInitModel(String path) async {
   } catch (err, tr) {
     snackbarKey.currentState?.showSnackBar(
         SnackBar(content: Text("Could not init model: ${err.toString()}")));
-    Sentry.captureException(err, stackTrace: tr);
     return err.toString();
   }
 }
@@ -120,7 +118,8 @@ Future<String?> voskDownloadAndInitModel(String url) async {
     await sharedPreferences.setString(modelDirKey, modelDir.path);
     return null;
   } catch (err, tr) {
-    Sentry.captureException(err, stackTrace: tr);
+    snackbarKey.currentState?.showSnackBar(
+        SnackBar(content: Text("Could not init model: ${err.toString()}")));
     return err.toString();
   }
 }

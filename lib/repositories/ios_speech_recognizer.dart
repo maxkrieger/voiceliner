@@ -21,7 +21,8 @@ Future<String?> recognizeNoteIOS(String path, String locale) async {
     }
   } catch (err, tr) {
     print(err);
-    Sentry.captureException(err, stackTrace: tr);
+    snackbarKey.currentState
+        ?.showSnackBar(const SnackBar(content: Text("Could not get speech")));
     return null;
   }
 }

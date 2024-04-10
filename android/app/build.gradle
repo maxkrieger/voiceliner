@@ -78,10 +78,10 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    def appcompat_version = "1.4.1"
+    def appcompat_version = "1.6.1"
     implementation "androidx.appcompat:appcompat:$appcompat_version"
-    api 'net.java.dev.jna:jna:5.10.0@aar'
-    implementation (group: 'com.alphacephei', name: 'vosk-android', version: '0.3.38') {
+    api 'net.java.dev.jna:jna:5.13.0@aar'
+    implementation (group: 'com.alphacephei', name: 'vosk-android', version: '0.3.45') {
         exclude group: 'net.java.dev.jna', module: 'jna'
     }
 }
