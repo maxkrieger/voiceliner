@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
+import 'package:voice_outliner/data/outline.dart';
 import 'package:voice_outliner/repositories/db_repository.dart';
 import 'package:voice_outliner/state/notes_state.dart';
 import 'package:voice_outliner/state/outline_state.dart';
@@ -277,21 +278,10 @@ class _NotesViewState extends State<_NotesView> {
 
   Widget buildChild(BuildContext context) {
     final outlineId = widget.args.outlineId;
-    final currentOutlineName = context.select<OutlinesModel, String>((value) =>
-        value.outlines
-            .firstWhere((element) => element.id == outlineId,
-                orElse: () => defaultOutline)
-            .name);
-    final currentOutlineEmoji = context.select<OutlinesModel, String>((value) =>
-        value.outlines
-            .firstWhere((element) => element.id == outlineId,
-                orElse: () => defaultOutline)
-            .emoji);
-    final currentOutlineArchived = context.select<OutlinesModel, bool>(
-        (value) => value.outlines
-            .firstWhere((element) => element.id == outlineId,
-                orElse: () => defaultOutline)
-            .archived);
+    final currentOutline = context.select<OutlinesModel, Outline>((value) =>
+        value.outlines.firstWhere((element) => element.id == outlineId,
+            orElse: () => defaultOutline));
+
     final noteCount =
         context.select<NotesModel, int>((value) => value.notes.length);
     final scrollController = context.select<NotesModel, AutoScrollController>(
@@ -313,7 +303,7 @@ class _NotesViewState extends State<_NotesView> {
               onTap: () => _handleMenu("rename"),
               borderRadius: const BorderRadius.all(Radius.circular(5.0)),
               child: Text(
-                "$currentOutlineEmoji $currentOutlineName",
+                "${currentOutline.emoji} ${currentOutline.name}",
                 overflow: TextOverflow.fade,
               )),
         ),
@@ -322,7 +312,7 @@ class _NotesViewState extends State<_NotesView> {
             onPressed: _goToOutlines,
             icon: const Icon(Icons.chevron_left)),
         actions: [
-          if (currentOutlineArchived)
+          if (currentOutline.archived)
             IconButton(
                 tooltip: "currently archived - unarchive?",
                 icon: const Icon(Icons.unarchive),
@@ -370,7 +360,7 @@ class _NotesViewState extends State<_NotesView> {
                                   Opacity(
                                       opacity: 0.5,
                                       child: Text(
-                                        currentOutlineEmoji,
+                                        currentOutline.emoji,
                                         style: const TextStyle(fontSize: 80.0),
                                         textAlign: TextAlign.center,
                                       )),
